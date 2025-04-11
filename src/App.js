@@ -105,9 +105,9 @@ function App() {
   // eslint-disable-next-line no-unused-vars
   const [hasStudentInfo, setHasStudentInfo] = useState(false);
   
-  // Determine if we need a basename for production or not for development
-  const isProduction = process.env.NODE_ENV === 'production';
-  const basename = isProduction ? '/v2' : '';
+  // Use a relative path instead of absolute path for basename
+  // This works with the homepage: "." setting in package.json
+  const basename = '';
   
   console.log('App render - hasStudentInfo:', hasStudentInfo);
   
