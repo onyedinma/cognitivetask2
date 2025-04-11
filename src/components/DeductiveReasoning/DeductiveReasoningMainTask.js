@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DeductiveReasoning.css';
 
@@ -109,7 +109,7 @@ const DeductiveReasoningMainTask = () => {
   const [showResults, setShowResults] = useState(false);
 
   // Toggle card selection
-  const toggleCardSelection = (cardIndex) => {
+  const toggleCardSelection = useCallback((cardIndex) => {
     setSelectedCards(prevSelected => {
       const isSelected = prevSelected.includes(cardIndex);
       
@@ -121,10 +121,10 @@ const DeductiveReasoningMainTask = () => {
         return [...prevSelected, cardIndex];
       }
     });
-  };
+  }, []);
 
   // Check if selected cards match correct cards
-  const checkCorrectCards = (correctCards) => {
+  const checkCorrectCards = useCallback((correctCards) => {
     if (selectedCards.length !== 2) return false;
     
     // Sort both arrays for comparison
@@ -132,10 +132,10 @@ const DeductiveReasoningMainTask = () => {
     const correctSorted = [...correctCards].sort((a, b) => a - b);
     
     return selectedSorted[0] === correctSorted[0] && selectedSorted[1] === correctSorted[1];
-  };
+  }, [selectedCards]);
 
   // Evaluate response for current puzzle
-  const evaluateResponse = () => {
+  const evaluateResponse = useCallback(() => {
     const currentPuzzle = mainPuzzles[currentPuzzleIndex];
     const isCorrect = checkCorrectCards(currentPuzzle.correctCards);
     
@@ -158,10 +158,10 @@ const DeductiveReasoningMainTask = () => {
     } else {
       setShowResults(true);
     }
-  };
+  }, [currentPuzzleIndex, mainPuzzles, checkCorrectCards, selectedCards]);
 
   // Complete task and return to home
-  const handleComplete = () => {
+  const handleComplete = useCallback(() => {
     // Save results to localStorage for later retrieval
     try {
       const studentId = localStorage.getItem('studentId') || 'unknown';
@@ -193,7 +193,7 @@ const DeductiveReasoningMainTask = () => {
     }
     
     navigate('/home');
-  };
+  }, [results, navigate]);
 
   // Render card component
   const renderCard = (card, index) => {

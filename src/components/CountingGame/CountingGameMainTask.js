@@ -46,10 +46,10 @@ const CountingGameMainTask = () => {
   };
   
   // Clear all timers
-  const clearAllTimers = () => {
+  const clearAllTimers = useCallback(() => {
     timersRef.current.forEach(timer => clearTimeout(timer));
     timersRef.current = [];
-  };
+  }, []);
   
   // Generate a sequence of random objects
   const generateSequence = useCallback(() => {
