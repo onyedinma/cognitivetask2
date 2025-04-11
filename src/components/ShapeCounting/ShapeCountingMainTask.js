@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ShapeCounting.css';
 
@@ -45,13 +45,13 @@ const ShapeCountingMainTask = () => {
   const shapes = ['square', 'triangle', 'circle'];
   
   // Clear all timers
-  const clearAllTimers = () => {
+  const clearAllTimers = useCallback(() => {
     timersRef.current.forEach(timer => clearTimeout(timer));
     timersRef.current = [];
-  };
+  }, []);
   
   // Generate a sequence of random shapes based on current level
-  const generateSequence = () => {
+  const generateSequence = useCallback(() => {
     const currentLevelConfig = levels[currentLevel - 1];
     const sequenceLength = currentLevelConfig.shapes;
     
@@ -79,10 +79,10 @@ const ShapeCountingMainTask = () => {
     }
     
     return { sequence, counts };
-  };
+  }, [currentLevel, currentAttempt, levels, shapes]);
   
   // Start showing the shapes
-  const startSequence = () => {
+  const startSequence = useCallback(() => {
     // Clear any existing timers
     clearAllTimers();
     
@@ -141,7 +141,22 @@ const ShapeCountingMainTask = () => {
     }, (sequence.length * 1500) + 500); // Add a small buffer after the last shape
     
     timersRef.current.push(responseTimer);
-  };
+  }, [
+    clearAllTimers,
+    currentLevel,
+    currentAttempt,
+    generateSequence,
+    setCurrentShape,
+    setShowingShapes,
+    setShowResponse,
+    setShowFeedback,
+    setTrialComplete,
+    setSquareCount,
+    setTriangleCount,
+    setCircleCount,
+    setCorrectCounts,
+    timersRef
+  ]);
   
   // Check user's response and record result
   const checkResponse = () => {
@@ -243,7 +258,7 @@ const ShapeCountingMainTask = () => {
       timersRef.current.push(timer);
       return () => clearTimeout(timer);
     }
-  }, [currentLevel, currentAttempt, showFeedback, taskComplete]);
+  }, [currentLevel, currentAttempt, showFeedback, taskComplete, startSequence, timersRef]);
   
   // Navigate back to tasks menu
   const returnToMenu = () => {
