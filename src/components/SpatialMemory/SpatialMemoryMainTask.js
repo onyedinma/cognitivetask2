@@ -15,7 +15,6 @@ const SpatialMemoryMainTask = () => {
   
   // States for managing the grids and timer
   const [currentLevel, setCurrentLevel] = useState(1);
-  const [maxLevel, setMaxLevel] = useState(5);
   const [phase, setPhase] = useState('study'); // 'study', 'response', 'feedback', 'levelComplete'
   const [shapes, setShapes] = useState([]);
   const [movedShapes, setMovedShapes] = useState([]);
@@ -48,7 +47,6 @@ const SpatialMemoryMainTask = () => {
 
   const generateShapes = () => {
     const dimensions = getGridDimensions();
-    const totalCells = dimensions.columns * dimensions.rows;
     
     // Number of shapes is exactly 4 * number of rows (current level)
     const numShapes = dimensions.columns * dimensions.rows;
@@ -70,7 +68,6 @@ const SpatialMemoryMainTask = () => {
 
   const moveShapes = (originalShapes) => {
     const dimensions = getGridDimensions();
-    const totalCells = dimensions.columns * dimensions.rows;
     
     // Number of shapes to swap (1 pair for levels 1-2, 2 pairs for 3-4, 3 pairs for 5-6)
     const numPairsToSwap = Math.ceil(currentLevel / 2);
@@ -231,7 +228,7 @@ const SpatialMemoryMainTask = () => {
         readyButtonTimerRef.current = null;
       }
     };
-  }, [currentLevel, trialCount, completed]);
+  }, [currentLevel, trialCount, completed, startLevel]);
 
   const handleCellClick = (position) => {
     if (phase !== 'response') return;
