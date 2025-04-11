@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CountingGame.css';
 
@@ -30,10 +30,10 @@ const CountingGamePractice = () => {
   const timersRef = useRef([]);
   
   // Clear all timers
-  const clearAllTimers = useCallback(() => {
+  const clearAllTimers = () => {
     timersRef.current.forEach(timer => clearTimeout(timer));
     timersRef.current = [];
-  }, []);
+  };
   
   // Objects for the practice
   const objects = ['bill', 'bus', 'face'];
@@ -46,7 +46,7 @@ const CountingGamePractice = () => {
   };
   
   // Generate a sequence of random objects
-  const generateSequence = useCallback(() => {
+  const generateSequence = () => {
     const sequenceLength = 5 + Math.floor(Math.random() * 5); // 5-10 objects
     const sequence = [];
     const counts = { bills: 0, buses: 0, faces: 0 };
@@ -63,10 +63,10 @@ const CountingGamePractice = () => {
     }
     
     return { sequence, counts };
-  }, [objects]);
+  };
   
   // Start showing the objects
-  const startSequence = useCallback(() => {
+  const startSequence = () => {
     // Clear any existing timers
     clearAllTimers();
     
@@ -112,7 +112,7 @@ const CountingGamePractice = () => {
     }, sequence.length * 1500);
     
     timersRef.current.push(responseTimer);
-  }, [clearAllTimers, generateSequence, setCurrentObject, setCorrectCounts, setShowFeedback, setShowingObjects, setShowResponse]);
+  };
   
   // Check user's response
   const checkResponse = () => {
@@ -147,14 +147,14 @@ const CountingGamePractice = () => {
   };
   
   // Continue practice or go to main task
-  const continuePractice = useCallback(() => {
+  const continuePractice = () => {
     // Reset counts
     setBillCount(0);
     setBusCount(0);
     setFaceCount(0);
     setShowFeedback(false);
     startSequence();
-  }, [setBillCount, setBusCount, setFaceCount, setShowFeedback, startSequence]);
+  };
   
   const goToMainTask = () => {
     navigate('/counting-game/task');
@@ -172,7 +172,7 @@ const CountingGamePractice = () => {
     return () => {
       clearAllTimers();
     };
-  }, [startSequence, clearAllTimers, timersRef]);
+  }, []);
   
   // Increment/decrement handlers for number inputs
   const handleIncrement = (setter) => {

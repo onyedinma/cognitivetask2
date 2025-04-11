@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CountingGame.css';
 
@@ -46,13 +46,13 @@ const CountingGameMainTask = () => {
   };
   
   // Clear all timers
-  const clearAllTimers = useCallback(() => {
+  const clearAllTimers = () => {
     timersRef.current.forEach(timer => clearTimeout(timer));
     timersRef.current = [];
-  }, []);
+  };
   
   // Generate a sequence of random objects
-  const generateSequence = useCallback(() => {
+  const generateSequence = () => {
     const difficultyFactor = Math.min(currentTrial, 3); // Increases up to level 3
     const baseObjectCount = 5 + difficultyFactor;
     const sequenceLength = baseObjectCount + Math.floor(Math.random() * 3); // Length increases with trials
@@ -72,10 +72,10 @@ const CountingGameMainTask = () => {
     }
     
     return { sequence, counts };
-  }, [currentTrial, objects]);
+  };
   
   // Start showing the objects
-  const startSequence = useCallback(() => {
+  const startSequence = () => {
     // Clear any existing timers
     clearAllTimers();
     
@@ -127,7 +127,7 @@ const CountingGameMainTask = () => {
     }, sequence.length * 1500);
     
     timersRef.current.push(responseTimer);
-  }, [clearAllTimers, currentTrial, generateSequence, setBillCount, setBusCount, setFaceCount, setCorrectCounts, setCurrentObject, setShowingObjects, setShowResponse, setShowFeedback, setTrialComplete]);
+  };
   
   // Check user's response and record result
   const checkResponse = () => {
@@ -238,7 +238,7 @@ const CountingGameMainTask = () => {
     return () => {
       clearAllTimers();
     };
-  }, [startSequence, clearAllTimers]);
+  }, []);
   
   // Increment/decrement handlers for number inputs
   const handleIncrement = (setter) => {

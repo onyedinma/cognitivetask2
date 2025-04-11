@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SpatialMemory.css';
 
@@ -15,6 +15,7 @@ const SpatialMemoryMainTask = () => {
   
   // States for managing the grids and timer
   const [currentLevel, setCurrentLevel] = useState(1);
+  const [maxLevel, setMaxLevel] = useState(5);
   const [phase, setPhase] = useState('study'); // 'study', 'response', 'feedback', 'levelComplete'
   const [shapes, setShapes] = useState([]);
   const [movedShapes, setMovedShapes] = useState([]);
@@ -35,7 +36,7 @@ const SpatialMemoryMainTask = () => {
   const readyButtonTimerRef = useRef(null);
 
   // Calculate grid dimensions based on current level
-  const getGridDimensions = useCallback(() => {
+  const getGridDimensions = () => {
     // Always 4 shapes per row
     const columns = 4;
     
@@ -43,10 +44,11 @@ const SpatialMemoryMainTask = () => {
     const rows = currentLevel;
     
     return { columns, rows };
-  }, [currentLevel]);
+  };
 
-  const generateShapes = useCallback(() => {
+  const generateShapes = () => {
     const dimensions = getGridDimensions();
+    const totalCells = dimensions.columns * dimensions.rows;
     
     // Number of shapes is exactly 4 * number of rows (current level)
     const numShapes = dimensions.columns * dimensions.rows;
@@ -64,10 +66,11 @@ const SpatialMemoryMainTask = () => {
     
     setShapes(newShapes);
     return newShapes;
-  }, [getGridDimensions]);
+  };
 
-  const moveShapes = useCallback((originalShapes) => {
+  const moveShapes = (originalShapes) => {
     const dimensions = getGridDimensions();
+    const totalCells = dimensions.columns * dimensions.rows;
     
     // Number of shapes to swap (1 pair for levels 1-2, 2 pairs for 3-4, 3 pairs for 5-6)
     const numPairsToSwap = Math.ceil(currentLevel / 2);
@@ -110,9 +113,9 @@ const SpatialMemoryMainTask = () => {
       movedShapes: shapesCopy,
       swappedPositions: shapesToSwap.map(index => shapesCopy[index].position)
     };
-  }, [currentLevel, getGridDimensions]);
+  };
 
-  const transitionToResponsePhase = useCallback((originalShapes) => {
+  const transitionToResponsePhase = (originalShapes) => {
     // Clear all timers
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -130,9 +133,9 @@ const SpatialMemoryMainTask = () => {
     // Move shapes instead of reshuffling all positions
     moveShapes(originalShapes);
     setPhase('response');
-  }, [moveShapes]);
+  };
 
-  const startLevel = useCallback(() => {
+  const startLevel = () => {
     // Clear any existing timers first
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -184,7 +187,14 @@ const SpatialMemoryMainTask = () => {
       }
       transitionToResponsePhase(newShapes);
     }, countdownTime);
-  }, [generateShapes, transitionToResponsePhase]);
+  };
+
+  const handleReadyClick = () => {
+    // Only transition if we're still in study phase
+    if (phase === 'study') {
+      transitionToResponsePhase(shapes);
+    }
+  };
 
   useEffect(() => {
     // Clear any previous timers when starting a new level or trial
@@ -221,14 +231,7 @@ const SpatialMemoryMainTask = () => {
         readyButtonTimerRef.current = null;
       }
     };
-  }, [currentLevel, trialCount, completed, startLevel]);
-
-  const handleReadyClick = useCallback(() => {
-    // Only transition if we're still in study phase
-    if (phase === 'study') {
-      transitionToResponsePhase(shapes);
-    }
-  }, [phase, shapes, transitionToResponsePhase]);
+  }, [currentLevel, trialCount, completed]);
 
   const handleCellClick = (position) => {
     if (phase !== 'response') return;

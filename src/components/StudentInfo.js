@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './StudentInfo.css';
 
 const StudentInfo = () => {
   const [studentId, setStudentId] = useState('');
   const [idError, setIdError] = useState('');
+  const navigate = useNavigate();
 
   // Validate student ID (5-10 digits)
   const validateStudentId = (id) => {

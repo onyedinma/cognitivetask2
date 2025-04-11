@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SpatialMemory.css';
 
@@ -22,54 +22,61 @@ const SpatialMemoryPractice = () => {
   const studyTimerRef = useRef(null);
   const readyButtonTimerRef = useRef(null);
   
-  // Shape types and colors for the practice
-  const shapeTypes = ['circle', 'square', 'triangle', 'pentagon', 'heart'];
-  const shapeColors = ['red', 'green', 'blue', 'yellow', 'purple'];
-  
-  // Generate shapes for practice (simpler than main task - just a single row of 5)
-  const generateShapes = useCallback(() => {
-    const positions = Array.from({ length: 5 }, (_, i) => i);
+  // Generate shapes to match the reference image
+  const generateShapes = () => {
+    // Define shape types and colors
+    const shapeOptions = [
+      { type: 'circle', color: 'green' },
+      { type: 'triangle', color: 'green' },
+      { type: 'pentagon', color: 'yellow' },
+      { type: 'triangle', color: 'purple' },
+      { type: 'circle', color: 'blue' },
+      { type: 'square', color: 'red' },
+      { type: 'pentagon', color: 'purple' },
+      { type: 'square', color: 'blue' },
+    ];
     
-    // Generate shapes with random types and colors
-    const newShapes = positions.map((position, index) => ({
+    // Randomly select 5 shapes from options
+    const shuffledOptions = [...shapeOptions].sort(() => Math.random() - 0.5);
+    const selectedShapes = shuffledOptions.slice(0, 5);
+    
+    // Create practice shapes with random selection
+    const practiceShapes = selectedShapes.map((shape, index) => ({
       id: index,
-      type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
-      color: shapeColors[Math.floor(Math.random() * shapeColors.length)],
-      position: position
+      type: shape.type,
+      color: shape.color,
+      position: index
     }));
     
-    setShapes(newShapes);
-    return newShapes;
-  }, []);
+    setShapes(practiceShapes);
+    return practiceShapes;
+  };
   
-  const moveShapes = useCallback((originalShapes) => {
-    // Create a deep copy of the shapes array
+  const moveShapes = (originalShapes) => {
+    // Create a deep copy of shapes
     const shapesCopy = JSON.parse(JSON.stringify(originalShapes));
     
-    // Choose 2 random distinct positions to swap
-    const pos1 = Math.floor(Math.random() * 5);
-    let pos2 = Math.floor(Math.random() * 5);
-    while (pos2 === pos1) {
-      pos2 = Math.floor(Math.random() * 5);
-    }
+    // Randomly select two different positions to swap
+    let pos1, pos2;
+    do {
+      pos1 = Math.floor(Math.random() * shapesCopy.length);
+      pos2 = Math.floor(Math.random() * shapesCopy.length);
+    } while (pos1 === pos2);
     
-    // Swap positions
-    const shape1 = shapesCopy.find(s => s.position === pos1);
-    const shape2 = shapesCopy.find(s => s.position === pos2);
+    // Store which positions were swapped for later evaluation
+    const changedPositions = [pos1, pos2];
+    setMovedPositions(changedPositions);
     
-    shape1.position = pos2;
-    shape2.position = pos1;
+    // Swap the positions
+    const temp = shapesCopy[pos1].position;
+    shapesCopy[pos1].position = shapesCopy[pos2].position;
+    shapesCopy[pos2].position = temp;
     
-    // Set moved shapes
     setMovedShapes(shapesCopy);
-    
-    // Store the positions that changed for feedback
-    setMovedPositions([pos1, pos2]);
-    
     return shapesCopy;
-  }, []);
+  };
   
-  const transitionToResponsePhase = useCallback((originalShapes) => {
+  const transitionToResponsePhase = (originalShapes) => {
     // Clear all timers
     if (timerRef.current) clearTimeout(timerRef.current);
     if (studyTimerRef.current) clearInterval(studyTimerRef.current);
@@ -78,9 +85,9 @@ const SpatialMemoryPractice = () => {
     // Move to response phase
     moveShapes(originalShapes);
     setPhase('response');
-  }, [moveShapes]);
+  };
   
-  const startStudyPhase = useCallback(() => {
+  const startStudyPhase = () => {
     const newShapes = generateShapes();
     setPhase('study');
     setSelectedCells([]);
@@ -112,11 +119,11 @@ const SpatialMemoryPractice = () => {
       clearInterval(studyTimerRef.current);
       transitionToResponsePhase(newShapes);
     }, countdownTime);
-  }, [generateShapes, transitionToResponsePhase]);
+  };
   
-  const handleReadyClick = useCallback(() => {
+  const handleReadyClick = () => {
     transitionToResponsePhase(shapes);
-  }, [transitionToResponsePhase, shapes]);
+  };
   
   useEffect(() => {
     return () => {
@@ -126,21 +133,20 @@ const SpatialMemoryPractice = () => {
     };
   }, []);
   
-  const handleCellClick = useCallback((position) => {
+  const handleCellClick = (position) => {
     if (phase !== 'response') return;
     
     setSelectedCells(prev => {
       if (prev.includes(position)) {
         return prev.filter(pos => pos !== position);
-      } else if (prev.length < 2) {
+      } else {
         return [...prev, position];
       }
-      return prev;
     });
-  }, [phase]);
+  };
   
-  const handleSubmit = useCallback(() => {
-    if (phase !== 'response' || selectedCells.length !== 2) return;
+  const handleSubmit = () => {
+    if (phase !== 'response') return;
     
     // Use the dynamically generated changed positions
     const changedPositions = movedPositions;
@@ -160,10 +166,10 @@ const SpatialMemoryPractice = () => {
     }
     
     setPhase('feedback');
-  }, [phase, selectedCells, movedPositions]);
+  };
   
   // Function to restart practice session
-  const handlePracticeAgain = useCallback(() => {
+  const handlePracticeAgain = () => {
     // Reset state for a new practice session
     setSelectedCells([]);
     setFeedbackMessage('');
@@ -171,11 +177,11 @@ const SpatialMemoryPractice = () => {
     
     // Start a new study phase
     startStudyPhase();
-  }, [startStudyPhase]);
+  };
   
-  const handleStartTask = useCallback(() => {
+  const handleStartTask = () => {
     navigate('/spatial-memory/task');
-  }, [navigate]);
+  };
   
   // Add a function to calculate responsive dimensions for the practice grid
   const getResponsiveGridStyles = () => {
