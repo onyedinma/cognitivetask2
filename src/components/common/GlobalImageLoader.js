@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllGameImages } from '../../utils/imageUtils';
+import { allImages } from '../../assets';
 import './LoadingStyles.css';
 
 /**
@@ -15,7 +16,14 @@ const GlobalImageLoader = () => {
     // Get all images to preload
     let images = [];
     try {
-      images = getAllGameImages();
+      // Get images from both utils and asset file for maximum compatibility
+      images = [
+        ...getAllGameImages(),
+        ...Object.values(allImages)
+      ];
+      
+      // Remove duplicates
+      images = [...new Set(images)];
     } catch (error) {
       console.error('Error getting game images:', error);
       // Continue without images rather than failing completely
@@ -98,6 +106,7 @@ const GlobalImageLoader = () => {
     };
   }, []);
   
+  // Only show loading spinner for 2+ seconds to avoid flash of loading UI
   if (!isLoading) {
     return null; // Don't render anything once loading is complete
   }

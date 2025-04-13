@@ -15,18 +15,30 @@ export const getNoCacheUrl = (url) => {
 };
 
 /**
+ * Get all image paths from public directory for preloading
+ * @returns {Array} Array of image URLs from public directory
+ */
+export const getPublicImages = () => {
+  // These need to be hardcoded as webpack can't dynamically require from public directory
+  const publicImages = [
+    '/images/objects/object1.svg',
+    '/images/objects/object2.svg',
+    '/images/ecological/scene1.svg'
+  ];
+  
+  return publicImages;
+};
+
+/**
  * Creates an array of all object images used in object span tasks
  * @returns {Array} Array of image URLs
  */
 export const getObjectSpanImages = () => {
-  try {
-    // Try to import images directly as a module
-    const objectImagesContext = require.context('../assets/objects', false, /\.(png|jpg|jpeg|svg)$/);
-    return objectImagesContext.keys().map(key => objectImagesContext(key));
-  } catch (e) {
-    console.warn('Warning: Object span images not found:', e.message);
-    return [];
-  }
+  // Use public directory images instead of trying to import from assets
+  return [
+    '/images/objects/object1.svg',
+    '/images/objects/object2.svg'
+  ];
 };
 
 /**
@@ -34,39 +46,10 @@ export const getObjectSpanImages = () => {
  * @returns {Array} Array of image URLs
  */
 export const getEcologicalSpatialImages = () => {
-  try {
-    const ecoSpatialImagesContext = require.context('../assets/ecological', false, /\.(png|jpg|jpeg|svg)$/);
-    return ecoSpatialImagesContext.keys().map(key => ecoSpatialImagesContext(key));
-  } catch (e) {
-    console.warn('Warning: Ecological spatial images not found:', e.message);
-    return [];
-  }
-};
-
-/**
- * Get all image paths from public directory for preloading
- * @returns {Array} Array of image URLs from public directory
- */
-export const getPublicImages = () => {
-  // These need to be hardcoded as webpack can't dynamically require from public directory
-  const publicImages = [
-    '/images/objects/object1.png',
-    '/images/objects/object2.png',
-    '/images/ecological/scene1.jpg',
-    // Add more image paths as needed
+  // Use public directory images instead of trying to import from assets
+  return [
+    '/images/ecological/scene1.svg'
   ];
-  
-  // Filter out any images that don't exist (to prevent console errors)
-  return publicImages.filter(path => {
-    try {
-      // This is just a simple test - it won't actually preload the image
-      const img = new Image();
-      img.src = path;
-      return true;
-    } catch (e) {
-      return false;
-    }
-  });
 };
 
 /**
@@ -74,36 +57,8 @@ export const getPublicImages = () => {
  * @returns {Array} Array of all image URLs to be preloaded
  */
 export const getAllGameImages = () => {
-  // Start with empty array to prevent errors
-  const allImages = [];
-  
-  // Try to add object span images
-  try {
-    const objectImages = getObjectSpanImages();
-    if (objectImages && objectImages.length) {
-      allImages.push(...objectImages);
-    }
-  } catch (e) {
-    console.warn('Error loading object span images:', e);
-  }
-  
-  // Try to add ecological spatial images
-  try {
-    const ecoImages = getEcologicalSpatialImages();
-    if (ecoImages && ecoImages.length) {
-      allImages.push(...ecoImages);
-    }
-  } catch (e) {
-    console.warn('Error loading ecological spatial images:', e);
-  }
-  
-  // Add public images as fallback
-  const publicImages = getPublicImages();
-  if (publicImages && publicImages.length) {
-    allImages.push(...publicImages);
-  }
-  
-  return allImages;
+  // Simply return all public images
+  return getPublicImages();
 };
 
 /**
