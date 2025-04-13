@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
+// Global image loader for preloading images
+import GlobalImageLoader from './components/common/GlobalImageLoader';
+
 // Task components
 import Home from './components/Home';
 import StudentInfo from './components/StudentInfo';
@@ -113,6 +116,7 @@ function App() {
   
   return (
     <FullscreenProvider>
+      <GlobalImageLoader />
       <Router basename={basename}>
     <div className="App">
           <Routes>

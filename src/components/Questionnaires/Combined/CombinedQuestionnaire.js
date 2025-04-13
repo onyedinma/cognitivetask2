@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ACEIQQuestionnaire from '../ACEIQ/ACEIQQuestionnaire';
 import SESQuestionnaire from '../SES/SESQuestionnaire';
 import MFQQuestionnaire from '../MFQ/MFQQuestionnaire';
+import SDQQuestionnaire from '../SDQ/SDQQuestionnaire';
 import './Combined.css';
 
 const CombinedQuestionnaire = () => {
@@ -11,10 +12,12 @@ const CombinedQuestionnaire = () => {
   const [aceiqCompleted, setAceiqCompleted] = useState(false);
   const [sesCompleted, setSesCompleted] = useState(false);
   const [mfqCompleted, setMfqCompleted] = useState(false);
+  const [sdqCompleted, setSdqCompleted] = useState(false);
   const [questionnairesCompleted, setQuestionnairesCompleted] = useState(false);
   const [aceiqResults, setAceiqResults] = useState(null);
   const [sesResults, setSesResults] = useState(null);
   const [mfqResults, setMfqResults] = useState(null);
+  const [sdqResults, setSdqResults] = useState(null);
 
   // Handle completion of ACEIQ questionnaire
   const handleAceiqComplete = (results) => {
@@ -52,13 +55,29 @@ const CombinedQuestionnaire = () => {
   const handleMfqComplete = (results) => {
     // If user clicked "Continue" after seeing score summary
     if (!results) {
-      // Mark this questionnaire as completed and move to completion
+      // Mark this questionnaire as completed and move to SDQ
       setMfqCompleted(true);
-      setQuestionnairesCompleted(true);
+      setCurrentQuestionnaire('SDQ');
     } else {
       // Store the results with scores
       setMfqResults(results);
       setMfqCompleted(true);
+      
+      // Show results screen with continue button
+    }
+  };
+
+  // Handle completion of SDQ questionnaire
+  const handleSdqComplete = (results) => {
+    // If user clicked "Continue" after seeing score summary
+    if (!results) {
+      // Mark this questionnaire as completed and move to completion
+      setSdqCompleted(true);
+      setQuestionnairesCompleted(true);
+    } else {
+      // Store the results with scores
+      setSdqResults(results);
+      setSdqCompleted(true);
       
       // Show results screen with continue button
     }
@@ -151,6 +170,39 @@ const CombinedQuestionnaire = () => {
               
               <button 
                 className="form-button" 
+                onClick={() => setCurrentQuestionnaire('SDQ')}
+              >
+                Continue to Next Questionnaire
+              </button>
+            </div>
+          );
+        }
+      }
+
+      // SDQ questionnaire flow
+      if (currentQuestionnaire === 'SDQ') {
+        if (!sdqCompleted) {
+          return <SDQQuestionnaire onComplete={handleSdqComplete} />;
+        } else {
+          // Show SDQ results with score before proceeding
+          return (
+            <div className="questionnaire-container">
+              <h1 className="questionnaire-title">Strengths and Difficulties Results</h1>
+              
+              {sdqResults && (
+                <div className="score-summary">
+                  <h2>Questionnaire Score Summary</h2>
+                  <p className="total-score">Emotional Problems: <span>{sdqResults.scores.emotional}</span></p>
+                  <p className="total-score">Conduct Problems: <span>{sdqResults.scores.conduct}</span></p>
+                  <p className="total-score">Hyperactivity: <span>{sdqResults.scores.hyperactivity}</span></p>
+                  <p className="total-score">Peer Problems: <span>{sdqResults.scores.peer}</span></p>
+                  <p className="total-score">Prosocial Behavior: <span>{sdqResults.scores.prosocial}</span></p>
+                  <p className="total-score">Total Difficulties: <span>{sdqResults.scores.totalDifficulties}</span></p>
+                </div>
+              )}
+              
+              <button 
+                className="form-button" 
                 onClick={() => setQuestionnairesCompleted(true)}
               >
                 Finish All Questionnaires
@@ -189,6 +241,18 @@ const CombinedQuestionnaire = () => {
               <h3>Mood and Feelings Score:</h3>
               <p>{mfqResults.totalScore} out of 26</p>
               <p className="interpretation-text">{mfqResults.interpretation}</p>
+            </div>
+          )}
+
+          {sdqResults && (
+            <div className="score-item">
+              <h3>Strengths and Difficulties Scores:</h3>
+              <p>Emotional Problems: {sdqResults.scores.emotional}</p>
+              <p>Conduct Problems: {sdqResults.scores.conduct}</p>
+              <p>Hyperactivity: {sdqResults.scores.hyperactivity}</p>
+              <p>Peer Problems: {sdqResults.scores.peer}</p>
+              <p>Prosocial Behavior: {sdqResults.scores.prosocial}</p>
+              <p>Total Difficulties: {sdqResults.scores.totalDifficulties}</p>
             </div>
           )}
         </div>
