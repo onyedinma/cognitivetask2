@@ -1,0 +1,35 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#ffebee" />
+  
+  <!-- Sky - sunset -->
+  <rect width="400" height="150" fill="#ffcdd2" />
+  <rect width="400" height="50" y="100" fill="#ef9a9a" />
+  
+  <!-- Sun -->
+  <circle cx="200" cy="100" r="40" fill="#ff7043" />
+  
+  <!-- Ground -->
+  <rect y="150" width="400" height="150" fill="#8d6e63" />
+  
+  <!-- City skyline -->
+  <rect x="30" y="90" width="30" height="60" fill="#424242" />
+  <rect x="70" y="110" width="40" height="40" fill="#616161" />
+  <rect x="120" y="70" width="50" height="80" fill="#424242" />
+  <rect x="180" y="100" width="35" height="50" fill="#616161" />
+  <rect x="230" y="60" width="40" height="90" fill="#424242" />
+  <rect x="280" y="90" width="60" height="60" fill="#616161" />
+  <rect x="350" y="110" width="30" height="40" fill="#424242" />
+  
+  <!-- Road -->
+  <rect x="0" y="220" width="400" height="30" fill="#212121" />
+  <rect x="10" y="234" width="30" height="2" fill="#fafafa" />
+  <rect x="60" y="234" width="30" height="2" fill="#fafafa" />
+  <rect x="110" y="234" width="30" height="2" fill="#fafafa" />
+  <rect x="160" y="234" width="30" height="2" fill="#fafafa" />
+  <rect x="210" y="234" width="30" height="2" fill="#fafafa" />
+  <rect x="260" y="234" width="30" height="2" fill="#fafafa" />
+  <rect x="310" y="234" width="30" height="2" fill="#fafafa" />
+  <rect x="360" y="234" width="30" height="2" fill="#fafafa" />
+  
+  <text x="200" y="280" font-family="Arial" font-size="24" text-anchor="middle" fill="#333">Scene 3</text>
+</svg> 
