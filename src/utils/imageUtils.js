@@ -1,7 +1,6 @@
 /**
  * Utility functions for working with images in the application
  */
-import { getBaseUrl, objectImages, ecologicalImages } from '../assets';
 
 /**
  * Adds cache-busting parameters to image URLs to prevent caching issues
@@ -16,34 +15,18 @@ export const getNoCacheUrl = (url) => {
 };
 
 /**
- * Fix the path for Netlify deployment
- * @param {string} relativePath The relative path to an image
- * @returns {string} The corrected path
- */
-export const fixImagePath = (relativePath) => {
-  if (!relativePath) return '';
-  
-  // Remove leading / if present
-  let path = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
-  
-  // Remove leading ./ if present
-  path = path.startsWith('./') ? path.slice(2) : path;
-  
-  // Add the base URL for production environments
-  const baseUrl = getBaseUrl();
-  return `${baseUrl}/${path}`;
-};
-
-/**
  * Get all image paths from public directory for preloading
  * @returns {Array} Array of image URLs from public directory
  */
 export const getPublicImages = () => {
-  // Convert object values to arrays
-  const objectPaths = Object.values(objectImages).map(fixImagePath);
-  const ecologicalPaths = Object.values(ecologicalImages).map(fixImagePath);
+  // These need to be hardcoded as webpack can't dynamically require from public directory
+  const publicImages = [
+    '/images/objects/object1.svg',
+    '/images/objects/object2.svg',
+    '/images/ecological/scene1.svg'
+  ];
   
-  return [...objectPaths, ...ecologicalPaths];
+  return publicImages;
 };
 
 /**
@@ -51,7 +34,11 @@ export const getPublicImages = () => {
  * @returns {Array} Array of image URLs
  */
 export const getObjectSpanImages = () => {
-  return Object.values(objectImages).map(fixImagePath);
+  // Use public directory images instead of trying to import from assets
+  return [
+    '/images/objects/object1.svg',
+    '/images/objects/object2.svg'
+  ];
 };
 
 /**
@@ -59,15 +46,18 @@ export const getObjectSpanImages = () => {
  * @returns {Array} Array of image URLs
  */
 export const getEcologicalSpatialImages = () => {
-  return Object.values(ecologicalImages).map(fixImagePath);
+  // Use public directory images instead of trying to import from assets
+  return [
+    '/images/ecological/scene1.svg'
+  ];
 };
 
 /**
- * Get all image paths for preloading
+ * Get all image paths from assets for preloading
  * @returns {Array} Array of all image URLs to be preloaded
  */
 export const getAllGameImages = () => {
-  // Simply return all public images with fixed paths
+  // Simply return all public images
   return getPublicImages();
 };
 
@@ -90,8 +80,8 @@ export const preloadImages = (imageSources) => {
       
       const img = new Image();
       img.onload = () => resolve(img);
-      img.onerror = (error) => {
-        console.warn(`Failed to preload image: ${src}`, error);
+      img.onerror = () => {
+        console.warn(`Failed to preload image: ${src}`);
         resolve(); // Resolve anyway to not block loading
       };
       img.src = src;
@@ -129,8 +119,7 @@ const imageUtils = {
   getEcologicalSpatialImages,
   getAllGameImages,
   preloadImages,
-  importAllImages,
-  fixImagePath
+  importAllImages
 };
 
 export default imageUtils; 

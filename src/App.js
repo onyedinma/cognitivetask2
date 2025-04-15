@@ -4,7 +4,6 @@ import './App.css';
 
 // Global image loader for preloading images
 import GlobalImageLoader from './components/common/GlobalImageLoader';
-import { testAllImagePaths } from './utils/imageDebugger';
 
 // Task components
 import Home from './components/Home';
@@ -108,19 +107,6 @@ function TaskWrapper({ children }) {
 function App() {
   // eslint-disable-next-line no-unused-vars
   const [hasStudentInfo, setHasStudentInfo] = useState(false);
-  const [imagesChecked, setImagesChecked] = useState(false);
-  
-  // Check image paths on startup in development
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      // Only run in development
-      testAllImagePaths().then(() => {
-        setImagesChecked(true);
-      });
-    } else {
-      setImagesChecked(true);
-    }
-  }, []);
   
   // Use a relative path instead of absolute path for basename
   // This works with the homepage: "." setting in package.json
