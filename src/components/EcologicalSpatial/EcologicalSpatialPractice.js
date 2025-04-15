@@ -202,7 +202,6 @@ const EcologicalSpatialPractice = () => {
   const getResponsiveGridStyles = () => {
     // Get viewport dimensions
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
     
     // Calculate maximum available width (accounting for padding/margins)
     const maxAvailableWidth = Math.min(viewportWidth - 40, 700);
