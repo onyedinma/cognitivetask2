@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
-// Import images from Ecoimages folder
-import dog from './Ecoimages/dog.png';
-import cat from './Ecoimages/cat.png';
-import bird from './Ecoimages/bird.png';
-import car from './Ecoimages/Car.png';
-import house from './Ecoimages/house.png';
-import bus from './Ecoimages/bus.png';
-import chair from './Ecoimages/chair.png';
-import computer from './Ecoimages/computer.png';
-import umbrella from './Ecoimages/umbrella.png';
-import clock from './Ecoimages/clock.png';
+// Import images from ecoimages folder
+import dog from './ecoimages/dog.png';
+import cat from './ecoimages/cat.png';
+import bird from './ecoimages/bird.png';
+import car from './ecoimages/car.png';
+import house from './ecoimages/house.png';
+import bus from './ecoimages/bus.png';
+import chair from './ecoimages/chair.png';
+import computer from './ecoimages/computer.png';
+import umbrella from './ecoimages/umbrella.png';
+import clock from './ecoimages/clock.png';
 
 // Define image objects to use for practice
 const ecoImages = [

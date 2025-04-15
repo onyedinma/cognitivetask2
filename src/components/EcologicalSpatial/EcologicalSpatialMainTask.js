@@ -2,27 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
-// Import all images from Ecoimages folder
-import dog from './Ecoimages/dog.png';
-import cat from './Ecoimages/cat.png';
-import bird from './Ecoimages/bird.png';
-import car from './Ecoimages/Car.png';
-import house from './Ecoimages/house.png';
-import bus from './Ecoimages/bus.png';
-import chair from './Ecoimages/chair.png';
-import computer from './Ecoimages/computer.png';
-import umbrella from './Ecoimages/umbrella.png';
-import clock from './Ecoimages/clock.png';
-import teacup from './Ecoimages/teacup.png';
-import guitar from './Ecoimages/guitar.png';
-import flower from './Ecoimages/flower.png';
-import bread from './Ecoimages/Bread.png';
-import bag from './Ecoimages/Bag.png';
-import shoe from './Ecoimages/Shoe.png';
-import kettle from './Ecoimages/kettle.png';
-import fryingpan from './Ecoimages/fryingpan.png';
-import electriciron from './Ecoimages/electriciron.png';
-import elephant from './Ecoimages/elephant.png';
+// Import all images from ecoimages folder
+import dog from './ecoimages/dog.png';
+import cat from './ecoimages/cat.png';
+import bird from './ecoimages/bird.png';
+import car from './ecoimages/car.png';
+import house from './ecoimages/house.png';
+import bus from './ecoimages/bus.png';
+import chair from './ecoimages/chair.png';
+import computer from './ecoimages/computer.png';
+import umbrella from './ecoimages/umbrella.png';
+import clock from './ecoimages/clock.png';
+import teacup from './ecoimages/teacup.png';
+import guitar from './ecoimages/guitar.png';
+import flower from './ecoimages/flower.png';
+import bread from './ecoimages/bread.png';
+import bag from './ecoimages/bag.png';
+import shoe from './ecoimages/shoe.png';
+import kettle from './ecoimages/kettle.png';
+import fryingpan from './ecoimages/fryingpan.png';
+import electriciron from './ecoimages/electriciron.png';
+import elephant from './ecoimages/elephant.png';
 
 // Define image objects to use
 const ecoImages = [
