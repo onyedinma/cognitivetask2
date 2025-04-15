@@ -5,4 +5,6 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /*.svg 200
-  Cache-Control: public, max-age=31536000, immutable 
+  Cache-Control: public, max-age=31536000, immutable
+
+/*  /index.html  200
