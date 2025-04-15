@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 
 // Global image loader for preloading images
@@ -52,20 +52,16 @@ import FullscreenWarning from './components/FullscreenWarning';
 function RequireStudentInfo({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const location = useLocation();
   
   useEffect(() => {
     const checkAuthorization = () => {
-      console.log('RequireStudentInfo mounting and checking localStorage');
       const studentId = localStorage.getItem('studentId');
       const counterBalance = localStorage.getItem('counterBalance');
       
-      console.log('RequireStudentInfo values:', { studentId, counterBalance, path: window.location.pathname });
-      
       if (studentId && counterBalance) {
-        console.log('RequireStudentInfo: Authorization successful');
         setIsAuthorized(true);
       } else {
-        console.log('RequireStudentInfo: Authorization failed');
         setIsAuthorized(false);
       }
       
@@ -92,7 +88,8 @@ function RequireStudentInfo({ children }) {
     return null;
   }
   
-  if (!isAuthorized) {
+  // Only redirect if we're not already on the student-info page
+  if (!isAuthorized && location.pathname !== '/student-info') {
     return <Navigate to="/student-info" replace />;
   }
   
