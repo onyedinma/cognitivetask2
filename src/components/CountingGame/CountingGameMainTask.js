@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CountingGame.css';
 
@@ -14,18 +14,19 @@ import faceImage from '../../assets/images/counting/face.jpg';
 const CountingGameMainTask = () => {
   const navigate = useNavigate();
   
-  // States for managing objects and counts
+  // State variables
   const [currentObject, setCurrentObject] = useState(null);
-  const [showingObjects, setShowingObjects] = useState(false);
+  const [showingObjects, setShowingObjects] = useState(true);
   const [showResponse, setShowResponse] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [trialComplete, setTrialComplete] = useState(false);
+  const [currentTrial, setCurrentTrial] = useState(1);
   const [billCount, setBillCount] = useState(0);
+  const [coinCount, setCoinCount] = useState(0);
   const [busCount, setBusCount] = useState(0);
   const [faceCount, setFaceCount] = useState(0);
-  const [correctCounts, setCorrectCounts] = useState({ bills: 0, buses: 0, faces: 0 });
-  const [currentTrial, setCurrentTrial] = useState(1);
+  const [correctCounts, setCorrectCounts] = useState({ bills: 0, coins: 0, buses: 0, faces: 0 });
   const [results, setResults] = useState([]);
-  const [trialComplete, setTrialComplete] = useState(false);
   const [taskComplete, setTaskComplete] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
   
@@ -46,36 +47,35 @@ const CountingGameMainTask = () => {
   };
   
   // Clear all timers
-  const clearAllTimers = () => {
+  const clearAllTimers = useCallback(() => {
     timersRef.current.forEach(timer => clearTimeout(timer));
     timersRef.current = [];
-  };
+  }, []);
   
   // Generate a sequence of random objects
-  const generateSequence = () => {
-    const difficultyFactor = Math.min(currentTrial, 3); // Increases up to level 3
-    const baseObjectCount = 5 + difficultyFactor;
-    const sequenceLength = baseObjectCount + Math.floor(Math.random() * 3); // Length increases with trials
-    
+  const generateSequence = useCallback(() => {
     const sequence = [];
-    const counts = { bills: 0, buses: 0, faces: 0 };
+    const counts = { bills: 0, coins: 0, buses: 0, faces: 0 };
     
-    for (let i = 0; i < sequenceLength; i++) {
-      const objectIndex = Math.floor(Math.random() * objects.length);
-      const object = objects[objectIndex];
+    // Generate 10-15 random objects
+    const length = Math.floor(Math.random() * 6) + 10;
+    
+    for (let i = 0; i < length; i++) {
+      const object = ['bill', 'coin', 'bus', 'face'][Math.floor(Math.random() * 4)];
       sequence.push(object);
       
-      // Count each object
+      // Count occurrences
       if (object === 'bill') counts.bills++;
+      else if (object === 'coin') counts.coins++;
       else if (object === 'bus') counts.buses++;
       else if (object === 'face') counts.faces++;
     }
     
     return { sequence, counts };
-  };
+  }, []);
   
   // Start showing the objects
-  const startSequence = () => {
+  const startSequence = useCallback(() => {
     // Clear any existing timers
     clearAllTimers();
     
@@ -91,43 +91,30 @@ const CountingGameMainTask = () => {
     setBusCount(0);
     setFaceCount(0);
     
-    // Generate sequence for trial
+    // Generate a new sequence
     const { sequence, counts } = generateSequence();
-    console.log(`Trial ${currentTrial} - Generated sequence:`, sequence);
-    console.log(`Trial ${currentTrial} - Correct counts:`, counts);
     
-    // Store correct counts for scoring
-    setCorrectCounts(counts);
-    
-    // Display objects one by one
-    sequence.forEach((object, index) => {
-      // Show object
-      const showTimer = setTimeout(() => {
-        console.log(`Showing object: ${object}`);
-        setCurrentObject(object);
-      }, index * 1500); // Show each object for 1.5 seconds
-      
-      timersRef.current.push(showTimer);
-      
-      // Hide object (except for the last one)
-      if (index < sequence.length - 1) {
-        const hideTimer = setTimeout(() => {
-          setCurrentObject(null);
-        }, (index * 1500) + 1000); // Show for 1 second, blank for 0.5 seconds
+    // Start showing objects one by one
+    let index = 0;
+    const showNextObject = () => {
+      if (index < sequence.length) {
+        setCurrentObject(sequence[index]);
+        index++;
         
-        timersRef.current.push(hideTimer);
+        // Schedule next object
+        const timer = setTimeout(showNextObject, 1000);
+        timersRef.current.push(timer);
+      } else {
+        // All objects shown, show response screen
+        setShowingObjects(false);
+        setShowResponse(true);
       }
-    });
+    };
     
-    // Show response form after all objects
-    const responseTimer = setTimeout(() => {
-      setShowingObjects(false);
-      setCurrentObject(null);
-      setShowResponse(true);
-    }, sequence.length * 1500);
-    
-    timersRef.current.push(responseTimer);
-  };
+    // Start the sequence
+    const timer = setTimeout(showNextObject, 1000);
+    timersRef.current.push(timer);
+  }, [clearAllTimers, generateSequence]);
   
   // Check user's response and record result
   const checkResponse = () => {
@@ -238,7 +225,7 @@ const CountingGameMainTask = () => {
     return () => {
       clearAllTimers();
     };
-  }, []);
+  }, [startSequence, clearAllTimers]);
   
   // Increment/decrement handlers for number inputs
   const handleIncrement = (setter) => {
