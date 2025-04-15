@@ -1,7 +1,11 @@
 # Netlify configuration
 [build]
   publish = "build"
-  command = "CI='' npm run build"
+  command = "npm run build"
+
+# Node version configuration
+[build.environment]
+  NODE_VERSION = "18"
 
 # Enable CORS headers to allow image loading from different origins
 [[headers]]
