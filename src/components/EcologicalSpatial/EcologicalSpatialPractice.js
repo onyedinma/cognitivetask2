@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
-// Import images from ecoimages folder
+// Import images from Ecoimages folder
 import dog from './ecoimages/dog.png';
 import cat from './ecoimages/cat.png';
 import bird from './ecoimages/bird.png';
@@ -202,6 +202,7 @@ const EcologicalSpatialPractice = () => {
   const getResponsiveGridStyles = () => {
     // Get viewport dimensions
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
     
     // Calculate maximum available width (accounting for padding/margins)
     const maxAvailableWidth = Math.min(viewportWidth - 40, 700);

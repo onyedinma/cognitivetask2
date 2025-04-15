@@ -51,43 +51,35 @@ import FullscreenWarning from './components/FullscreenWarning';
 // Protected Route component to ensure student info is entered
 function RequireStudentInfo({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
-    console.log('RequireStudentInfo mounting and checking localStorage');
-    
-    // Use a timer to ensure localStorage is fully available
-    const timer = setTimeout(() => {
-      // Direct access to localStorage 
+    const checkAuthorization = () => {
       const studentId = localStorage.getItem('studentId');
       const counterBalance = localStorage.getItem('counterBalance');
       
-      console.log('RequireStudentInfo values:', {
-        studentId: studentId ? `${studentId.substring(0, 3)}...` : 'not set',
-        counterBalance: counterBalance || 'not set',
-        path: window.location.pathname
-      });
-      
       if (studentId && counterBalance) {
-        console.log('RequireStudentInfo: Authorization successful');
         setIsAuthorized(true);
       } else {
-        console.log('RequireStudentInfo: Authorization failed, missing required data');
         setIsAuthorized(false);
       }
-      
-      setIsChecking(false);
-    }, 50); // Small delay to ensure localStorage is synced
+    };
     
-    return () => clearTimeout(timer);
+    // Initial check
+    checkAuthorization();
+    
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      checkAuthorization();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
   
-  if (isChecking) {
-    return <div className="loading">Checking authorization...</div>;
-  }
-  
   if (!isAuthorized) {
-    console.log('RequireStudentInfo redirecting to /student-info');
     return <Navigate to="/student-info" replace />;
   }
   
@@ -116,9 +108,11 @@ function App() {
   
   return (
     <FullscreenProvider>
-      <GlobalImageLoader />
       <Router basename={basename}>
-    <div className="App">
+        <div className="App">
+          <RequireStudentInfo>
+            <GlobalImageLoader />
+          </RequireStudentInfo>
           <Routes>
             {/* Student Info Route */}
             <Route path="/student-info" element={<StudentInfo />} />
@@ -398,7 +392,7 @@ function App() {
             {/* Fallback route - redirect to home */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
-    </div>
+        </div>
       </Router>
     </FullscreenProvider>
   );

@@ -15,16 +15,22 @@ export const getNoCacheUrl = (url) => {
 };
 
 /**
- * Get all image paths from public directory for preloading
- * @returns {Array} Array of image URLs from public directory
+ * Get all image paths from assets directory for preloading
+ * @returns {Array} Array of image URLs from assets directory
  */
 export const getPublicImages = () => {
-  // These need to be hardcoded as webpack can't dynamically require from public directory
-  const publicImages = [
-    '/images/objects/object1.svg',
-    '/images/objects/object2.svg',
-    '/images/ecological/scene1.svg'
-  ];
+  // Get images from the assets directory
+  const publicImages = [];
+  
+  // Add counting images
+  try {
+    const countingContext = require.context('../assets/images/counting', false, /\.(png|jpe?g|svg)$/);
+    countingContext.keys().forEach(key => {
+      publicImages.push(countingContext(key));
+    });
+  } catch (error) {
+    console.warn('Error loading counting images:', error);
+  }
   
   return publicImages;
 };
@@ -34,11 +40,7 @@ export const getPublicImages = () => {
  * @returns {Array} Array of image URLs
  */
 export const getObjectSpanImages = () => {
-  // Use public directory images instead of trying to import from assets
-  return [
-    '/images/objects/object1.svg',
-    '/images/objects/object2.svg'
-  ];
+  return getPublicImages();
 };
 
 /**
@@ -46,10 +48,7 @@ export const getObjectSpanImages = () => {
  * @returns {Array} Array of image URLs
  */
 export const getEcologicalSpatialImages = () => {
-  // Use public directory images instead of trying to import from assets
-  return [
-    '/images/ecological/scene1.svg'
-  ];
+  return getPublicImages();
 };
 
 /**
@@ -57,7 +56,6 @@ export const getEcologicalSpatialImages = () => {
  * @returns {Array} Array of all image URLs to be preloaded
  */
 export const getAllGameImages = () => {
-  // Simply return all public images
   return getPublicImages();
 };
 

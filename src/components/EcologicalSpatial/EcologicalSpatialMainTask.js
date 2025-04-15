@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
-// Import all images from ecoimages folder
+// Import all images from Ecoimages folder
 import dog from './ecoimages/dog.png';
 import cat from './ecoimages/cat.png';
 import bird from './ecoimages/bird.png';
@@ -57,6 +57,7 @@ const EcologicalSpatialMainTask = () => {
   
   // States for managing the grids and timer
   const [currentLevel, setCurrentLevel] = useState(1);
+  const [maxLevel, setMaxLevel] = useState(5);
   const [phase, setPhase] = useState('study'); // 'study', 'response', 'feedback', 'levelComplete'
   const [shapes, setShapes] = useState([]);
   const [movedShapes, setMovedShapes] = useState([]);
@@ -89,6 +90,9 @@ const EcologicalSpatialMainTask = () => {
 
   const generateShapes = () => {
     const dimensions = getGridDimensions();
+    const totalCells = dimensions.columns * dimensions.rows;
+    
+    // Number of shapes is exactly 4 * number of rows (current level)
     const numShapes = dimensions.columns * dimensions.rows;
     
     // Generate positions for all cells in the grid
@@ -114,6 +118,9 @@ const EcologicalSpatialMainTask = () => {
 
   const moveShapes = (originalShapes) => {
     const dimensions = getGridDimensions();
+    const totalCells = dimensions.columns * dimensions.rows;
+    
+    // Number of shapes to swap (1 pair for levels 1-2, 2 pairs for 3-4, 3 pairs for 5-6)
     const numPairsToSwap = Math.ceil(currentLevel / 2);
     
     // Create a deep copy of the shapes array
@@ -138,6 +145,16 @@ const EcologicalSpatialMainTask = () => {
       shapesCopy[shapesToSwap[i]].position = shapesCopy[shapesToSwap[i + 1]].position;
       shapesCopy[shapesToSwap[i + 1]].position = temp;
     }
+    
+    // Log the shapes that were swapped for debugging
+    console.log("Moved shapes:", shapesCopy.filter((shape, index) => 
+      shapesToSwap.includes(index)).map(s => ({
+        id: s.id,
+        imageName: s.imageName,
+        imageSrc: s.imageSrc,
+        position: s.position
+      }))
+    );
     
     setMovedShapes(shapesCopy);
     return {
@@ -166,7 +183,7 @@ const EcologicalSpatialMainTask = () => {
     setPhase('response');
   };
 
-  const startLevel = useCallback(() => {
+  const startLevel = () => {
     // Clear any existing timers first
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -194,7 +211,7 @@ const EcologicalSpatialMainTask = () => {
     
     // Start countdown timer
     const startTime = Date.now();
-    const countdownTime = 30000; // 30 seconds in milliseconds
+    const countdownTime = 30000; // 30 seconds to study in milliseconds
     
     studyTimerRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -218,7 +235,7 @@ const EcologicalSpatialMainTask = () => {
       }
       transitionToResponsePhase(newShapes);
     }, countdownTime);
-  }, [transitionToResponsePhase, generateShapes]);
+  };
 
   const handleReadyClick = () => {
     // Only transition if we're still in study phase
@@ -228,7 +245,7 @@ const EcologicalSpatialMainTask = () => {
   };
 
   useEffect(() => {
-    // Clear any existing timers first
+    // Clear any previous timers when starting a new level or trial
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -262,7 +279,7 @@ const EcologicalSpatialMainTask = () => {
         readyButtonTimerRef.current = null;
       }
     };
-  }, [currentLevel, trialCount, completed, startLevel]);
+  }, [currentLevel, trialCount, completed]);
 
   const handleCellClick = (position) => {
     if (phase !== 'response') return;
