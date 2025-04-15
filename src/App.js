@@ -51,17 +51,25 @@ import FullscreenWarning from './components/FullscreenWarning';
 // Protected Route component to ensure student info is entered
 function RequireStudentInfo({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
     const checkAuthorization = () => {
+      console.log('RequireStudentInfo mounting and checking localStorage');
       const studentId = localStorage.getItem('studentId');
       const counterBalance = localStorage.getItem('counterBalance');
       
+      console.log('RequireStudentInfo values:', { studentId, counterBalance, path: window.location.pathname });
+      
       if (studentId && counterBalance) {
+        console.log('RequireStudentInfo: Authorization successful');
         setIsAuthorized(true);
       } else {
+        console.log('RequireStudentInfo: Authorization failed');
         setIsAuthorized(false);
       }
+      
+      setIsChecking(false);
     };
     
     // Initial check
@@ -78,6 +86,11 @@ function RequireStudentInfo({ children }) {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+  
+  // Show nothing while checking
+  if (isChecking) {
+    return null;
+  }
   
   if (!isAuthorized) {
     return <Navigate to="/student-info" replace />;
@@ -97,18 +110,19 @@ function TaskWrapper({ children }) {
 }
 
 function App() {
-  // eslint-disable-next-line no-unused-vars
-  const [hasStudentInfo, setHasStudentInfo] = useState(false);
-  
   // Use a relative path instead of absolute path for basename
   // This works with the homepage: "." setting in package.json
   const basename = '';
   
-  console.log('App render - hasStudentInfo:', hasStudentInfo);
-  
   return (
     <FullscreenProvider>
-      <Router basename={basename}>
+      <Router 
+        basename={basename}
+        future={{ 
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <div className="App">
           <RequireStudentInfo>
             <GlobalImageLoader />

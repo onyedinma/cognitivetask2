@@ -50,9 +50,8 @@ const StudentInfo = () => {
         counterBalance: localStorage.getItem('counterBalance')
       });
       
-      // Force a complete page reload instead of using React Router
-      // This ensures the app reads the latest localStorage values on startup
-      window.location.href = '/';
+      // Use React Router navigation instead of window.location.href
+      navigate('/', { replace: true });
       
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
