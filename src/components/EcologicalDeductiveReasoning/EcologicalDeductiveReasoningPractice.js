@@ -6,7 +6,7 @@ const EcologicalDeductiveReasoningPractice = () => {
   const navigate = useNavigate();
   
   // Define constants for paths to images
-  const IMAGE_PATH = 'src/components/EcologicalDeductiveReasoning/deducimages/';
+  const IMAGE_PATH = './deducimages/';
 
   // Define the practice puzzles
   const practicePuzzles = [
@@ -14,23 +14,23 @@ const EcologicalDeductiveReasoningPractice = () => {
       question: "If a person is drinking beer, then they must be over 21 years old.",
       cards: [
         { front: "16", back: "16", type: "text" },
-        { front: "beer", back: "beer", type: "drink", image: 'src/components/EcologicalDeductiveReasoning/deducimages/beer.jpg' },
+        { front: "beer", back: "beer", type: "drink", image: require('./deducimages/beer.jpg') },
         { front: "25", back: "25", type: "text" },
-        { front: "juice", back: "juice", type: "drink", image: 'src/components/EcologicalDeductiveReasoning/deducimages/juice.jpg' }
+        { front: "juice", back: "juice", type: "drink", image: require('./deducimages/juice.jpg') }
       ],
       correctCards: [0, 1],  // 16 and beer
       explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
     },
     {
-      question: "If an animal has feathers, then it must be a bird.",
+      question: "If someone treats patients in a hospital, then they must be a doctor.",
       cards: [
-        { front: "Has feathers", back: "Has feathers", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/feathers.jpg' },
-        { front: "No feathers", back: "No feathers", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/dog.jpg' },
-        { front: "Bird", back: "Bird", type: "text" },
-        { front: "Dog", back: "Dog", type: "text" }
+        { front: "Doctor", back: "Doctor", type: "text" },
+        { front: "Teacher", back: "Teacher", type: "text" },
+        { front: "Treats patients", back: "Treats patients", type: "image", image: require('./deducimages/doctor-patient.jpg') },
+        { front: "Teaching", back: "Teaching", type: "image", image: require('./deducimages/teacher.jpg') }
       ],
-      correctCards: [0, 3],  // Has feathers and Dog
-      explanation: "Correct answer: 'Has feathers' and Dog. You need to check if an animal with feathers is a bird and if a dog might also have feathers."
+      correctCards: [1, 2],  // Teacher and Treats patients
+      explanation: "Correct answer: Teacher and 'Treats patients'. You need to check if someone treating patients is a doctor and if a teacher might also be treating patients."
     }
   ];
 
