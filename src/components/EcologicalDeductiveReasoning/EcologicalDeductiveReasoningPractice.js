@@ -6,7 +6,10 @@ const EcologicalDeductiveReasoningPractice = () => {
   const navigate = useNavigate();
   
   // Define constants for paths to images
-  const PUBLIC_IMAGE_PATH = process.env.PUBLIC_URL + '/Deductimages/';
+  const beer = '/deducimages/beer.jpg';
+  const juice = '/deducimages/juice.jpg';
+  const doctorPatient = '/deducimages/doctor-patient.jpg';
+  const teacher = '/deducimages/teacher.jpg';
 
   // Define the practice puzzles
   const practicePuzzles = [
@@ -14,9 +17,9 @@ const EcologicalDeductiveReasoningPractice = () => {
       question: "If a person is drinking beer, then they must be over 21 years old.",
       cards: [
         { front: "16", back: "16", type: "text" },
-        { front: "beer", back: "beer", type: "drink", image: PUBLIC_IMAGE_PATH + 'beer.jpg' },
+        { front: "beer", back: "beer", type: "drink", image: beer },
         { front: "25", back: "25", type: "text" },
-        { front: "juice", back: "juice", type: "drink", image: PUBLIC_IMAGE_PATH + 'juice.jpg' }
+        { front: "juice", back: "juice", type: "drink", image: juice }
       ],
       correctCards: [0, 1],  // 16 and beer
       explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
@@ -26,8 +29,8 @@ const EcologicalDeductiveReasoningPractice = () => {
       cards: [
         { front: "Doctor", back: "Doctor", type: "text" },
         { front: "Teacher", back: "Teacher", type: "text" },
-        { front: "Treats patients", back: "Treats patients", type: "image", image: PUBLIC_IMAGE_PATH + 'doctor-patient.jpg' },
-        { front: "Teaching", back: "Teaching", type: "image", image: PUBLIC_IMAGE_PATH + 'teacher.jpg' }
+        { front: "Treats patients", back: "Treats patients", type: "image", image: doctorPatient },
+        { front: "Teaching", back: "Teaching", type: "image", image: teacher }
       ],
       correctCards: [1, 2],  // Teacher and Treats patients
       explanation: "Correct answer: Teacher and 'Treats patients'. You need to check if someone treating patients is a doctor and if a teacher might also be treating patients."
