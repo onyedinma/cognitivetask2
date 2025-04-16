@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
 // Import images from Ecoimages folder
-import dog from './ecoimages/dog.png';
-import cat from './ecoimages/cat.png';
-import bird from './ecoimages/bird.png';
-import car from './ecoimages/car.png';
-import house from './ecoimages/house.png';
-import bus from './ecoimages/bus.png';
-import chair from './ecoimages/chair.png';
-import computer from './ecoimages/computer.png';
-import umbrella from './ecoimages/umbrella.png';
-import clock from './ecoimages/clock.png';
+const dog = process.env.PUBLIC_URL + '/images/ecoimages/dog.jpg';
+const cat = process.env.PUBLIC_URL + '/images/ecoimages/cat.jpg';
+const bird = process.env.PUBLIC_URL + '/images/ecoimages/bird.jpg';
+const car = process.env.PUBLIC_URL + '/images/ecoimages/car.jpg';
+const house = process.env.PUBLIC_URL + '/images/ecoimages/house.jpg';
+const bus = process.env.PUBLIC_URL + '/images/ecoimages/bus.jpg';
+const chair = process.env.PUBLIC_URL + '/images/ecoimages/chair.jpg';
+const computer = process.env.PUBLIC_URL + '/images/ecoimages/computer.jpg';
+const umbrella = process.env.PUBLIC_URL + '/images/ecoimages/umbrella.jpg';
+const clock = process.env.PUBLIC_URL + '/images/ecoimages/clock.jpg';
 
 // Define image objects to use for practice
 const ecoImages = [

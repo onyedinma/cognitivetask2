@@ -3,26 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
 // Import all images from Ecoimages folder
-import dog from './ecoimages/dog.png';
-import cat from './ecoimages/cat.png';
-import bird from './ecoimages/bird.png';
-import car from './ecoimages/car.png';
-import house from './ecoimages/house.png';
-import bus from './ecoimages/bus.png';
-import chair from './ecoimages/chair.png';
-import computer from './ecoimages/computer.png';
-import umbrella from './ecoimages/umbrella.png';
-import clock from './ecoimages/clock.png';
-import teacup from './ecoimages/teacup.png';
-import guitar from './ecoimages/guitar.png';
-import flower from './ecoimages/flower.png';
-import bread from './ecoimages/bread.png';
-import bag from './ecoimages/bag.png';
-import shoe from './ecoimages/shoe.png';
-import kettle from './ecoimages/kettle.png';
-import fryingpan from './ecoimages/fryingpan.png';
-import electriciron from './ecoimages/electriciron.png';
-import elephant from './ecoimages/elephant.png';
+const dog = process.env.PUBLIC_URL + '/images/ecoimages/dog.jpg';
+const cat = process.env.PUBLIC_URL + '/images/ecoimages/cat.jpg';
+const bird = process.env.PUBLIC_URL + '/images/ecoimages/bird.jpg';
+const car = process.env.PUBLIC_URL + '/images/ecoimages/car.jpg';
+const house = process.env.PUBLIC_URL + '/images/ecoimages/house.jpg';
+const bus = process.env.PUBLIC_URL + '/images/ecoimages/bus.jpg';
+const chair = process.env.PUBLIC_URL + '/images/ecoimages/chair.jpg';
+const computer = process.env.PUBLIC_URL + '/images/ecoimages/computer.jpg';
+const umbrella = process.env.PUBLIC_URL + '/images/ecoimages/umbrella.jpg';
+const clock = process.env.PUBLIC_URL + '/images/ecoimages/clock.jpg';
+const teacup = process.env.PUBLIC_URL + '/images/ecoimages/teacup.jpg';
+const guitar = process.env.PUBLIC_URL + '/images/ecoimages/guitar.jpg';
+const flower = process.env.PUBLIC_URL + '/images/ecoimages/flower.jpg';
+const bread = process.env.PUBLIC_URL + '/images/ecoimages/bread.jpg';
+const bag = process.env.PUBLIC_URL + '/images/ecoimages/bag.jpg';
+const shoe = process.env.PUBLIC_URL + '/images/ecoimages/shoe.jpg';
+const kettle = process.env.PUBLIC_URL + '/images/ecoimages/kettle.jpg';
+const fryingpan = process.env.PUBLIC_URL + '/images/ecoimages/fryingpan.jpg';
+const electriciron = process.env.PUBLIC_URL + '/images/ecoimages/electriciron.jpg';
+const elephant = process.env.PUBLIC_URL + '/images/ecoimages/elephant.jpg';
 
 // Define image objects to use
 const ecoImages = [
