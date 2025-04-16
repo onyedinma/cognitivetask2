@@ -6,20 +6,33 @@ const EcologicalDeductiveReasoningPractice = () => {
   const navigate = useNavigate();
   
   // Define constants for paths to images
-  const IMAGE_PATH = '/static/media/components/DeductiveReasoning/Deductimages/';
+  const IMAGE_PATH = 'src/components/EcologicalDeductiveReasoning/deducimages/';
 
-  // Define the practice puzzle
-  const practicePuzzle = {
-    question: "If a person drinks an alcoholic drink, then they must be over the age of 21 years old.",
-    cards: [
-      { front: "16", back: "16", type: "text" },
-      { front: "beer", back: "beer", type: "drink", image: require('../DeductiveReasoning/Deductimages/beer.jpg') },
-      { front: "25", back: "25", type: "text" },
-      { front: "juice", back: "juice", type: "drink", image: require('../DeductiveReasoning/Deductimages/juice.jpg') }
-    ],
-    correctCards: [0, 1],  // 16 and beer (0-indexed)
-    explanation: "You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
-  };
+  // Define the practice puzzles
+  const practicePuzzles = [
+    {
+      question: "If a person is drinking beer, then they must be over 21 years old.",
+      cards: [
+        { front: "16", back: "16", type: "text" },
+        { front: "beer", back: "beer", type: "drink", image: 'src/components/EcologicalDeductiveReasoning/deducimages/beer.jpg' },
+        { front: "25", back: "25", type: "text" },
+        { front: "juice", back: "juice", type: "drink", image: 'src/components/EcologicalDeductiveReasoning/deducimages/juice.jpg' }
+      ],
+      correctCards: [0, 1],  // 16 and beer
+      explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
+    },
+    {
+      question: "If an animal has feathers, then it must be a bird.",
+      cards: [
+        { front: "Has feathers", back: "Has feathers", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/feathers.jpg' },
+        { front: "No feathers", back: "No feathers", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/dog.jpg' },
+        { front: "Bird", back: "Bird", type: "text" },
+        { front: "Dog", back: "Dog", type: "text" }
+      ],
+      correctCards: [0, 3],  // Has feathers and Dog
+      explanation: "Correct answer: 'Has feathers' and Dog. You need to check if an animal with feathers is a bird and if a dog might also have feathers."
+    }
+  ];
 
   // Component state
   const [selectedCards, setSelectedCards] = useState([]);
@@ -54,19 +67,19 @@ const EcologicalDeductiveReasoningPractice = () => {
 
   // Evaluate practice response
   const evaluatePracticeResponse = () => {
-    const isCorrect = checkCorrectCards(practicePuzzle.correctCards);
+    const isCorrect = checkCorrectCards(practicePuzzles[0].correctCards);
     
     if (isCorrect) {
       setPracticeResult({
         isCorrect: true,
         message: 'Correct! You have selected the right cards.',
-        explanation: practicePuzzle.explanation
+        explanation: practicePuzzles[0].explanation
       });
     } else {
       setPracticeResult({
         isCorrect: false,
         message: 'Incorrect. You did not select the right cards.',
-        explanation: practicePuzzle.explanation
+        explanation: practicePuzzles[0].explanation
       });
     }
     
@@ -133,7 +146,7 @@ const EcologicalDeductiveReasoningPractice = () => {
         <div className="eco-deductive-header">
           <h2>Practice Round</h2>
           <div className="eco-deductive-question">
-            {practicePuzzle.question}
+            {practicePuzzles[0].question}
           </div>
         </div>
         
@@ -142,7 +155,7 @@ const EcologicalDeductiveReasoningPractice = () => {
         </p>
         
         <div className="eco-cards-container">
-          {practicePuzzle.cards.map((card, index) => renderCard(card, index))}
+          {practicePuzzles[0].cards.map((card, index) => renderCard(card, index))}
         </div>
         
         <button 

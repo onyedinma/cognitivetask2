@@ -6,7 +6,7 @@ const EcologicalDeductiveReasoningMainTask = () => {
   const navigate = useNavigate();
   
   // Define constants for paths to images
-  const IMAGE_PATH = '/static/media/components/DeductiveReasoning/Deductimages/';
+  const IMAGE_PATH = 'src/components/EcologicalDeductiveReasoning/deducimages/';
 
   // Define the main puzzles
   const mainPuzzles = [
@@ -14,9 +14,9 @@ const EcologicalDeductiveReasoningMainTask = () => {
       question: "If a person drinks an alcoholic drink, then they must be over the age of 21 years old.",
       cards: [
         { front: "16", back: "16", type: "text" },
-        { front: "beer", back: "beer", type: "drink", image: require('../DeductiveReasoning/Deductimages/beer.jpg') },
+        { front: "beer", back: "beer", type: "drink", image: 'src/components/EcologicalDeductiveReasoning/deducimages/beer.jpg' },
         { front: "25", back: "25", type: "text" },
-        { front: "juice", back: "juice", type: "drink", image: require('../DeductiveReasoning/Deductimages/juice.jpg') }
+        { front: "juice", back: "juice", type: "drink", image: 'src/components/EcologicalDeductiveReasoning/deducimages/juice.jpg' }
       ],
       correctCards: [0, 1],  // 16 and beer
       explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
@@ -37,8 +37,8 @@ const EcologicalDeductiveReasoningMainTask = () => {
       cards: [
         { front: "Doctor", back: "Doctor", type: "text" },
         { front: "Teacher", back: "Teacher", type: "text" },
-        { front: "Treats children", back: "Treats children", type: "image", image: require('../DeductiveReasoning/Deductimages/doctor-patient.jpg') },
-        { front: "Teaching", back: "Teaching", type: "image", image: require('../DeductiveReasoning/Deductimages/teacher.jpg') }
+        { front: "Treats children", back: "Treats children", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/doctor-patient.jpg' },
+        { front: "Teaching", back: "Teaching", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/teacher.jpg' }
       ],
       correctCards: [1, 2],  // Teacher and Treats children
       explanation: "Correct answer: Teacher and 'Treats children'. You need to check if someone treating children is a doctor and if a teacher might also be treating children."
@@ -46,8 +46,8 @@ const EcologicalDeductiveReasoningMainTask = () => {
     {
       question: "If an animal barks, then it must be a dog.",
       cards: [
-        { front: "Barks", back: "Barks", type: "image", image: require('../DeductiveReasoning/Deductimages/dog-barking.jpg') },
-        { front: "Doesn't bark", back: "Doesn't bark", type: "image", image: require('../DeductiveReasoning/Deductimages/cat.jpg') },
+        { front: "Barks", back: "Barks", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/dog-barking.jpg' },
+        { front: "Doesn't bark", back: "Doesn't bark", type: "image", image: 'src/components/EcologicalDeductiveReasoning/deducimages/cat.jpg' },
         { front: "Dog", back: "Dog", type: "text" },
         { front: "Cat", back: "Cat", type: "text" }
       ],
