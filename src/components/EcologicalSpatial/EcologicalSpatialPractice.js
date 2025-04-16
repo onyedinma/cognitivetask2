@@ -14,6 +14,9 @@ const computer = '/ecoimages/computer.jpg';
 const umbrella = '/ecoimages/umbrella.jpg';
 const clock = '/ecoimages/clock.jpg';
 
+// Array of all image paths for preloading
+const allImagePaths = [dog, cat, bird, car, house, bus, chair, computer, umbrella, clock];
+
 // Define image objects to use for practice
 const ecoImages = [
   { name: 'dog', src: dog },
@@ -34,6 +37,11 @@ const ecoImages = [
  */
 const EcologicalSpatialPractice = () => {
   const navigate = useNavigate();
+  
+  // Add image loading states
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  
   const [phase, setPhase] = useState('instructions'); // 'instructions', 'study', 'response', 'feedback'
   const [shapes, setShapes] = useState([]);
   const [movedShapes, setMovedShapes] = useState([]);
@@ -47,6 +55,51 @@ const EcologicalSpatialPractice = () => {
   const timerRef = useRef(null);
   const studyTimerRef = useRef(null);
   const readyButtonTimerRef = useRef(null);
+
+  // Preload images when component mounts
+  useEffect(() => {
+    let loadedCount = 0;
+    const totalImages = allImagePaths.length;
+    
+    const preloadImage = (src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          loadedCount++;
+          setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
+          resolve();
+        };
+        img.onerror = () => {
+          console.warn(`Failed to load image: ${src}`);
+          loadedCount++;
+          setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
+          resolve(); // Resolve anyway to not block other images
+        };
+      });
+    };
+
+    const loadAllImages = async () => {
+      try {
+        await Promise.all(allImagePaths.map(src => preloadImage(src)));
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error('Error preloading images:', error);
+        setImagesLoaded(true); // Continue anyway
+      }
+    };
+
+    loadAllImages();
+  }, []);
+
+  // Cleanup effect for timers
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (studyTimerRef.current) clearInterval(studyTimerRef.current);
+      if (readyButtonTimerRef.current) clearTimeout(readyButtonTimerRef.current);
+    };
+  }, []);
   
   // Generate shapes with ecological images
   const generateShapes = () => {
@@ -501,10 +554,26 @@ const EcologicalSpatialPractice = () => {
   return (
     <div className="spatial-screen">
       <div className="spatial-content">
-        {phase === 'instructions' && renderInstructions()}
-        {phase === 'study' && renderStudyPhase()}
-        {phase === 'response' && renderResponsePhase()}
-        {phase === 'feedback' && renderFeedbackPhase()}
+        {!imagesLoaded ? (
+          <div className="eco-loading-container">
+            <h2>Loading Images...</h2>
+            <div className="eco-loading-bar">
+              <div 
+                className="eco-loading-progress" 
+                style={{ width: `${loadingProgress}%` }}
+              ></div>
+            </div>
+            <p>{loadingProgress}%</p>
+          </div>
+        ) : phase === 'instructions' ? (
+          renderInstructions()
+        ) : phase === 'study' ? (
+          renderStudyPhase()
+        ) : phase === 'response' ? (
+          renderResponsePhase()
+        ) : (
+          renderFeedbackPhase()
+        )}
       </div>
     </div>
   );
