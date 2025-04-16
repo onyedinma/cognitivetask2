@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 
 // Global image loader for preloading images
@@ -53,35 +53,47 @@ function RequireStudentInfo({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  const checkAuthorization = useCallback(() => {
+    const studentId = localStorage.getItem('studentId');
+    const counterBalance = localStorage.getItem('counterBalance');
+    
+    if (studentId && counterBalance) {
+      setIsAuthorized(true);
+    } else {
+      setIsAuthorized(false);
+    }
+    
+    setIsChecking(false);
+  }, []);
   
   useEffect(() => {
-    const checkAuthorization = () => {
-      const studentId = localStorage.getItem('studentId');
-      const counterBalance = localStorage.getItem('counterBalance');
-      
-      if (studentId && counterBalance) {
-        setIsAuthorized(true);
-      } else {
-        setIsAuthorized(false);
-      }
-      
-      setIsChecking(false);
-    };
-    
     // Initial check
     checkAuthorization();
     
-    // Listen for storage changes
-    const handleStorageChange = () => {
+    // Listen for storage changes from other tabs
+    const handleStorageChange = (e) => {
+      if (e.key === 'studentId' || e.key === 'counterBalance') {
+        checkAuthorization();
+      }
+    };
+    
+    // Listen for storage changes from other tabs
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for same-tab changes
+    const handleLocalStorageChange = () => {
       checkAuthorization();
     };
     
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('localStorageChange', handleLocalStorageChange);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('localStorageChange', handleLocalStorageChange);
     };
-  }, []);
+  }, [checkAuthorization]);
   
   // Show nothing while checking
   if (isChecking) {

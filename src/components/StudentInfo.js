@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setLocalStorageItem, clearLocalStorage } from '../utils/localStorage';
 import './StudentInfo.css';
 
 const StudentInfo = () => {
   const [studentId, setStudentId] = useState('');
   const [idError, setIdError] = useState('');
   const navigate = useNavigate();
+
+  // Check if already authorized
+  useEffect(() => {
+    const savedStudentId = localStorage.getItem('studentId');
+    const savedCounterBalance = localStorage.getItem('counterBalance');
+    
+    if (savedStudentId && savedCounterBalance) {
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
 
   // Validate student ID (5-10 digits)
   const validateStudentId = (id) => {
@@ -26,31 +37,22 @@ const StudentInfo = () => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted', { studentId });
     
     // Validate student ID
     if (!validateStudentId(studentId)) {
-      console.log('Invalid student ID');
       setIdError('Please enter a valid ID (5-10 digits)');
       return;
     }
     
-    // Store in localStorage
     try {
       // Clear first, then set
-      localStorage.clear(); // Clear all previous data
+      clearLocalStorage();
       
       // Store values in localStorage
-      localStorage.setItem('studentId', studentId);
-      localStorage.setItem('counterBalance', 'A'); // Default value
+      setLocalStorageItem('studentId', studentId);
+      setLocalStorageItem('counterBalance', 'A'); // Default value
       
-      // Log to confirm values are set
-      console.log('Data saved to localStorage', { 
-        studentId: localStorage.getItem('studentId'),
-        counterBalance: localStorage.getItem('counterBalance')
-      });
-      
-      // Use React Router navigation instead of window.location.href
+      // Navigate to home page
       navigate('/', { replace: true });
       
     } catch (error) {
