@@ -13,10 +13,62 @@ const cat = '/deducimages/cat.jpg';
 // All images used in the component - for preloading
 const allImages = [beer, juice, doctorPatient, teacher, dogBarking, cat];
 
+// Define the main puzzles
+const mainPuzzles = [
+  {
+    question: "If a person drinks an alcoholic drink, then they must be over the age of 21 years old.",
+    cards: [
+      { front: "16", back: "16", type: "text" },
+      { front: "beer", back: "beer", type: "drink", image: beer },
+      { front: "25", back: "25", type: "text" },
+      { front: "juice", back: "juice", type: "drink", image: juice }
+    ],
+    correctCards: [0, 1],  // 16 and beer
+    explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
+  },
+  {
+    question: "If Mary and Jane always hang out together, then they must be friends.",
+    cards: [
+      { front: "Mary and Jane hang out", back: "Mary and Jane hang out", type: "text" },
+      { front: "Mary and Jane do not hang out", back: "Mary and Jane do not hang out", type: "text" },
+      { front: "Mary and Jane are friends", back: "Mary and Jane are friends", type: "text" },
+      { front: "Mary and Jane are not friends", back: "Mary and Jane are not friends", type: "text" }
+    ],
+    correctCards: [0, 3],  // "Mary and Jane hang out" and "Mary and Jane are not friends"
+    explanation: "Correct answer: 'Mary and Jane hang out' and 'Mary and Jane are not friends'. You need to check if they hang out (to verify they are friends) and if they are not friends (to verify they don't hang out)."
+  },
+  {
+    question: "If Amy treats sick children in the hospital, then she must be a doctor.",
+    cards: [
+      { front: "Doctor", back: "Doctor", type: "text" },
+      { front: "Teacher", back: "Teacher", type: "text" },
+      { front: "Treats children", back: "Treats children", type: "image", image: doctorPatient },
+      { front: "Teaching", back: "Teaching", type: "image", image: teacher }
+    ],
+    correctCards: [1, 2],  // Teacher and Treats children
+    explanation: "Correct answer: Teacher and 'Treats children'. You need to check if someone treating children is a doctor and if a teacher might also be treating children."
+  },
+  {
+    question: "If an animal barks, then it must be a dog.",
+    cards: [
+      { front: "Barks", back: "Barks", type: "image", image: dogBarking },
+      { front: "Doesn't bark", back: "Doesn't bark", type: "image", image: cat },
+      { front: "Dog", back: "Dog", type: "text" },
+      { front: "Cat", back: "Cat", type: "text" }
+    ],
+    correctCards: [0, 3],  // Barks and Cat
+    explanation: "Correct answer: 'Barks' and Cat. You need to check if a barking animal is a dog and if a cat might also bark."
+  }
+];
+
 const EcologicalDeductiveReasoningMainTask = () => {
   const navigate = useNavigate();
   
-  // State to track image loading
+  // All state declarations must come at the top level of the component
+  const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [results, setResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
@@ -26,7 +78,7 @@ const EcologicalDeductiveReasoningMainTask = () => {
     const totalImages = allImages.length;
     
     const preloadImage = (src) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const img = new Image();
         img.src = src;
         img.onload = () => {
@@ -55,60 +107,6 @@ const EcologicalDeductiveReasoningMainTask = () => {
 
     loadAllImages();
   }, []);
-
-  // Define the main puzzles
-  const mainPuzzles = [
-    {
-      question: "If a person drinks an alcoholic drink, then they must be over the age of 21 years old.",
-      cards: [
-        { front: "16", back: "16", type: "text" },
-        { front: "beer", back: "beer", type: "drink", image: beer },
-        { front: "25", back: "25", type: "text" },
-        { front: "juice", back: "juice", type: "drink", image: juice }
-      ],
-      correctCards: [0, 1],  // 16 and beer
-      explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
-    },
-    {
-      question: "If Mary and Jane always hang out together, then they must be friends.",
-      cards: [
-        { front: "Mary and Jane hang out", back: "Mary and Jane hang out", type: "text" },
-        { front: "Mary and Jane do not hang out", back: "Mary and Jane do not hang out", type: "text" },
-        { front: "Mary and Jane are friends", back: "Mary and Jane are friends", type: "text" },
-        { front: "Mary and Jane are not friends", back: "Mary and Jane are not friends", type: "text" }
-      ],
-      correctCards: [0, 3],  // "Mary and Jane hang out" and "Mary and Jane are not friends"
-      explanation: "Correct answer: 'Mary and Jane hang out' and 'Mary and Jane are not friends'. You need to check if they hang out (to verify they are friends) and if they are not friends (to verify they don't hang out)."
-    },
-    {
-      question: "If Amy treats sick children in the hospital, then she must be a doctor.",
-      cards: [
-        { front: "Doctor", back: "Doctor", type: "text" },
-        { front: "Teacher", back: "Teacher", type: "text" },
-        { front: "Treats children", back: "Treats children", type: "image", image: doctorPatient },
-        { front: "Teaching", back: "Teaching", type: "image", image: teacher }
-      ],
-      correctCards: [1, 2],  // Teacher and Treats children
-      explanation: "Correct answer: Teacher and 'Treats children'. You need to check if someone treating children is a doctor and if a teacher might also be treating children."
-    },
-    {
-      question: "If an animal barks, then it must be a dog.",
-      cards: [
-        { front: "Barks", back: "Barks", type: "image", image: dogBarking },
-        { front: "Doesn't bark", back: "Doesn't bark", type: "image", image: cat },
-        { front: "Dog", back: "Dog", type: "text" },
-        { front: "Cat", back: "Cat", type: "text" }
-      ],
-      correctCards: [0, 3],  // Barks and Cat
-      explanation: "Correct answer: 'Barks' and Cat. You need to check if a barking animal is a dog and if a cat might also bark."
-    }
-  ];
-
-  // Component state
-  const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
-  const [selectedCards, setSelectedCards] = useState([]);
-  const [results, setResults] = useState([]);
-  const [showResults, setShowResults] = useState(false);
 
   // Toggle card selection
   const toggleCardSelection = (cardIndex) => {

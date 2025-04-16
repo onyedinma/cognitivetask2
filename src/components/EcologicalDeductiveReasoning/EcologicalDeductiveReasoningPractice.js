@@ -11,10 +11,39 @@ const teacher = '/deducimages/teacher.jpg';
 // All images used in the component - for preloading
 const allImages = [beer, juice, doctorPatient, teacher];
 
+// Define the practice puzzles
+const practicePuzzles = [
+  {
+    question: "If a person is drinking beer, then they must be over 21 years old.",
+    cards: [
+      { front: "16", back: "16", type: "text" },
+      { front: "beer", back: "beer", type: "drink", image: beer },
+      { front: "25", back: "25", type: "text" },
+      { front: "juice", back: "juice", type: "drink", image: juice }
+    ],
+    correctCards: [0, 1],  // 16 and beer
+    explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
+  },
+  {
+    question: "If someone treats patients in a hospital, then they must be a doctor.",
+    cards: [
+      { front: "Doctor", back: "Doctor", type: "text" },
+      { front: "Teacher", back: "Teacher", type: "text" },
+      { front: "Treats patients", back: "Treats patients", type: "image", image: doctorPatient },
+      { front: "Teaching", back: "Teaching", type: "image", image: teacher }
+    ],
+    correctCards: [1, 2],  // Teacher and Treats patients
+    explanation: "Correct answer: Teacher and 'Treats patients'. You need to check if someone treating patients is a doctor and if a teacher might also be treating patients."
+  }
+];
+
 const EcologicalDeductiveReasoningPractice = () => {
   const navigate = useNavigate();
   
-  // State to track image loading
+  // All state declarations must come at the top level of the component
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [practiceResult, setPracticeResult] = useState({ isCorrect: false, message: '', explanation: '' });
+  const [selectedCards, setSelectedCards] = useState([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
@@ -24,7 +53,7 @@ const EcologicalDeductiveReasoningPractice = () => {
     const totalImages = allImages.length;
     
     const preloadImage = (src) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const img = new Image();
         img.src = src;
         img.onload = () => {
@@ -53,55 +82,6 @@ const EcologicalDeductiveReasoningPractice = () => {
 
     loadAllImages();
   }, []);
-
-  // Define the practice puzzles
-  const practicePuzzles = [
-    {
-      question: "If a person is drinking beer, then they must be over 21 years old.",
-      cards: [
-        { front: "16", back: "16", type: "text" },
-        { front: "beer", back: "beer", type: "drink", image: beer },
-        { front: "25", back: "25", type: "text" },
-        { front: "juice", back: "juice", type: "drink", image: juice }
-      ],
-      correctCards: [0, 1],  // 16 and beer
-      explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
-    },
-    {
-      question: "If someone treats patients in a hospital, then they must be a doctor.",
-      cards: [
-        { front: "Doctor", back: "Doctor", type: "text" },
-        { front: "Teacher", back: "Teacher", type: "text" },
-        { front: "Treats patients", back: "Treats patients", type: "image", image: doctorPatient },
-        { front: "Teaching", back: "Teaching", type: "image", image: teacher }
-      ],
-      correctCards: [1, 2],  // Teacher and Treats patients
-      explanation: "Correct answer: Teacher and 'Treats patients'. You need to check if someone treating patients is a doctor and if a teacher might also be treating patients."
-    }
-  ];
-
-  // Show loading screen while images are loading
-  if (!imagesLoaded) {
-    return (
-      <div className="eco-deductive-screen">
-        <div className="eco-loading-container">
-          <h2>Loading Images...</h2>
-          <div className="eco-loading-bar">
-            <div 
-              className="eco-loading-progress" 
-              style={{ width: `${loadingProgress}%` }}
-            ></div>
-          </div>
-          <p>{loadingProgress}%</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Component state
-  const [selectedCards, setSelectedCards] = useState([]);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [practiceResult, setPracticeResult] = useState({ isCorrect: false, message: '', explanation: '' });
 
   // Toggle card selection
   const toggleCardSelection = (cardIndex) => {
@@ -179,6 +159,24 @@ const EcologicalDeductiveReasoningPractice = () => {
       </div>
     );
   };
+
+  // Show loading screen while images are loading
+  if (!imagesLoaded) {
+    return (
+      <div className="eco-deductive-screen">
+        <div className="eco-loading-container">
+          <h2>Loading Images...</h2>
+          <div className="eco-loading-bar">
+            <div 
+              className="eco-loading-progress" 
+              style={{ width: `${loadingProgress}%` }}
+            ></div>
+          </div>
+          <p>{loadingProgress}%</p>
+        </div>
+      </div>
+    );
+  }
 
   // Render practice component or feedback
   if (showFeedback) {
