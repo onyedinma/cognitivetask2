@@ -1,56 +1,74 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import './EcologicalDeductiveReasoning.css';
 
-// Define constants for paths to images
-const beer = '/deducimages/beer.jpg';
-const juice = '/deducimages/juice.jpg';
-const doctorPatient = '/deducimages/doctor-patient.jpg';
-const teacher = '/deducimages/teacher.jpg';
+const IMAGE_PATH = '/images/deductimages/';
 
-// All images used in the component - for preloading
-const allImages = [beer, juice, doctorPatient, teacher];
-
-// Define the practice puzzles
-const practicePuzzles = [
+// Practice puzzles
+const puzzles = [
   {
-    question: "If a person is drinking beer, then they must be over 21 years old.",
+    question: "You are at a friend's party. There are some cookies on the table. Your friend says: \"If the cookies are chocolate chip, then they're homemade.\" Which cards would you need to turn over to check if this rule is being followed?",
     cards: [
-      { front: "16", back: "16", type: "text" },
-      { front: "beer", back: "beer", type: "drink", image: beer },
-      { front: "25", back: "25", type: "text" },
-      { front: "juice", back: "juice", type: "drink", image: juice }
+      {
+        id: 1,
+        type: 'p',
+        front: 'Chocolate Chip Cookie',
+        back: 'Homemade',
+        frontImage: `${IMAGE_PATH}chocolate_chip_cookie.jpg`,
+        backText: 'This cookie is homemade'
+      },
+      {
+        id: 2,
+        type: 'not-p',
+        front: 'Vanilla Cookie',
+        back: 'Store-bought',
+        frontImage: `${IMAGE_PATH}vanilla_cookie.jpg`,
+        backText: 'This cookie is store-bought'
+      },
+      {
+        id: 3,
+        type: 'q',
+        front: 'Homemade Cookie',
+        back: 'Chocolate Chip',
+        frontImage: `${IMAGE_PATH}homemade_cookie.jpg`,
+        backText: 'This cookie is chocolate chip'
+      },
+      {
+        id: 4,
+        type: 'not-q',
+        front: 'Store-bought Cookie',
+        back: 'Oatmeal Raisin',
+        frontImage: `${IMAGE_PATH}storebought_cookie.jpg`,
+        backText: 'This cookie is oatmeal raisin'
+      }
     ],
-    correctCards: [0, 1],  // 16 and beer
-    explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
-  },
-  {
-    question: "If someone treats patients in a hospital, then they must be a doctor.",
-    cards: [
-      { front: "Doctor", back: "Doctor", type: "text" },
-      { front: "Teacher", back: "Teacher", type: "text" },
-      { front: "Treats patients", back: "Treats patients", type: "image", image: doctorPatient },
-      { front: "Teaching", back: "Teaching", type: "image", image: teacher }
-    ],
-    correctCards: [1, 2],  // Teacher and Treats patients
-    explanation: "Correct answer: Teacher and 'Treats patients'. You need to check if someone treating patients is a doctor and if a teacher might also be treating patients."
+    correctAnswer: [1, 4],
+    explanation: "You need to check if all chocolate chip cookies are homemade (P implies Q), so you need to check the chocolate chip cookie (P) to see if it's homemade. You also need to check the store-bought cookie (not-Q) to make sure it's not chocolate chip."
   }
 ];
 
 const EcologicalDeductiveReasoningPractice = () => {
-  const navigate = useNavigate();
-  
-  // All state declarations must come at the top level of the component
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [practiceResult, setPracticeResult] = useState({ isCorrect: false, message: '', explanation: '' });
   const [selectedCards, setSelectedCards] = useState([]);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // Preload images when component mounts
+  // Preload all puzzle images
   useEffect(() => {
+    const imageUrls = [];
+    
+    // Collect all image URLs
+    puzzles.forEach(puzzle => {
+      puzzle.cards.forEach(card => {
+        if (card.frontImage) {
+          imageUrls.push(card.frontImage);
+        }
+      });
+    });
+    
     let loadedCount = 0;
-    const totalImages = allImages.length;
+    const totalImages = imageUrls.length;
     
     const preloadImage = (src) => {
       return new Promise((resolve) => {
@@ -72,7 +90,7 @@ const EcologicalDeductiveReasoningPractice = () => {
 
     const loadAllImages = async () => {
       try {
-        await Promise.all(allImages.map(src => preloadImage(src)));
+        await Promise.all(imageUrls.map(src => preloadImage(src)));
         setImagesLoaded(true);
       } catch (error) {
         console.error('Error preloading images:', error);
@@ -83,92 +101,55 @@ const EcologicalDeductiveReasoningPractice = () => {
     loadAllImages();
   }, []);
 
-  // Toggle card selection
-  const toggleCardSelection = (cardIndex) => {
-    setSelectedCards(prevSelected => {
-      const isSelected = prevSelected.includes(cardIndex);
-      
-      if (isSelected) {
-        // Remove from selected cards if already selected
-        return prevSelected.filter(idx => idx !== cardIndex);
-      } else {
-        // Add to selected cards if not already selected
-        return [...prevSelected, cardIndex];
-      }
-    });
-  };
-
-  // Check if selected cards match correct cards
-  const checkCorrectCards = (correctCards) => {
-    if (selectedCards.length !== 2) return false;
-    
-    // Sort both arrays for comparison
-    const selectedSorted = [...selectedCards].sort((a, b) => a - b);
-    const correctSorted = [...correctCards].sort((a, b) => a - b);
-    
-    return selectedSorted[0] === correctSorted[0] && selectedSorted[1] === correctSorted[1];
-  };
-
-  // Evaluate practice response
-  const evaluatePracticeResponse = () => {
-    const isCorrect = checkCorrectCards(practicePuzzles[0].correctCards);
-    
-    if (isCorrect) {
-      setPracticeResult({
-        isCorrect: true,
-        message: 'Correct! You have selected the right cards.',
-        explanation: practicePuzzles[0].explanation
-      });
-    } else {
-      setPracticeResult({
-        isCorrect: false,
-        message: 'Incorrect. You did not select the right cards.',
-        explanation: practicePuzzles[0].explanation
+  const toggleCardSelection = (cardId) => {
+    if (!showFeedback) {
+      setSelectedCards(prevSelected => {
+        if (prevSelected.includes(cardId)) {
+          return prevSelected.filter(id => id !== cardId);
+        } else {
+          return [...prevSelected, cardId];
+        }
       });
     }
+  };
+
+  const checkAnswer = () => {
+    const puzzle = puzzles[0]; // Only one practice puzzle
+    const correctAnswerIds = puzzle.correctAnswer;
     
+    // Check if selected cards match the correct answer (same length and same elements)
+    const isCorrectAnswer = 
+      selectedCards.length === correctAnswerIds.length && 
+      correctAnswerIds.every(id => selectedCards.includes(id));
+    
+    setIsCorrect(isCorrectAnswer);
     setShowFeedback(true);
   };
 
-  // Handle navigation to main task
-  const handleStartMainTask = () => {
-    navigate('/ecological-deductive/task');
+  const handleContinue = () => {
+    if (!showExplanation) {
+      setShowExplanation(true);
+    } else {
+      // Navigate to main task
+      window.location.href = '/ecological-deductive-reasoning/main';
+    }
   };
 
-  // Render card component
-  const renderCard = (card, index) => {
-    const isSelected = selectedCards.includes(index);
-    
-    return (
-      <div 
-        key={index} 
-        className={`eco-deductive-card ${isSelected ? 'selected' : ''}`}
-        onClick={() => toggleCardSelection(index)}
-      >
-        <div className="eco-card-content">
-          {card.type === 'text' ? (
-            <span className="eco-card-text">{card.front}</span>
-          ) : (
-            <img 
-              src={card.image} 
-              alt={card.front} 
-              className="eco-card-image" 
-            />
-          )}
-        </div>
-      </div>
-    );
+  const handleTryAgain = () => {
+    setSelectedCards([]);
+    setShowFeedback(false);
+    setShowExplanation(false);
   };
 
-  // Show loading screen while images are loading
+  // Show loading screen if images are not loaded
   if (!imagesLoaded) {
     return (
-      <div className="eco-deductive-screen">
-        <div className="eco-loading-container">
-          <h2>Loading Images...</h2>
-          <div className="eco-loading-bar">
+      <div className="task-screen">
+        <div className="loading-container">
+          <h2>Loading Task...</h2>
+          <div className="loading-bar">
             <div 
-              className="eco-loading-progress" 
+              className="loading-progress" 
               style={{ width: `${loadingProgress}%` }}
             ></div>
           </div>
@@ -178,56 +159,72 @@ const EcologicalDeductiveReasoningPractice = () => {
     );
   }
 
-  // Render practice component or feedback
-  if (showFeedback) {
-    return (
-      <div className="eco-deductive-screen">
-        <div className="eco-deductive-content">
-          <div className="eco-deductive-feedback">
-            <div className={`eco-feedback-result ${practiceResult.isCorrect ? 'eco-correct-answer' : 'eco-incorrect-answer'}`}>
-              {practiceResult.message}
-            </div>
-            <div className="eco-feedback-explanation">
-              {practiceResult.explanation}
-            </div>
-          </div>
-          <button 
-            className="eco-deductive-button eco-continue-button" 
-            onClick={handleStartMainTask}
-          >
-            Continue to Main Task
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const puzzle = puzzles[0]; // Only one practice puzzle
 
   return (
-    <div className="eco-deductive-screen">
-      <div className="eco-deductive-content">
-        <div className="eco-deductive-header">
-          <h2>Practice Round</h2>
-          <div className="eco-deductive-question">
-            {practicePuzzles[0].question}
+    <div className="deductive-reasoning-container">
+      <h1>Practice: Ecological Deductive Reasoning</h1>
+      
+      <div className="puzzle-question">
+        <p>{puzzle.question}</p>
+        {selectedCards.length > 0 && (
+          <p className="selected-count">
+            You have selected {selectedCards.length} card{selectedCards.length !== 1 ? 's' : ''}.
+          </p>
+        )}
+      </div>
+      
+      <div className="cards-container">
+        {puzzle.cards.map((card) => (
+          <div 
+            key={card.id}
+            className={`card ${selectedCards.includes(card.id) ? 'selected' : ''}`}
+            onClick={() => toggleCardSelection(card.id)}
+          >
+            <div className="card-front">
+              <img src={card.frontImage} alt={card.front} className="card-image" />
+              <div className="card-label">{card.front}</div>
+            </div>
           </div>
-        </div>
-        
-        <p className="eco-selected-count">
-          Selected cards: {selectedCards.length}/2
-        </p>
-        
-        <div className="eco-cards-container">
-          {practicePuzzles[0].cards.map((card, index) => renderCard(card, index))}
-        </div>
-        
+        ))}
+      </div>
+      
+      {!showFeedback ? (
         <button 
-          className="eco-deductive-button eco-submit-button" 
-          onClick={evaluatePracticeResponse}
-          disabled={selectedCards.length !== 2}
+          className="submit-button"
+          onClick={checkAnswer}
+          disabled={selectedCards.length === 0}
         >
           Submit Answer
         </button>
-      </div>
+      ) : (
+        <div className="feedback-container">
+          <h2 className={isCorrect ? 'correct-feedback' : 'incorrect-feedback'}>
+            {isCorrect ? 'Correct!' : 'Not quite right.'}
+          </h2>
+          
+          {showExplanation ? (
+            <>
+              <p className="explanation">{puzzle.explanation}</p>
+              <button className="continue-button" onClick={handleContinue}>
+                Continue to Main Task
+              </button>
+            </>
+          ) : (
+            <>
+              {isCorrect ? (
+                <button className="continue-button" onClick={handleContinue}>
+                  See Explanation
+                </button>
+              ) : (
+                <button className="try-again-button" onClick={handleTryAgain}>
+                  Try Again
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
