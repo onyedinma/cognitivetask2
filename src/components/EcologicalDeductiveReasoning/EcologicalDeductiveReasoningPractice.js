@@ -1,15 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalDeductiveReasoning.css';
+
+// Define constants for paths to images
+const beer = '/deducimages/beer.jpg';
+const juice = '/deducimages/juice.jpg';
+const doctorPatient = '/deducimages/doctor-patient.jpg';
+const teacher = '/deducimages/teacher.jpg';
+
+// All images used in the component - for preloading
+const allImages = [beer, juice, doctorPatient, teacher];
 
 const EcologicalDeductiveReasoningPractice = () => {
   const navigate = useNavigate();
   
-  // Define constants for paths to images
-  const beer = '/deducimages/beer.jpg';
-  const juice = '/deducimages/juice.jpg';
-  const doctorPatient = '/deducimages/doctor-patient.jpg';
-  const teacher = '/deducimages/teacher.jpg';
+  // State to track image loading
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // Preload images when component mounts
+  useEffect(() => {
+    let loadedCount = 0;
+    const totalImages = allImages.length;
+    
+    const preloadImage = (src) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          loadedCount++;
+          setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
+          resolve();
+        };
+        img.onerror = () => {
+          console.warn(`Failed to load image: ${src}`);
+          loadedCount++;
+          setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
+          resolve(); // Resolve anyway to not block other images
+        };
+      });
+    };
+
+    const loadAllImages = async () => {
+      try {
+        await Promise.all(allImages.map(src => preloadImage(src)));
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error('Error preloading images:', error);
+        setImagesLoaded(true); // Continue anyway
+      }
+    };
+
+    loadAllImages();
+  }, []);
 
   // Define the practice puzzles
   const practicePuzzles = [
@@ -36,6 +79,24 @@ const EcologicalDeductiveReasoningPractice = () => {
       explanation: "Correct answer: Teacher and 'Treats patients'. You need to check if someone treating patients is a doctor and if a teacher might also be treating patients."
     }
   ];
+
+  // Show loading screen while images are loading
+  if (!imagesLoaded) {
+    return (
+      <div className="eco-deductive-screen">
+        <div className="eco-loading-container">
+          <h2>Loading Images...</h2>
+          <div className="eco-loading-bar">
+            <div 
+              className="eco-loading-progress" 
+              style={{ width: `${loadingProgress}%` }}
+            ></div>
+          </div>
+          <p>{loadingProgress}%</p>
+        </div>
+      </div>
+    );
+  }
 
   // Component state
   const [selectedCards, setSelectedCards] = useState([]);
