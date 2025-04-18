@@ -27,8 +27,8 @@ const DeductiveReasoningMainTask = () => {
       cards: [
         { front: "3", back: "red", type: "text", cardType: "text-card" },
         { front: "8", back: "yellow", type: "text", cardType: "text-card" },
-        { front: "yellow", back: "5", type: "color", cardType: "color-card yellow" },
-        { front: "red", back: "6", type: "color", cardType: "color-card red" }
+        { front: "yellow", back: "5", type: "color", cardType: "color-card yellow", color: "#FDD835" },
+        { front: "red", back: "6", type: "color", cardType: "color-card red", color: "#F44336" }
       ],
       correctCards: [1, 3],  // 8 and red (with 6)
       explanation: "Correct answer: 8 and red (with 6). You need to check the 8 card (even number, to verify it has yellow on the other side) and the red card (to verify it doesn't have an even number on the other side)."
@@ -37,9 +37,9 @@ const DeductiveReasoningMainTask = () => {
       question: "If a card has the digit \"5\" on one side, then it has a triangle symbol on the other side.",
       cards: [
         { front: "5", back: "square", type: "text", cardType: "text-card" },
-        { front: "triangle", back: "7", type: "shape", cardType: "shape-card" },
+        { front: "triangle", back: "7", type: "shape", cardType: "shape-card", shape: "triangle" },
         { front: "3", back: "triangle", type: "text", cardType: "text-card" },
-        { front: "circle", back: "5", type: "shape", cardType: "shape-card" }
+        { front: "circle", back: "5", type: "shape", cardType: "shape-card", shape: "circle" }
       ],
       correctCards: [0, 3],  // 5 and Circle (with 5)
       explanation: "Correct answer: 5 and Circle (with 5). You need to check the 5 card (to verify it has a triangle on the other side) and the circle card (to verify it doesn't have a 5 on the other side)."
@@ -47,10 +47,10 @@ const DeductiveReasoningMainTask = () => {
     {
       question: "If a card has a square symbol on one side, then it has the color red on the other side.",
       cards: [
-        { front: "square", back: "yellow", type: "shape", cardType: "shape-card" },
-        { front: "circle", back: "red", type: "shape", cardType: "shape-card" },
-        { front: "red", back: "triangle", type: "color", cardType: "color-card red" },
-        { front: "yellow", back: "square", type: "color", cardType: "color-card yellow" }
+        { front: "square", back: "yellow", type: "shape", cardType: "shape-card", shape: "square" },
+        { front: "circle", back: "red", type: "shape", cardType: "shape-card", shape: "circle" },
+        { front: "red", back: "triangle", type: "color", cardType: "color-card red", color: "#F44336" },
+        { front: "yellow", back: "square", type: "color", cardType: "color-card yellow", color: "#FDD835" }
       ],
       correctCards: [0, 3],  // Square and Yellow (with Square)
       explanation: "Correct answer: Square and Yellow (with Square). You need to check the square card (to verify it has red on the other side) and the yellow card (to verify it doesn't have a square on the other side)."
@@ -72,8 +72,11 @@ const DeductiveReasoningMainTask = () => {
         // Remove from selected cards if already selected
         return prevSelected.filter(idx => idx !== cardIndex);
       } else {
-        // Add to selected cards if not already selected
-        return [...prevSelected, cardIndex];
+        // Add to selected cards if not already selected and not already have 2
+        if (prevSelected.length < 2) {
+          return [...prevSelected, cardIndex];
+        }
+        return prevSelected;
       }
     });
   };
@@ -150,29 +153,18 @@ const DeductiveReasoningMainTask = () => {
     navigate('/home');
   };
 
-  // Render card component
-  const renderCard = (card, index) => {
-    const isSelected = selectedCards.includes(index);
-    
-    return (
-      <div 
-        key={index} 
-        className={`deductive-card ${card.cardType} ${isSelected ? 'selected' : ''}`}
-        onClick={() => toggleCardSelection(index)}
-      >
-        <div className="card-content">
-          {card.type === 'text' && (
-            <span className="card-text">{card.front}</span>
-          )}
-          {card.type === 'shape' && (
-            <div className={`shape ${card.front}`}></div>
-          )}
-          {card.type === 'color' && (
-            <div className="shape"></div>
-          )}
-        </div>
-      </div>
-    );
+  // Render shape based on type
+  const renderShape = (shape) => {
+    switch(shape) {
+      case 'triangle':
+        return <div className="deductive-triangle"></div>;
+      case 'circle':
+        return <div className="deductive-circle"></div>;
+      case 'square':
+        return <div className="deductive-square"></div>;
+      default:
+        return null;
+    }
   };
 
   // Render results screen
@@ -212,6 +204,7 @@ const DeductiveReasoningMainTask = () => {
   const currentPuzzle = mainPuzzles[currentPuzzleIndex];
   const submitDisabled = selectedCards.length !== 2;
   
+  // Render main task
   return (
     <div className="deductive-screen">
       <div className="deductive-content">
@@ -224,16 +217,42 @@ const DeductiveReasoningMainTask = () => {
           </p>
         </div>
         
-        <p className="selected-count">
+        <div className="deductive-selected-count">
           Selected cards: {selectedCards.length}/2
-        </p>
+        </div>
         
-        <div className="cards-container">
-          {currentPuzzle.cards.map((card, index) => renderCard(card, index))}
+        <div className="horizontal-container">
+          <div className="playing-cards-row">
+            {currentPuzzle.cards.map((card, index) => (
+              <div 
+                key={index} 
+                className={`playing-card ${card.type === 'color' ? 'color-card' : 'symbol-card'} ${selectedCards.includes(index) ? 'selected' : ''}`}
+                onClick={() => toggleCardSelection(index)}
+                style={card.type === 'color' ? { backgroundColor: card.color } : {}}
+              >
+                {card.type === 'text' && (
+                  <div className="card-face">{card.front}</div>
+                )}
+                {card.type === 'shape' && (
+                  <div className="deductive-shape">
+                    {renderShape(card.shape)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="card-labels-row">
+          {currentPuzzle.cards.map((card, index) => (
+            <div key={index} className="card-label-container">
+              {card.front}
+            </div>
+          ))}
         </div>
         
         <button 
-          className="deductive-button submit-button" 
+          className="deductive-button" 
           onClick={evaluateResponse}
           disabled={submitDisabled}
         >

@@ -2,17 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
+// Define constant for image path
+const IMAGE_PATH = '/ecoimages/';
+
 // Import images from Ecoimages folder with correct paths
-const dog = '/ecoimages/dog.jpg';
-const cat = '/ecoimages/cat.jpg';
-const bird = '/ecoimages/bird.jpg';
-const car = '/ecoimages/car.jpg';
-const house = '/ecoimages/house.jpg';
-const bus = '/ecoimages/bus.jpg';
-const chair = '/ecoimages/chair.jpg';
-const computer = '/ecoimages/computer.jpg';
-const umbrella = '/ecoimages/umbrella.jpg';
-const clock = '/ecoimages/clock.jpg';
+const dog = `${IMAGE_PATH}dog.jpg`;
+const cat = `${IMAGE_PATH}cat.jpg`;
+const bird = `${IMAGE_PATH}bird.jpg`;
+const car = `${IMAGE_PATH}car.jpg`;
+const house = `${IMAGE_PATH}house.jpg`;
+const bus = `${IMAGE_PATH}bus.jpg`;
+const chair = `${IMAGE_PATH}chair.jpg`;
+const computer = `${IMAGE_PATH}computer.jpg`;
+const umbrella = `${IMAGE_PATH}umbrella.jpg`;
+const clock = `${IMAGE_PATH}clock.jpg`;
 
 // Array of all image paths for preloading
 const allImagePaths = [dog, cat, bird, car, house, bus, chair, computer, umbrella, clock];
@@ -239,9 +242,9 @@ const EcologicalSpatialPractice = () => {
     if (correctSelections.length === totalMovedObjects && incorrectSelections.length === 0) {
       setFeedbackMessage('Perfect! You correctly identified all the objects that moved.');
     } else if (correctSelections.length > 0) {
-      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedObjects} moved objects, with ${incorrectSelections.length} incorrect selections.`);
+      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedObjects} objects that moved, with ${incorrectSelections.length} incorrect selections.`);
     } else {
-      setFeedbackMessage(`You didn't identify any moved objects correctly. ${totalMovedObjects} objects moved in this trial.`);
+      setFeedbackMessage(`You didn't identify any objects correctly. ${totalMovedObjects} objects moved in this trial.`);
     }
     
     setPhase('feedback');
@@ -328,12 +331,66 @@ const EcologicalSpatialPractice = () => {
             </div>
             
             <div className="instructions-note">
-              <p>Important: In this task, you need to identify BOTH objects that change positions.</p>
+              <p><strong>Note:</strong> When objects swap positions, you need to identify BOTH objects involved in the swap.</p>
+            </div>
+            
+            <div className="instructions-examples">
+              <h3>Example:</h3>
+              <div className="examples-container">
+                <div className="example">
+                  <div className="example-label">Original Order:</div>
+                  <div className="example-shapes">
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}dog.jpg`} alt="Dog" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}cat.jpg`} alt="Cat" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}bird.jpg`} alt="Bird" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}car.jpg`} alt="Car" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}house.jpg`} alt="House" className="eco-image" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="example-arrow">→</div>
+                
+                <div className="example">
+                  <div className="example-label">After Change:</div>
+                  <div className="example-shapes">
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}dog.jpg`} alt="Dog" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}bird.jpg`} alt="Bird" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}cat.jpg`} alt="Cat" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}car.jpg`} alt="Car" className="eco-image" />
+                    </div>
+                    <div className="eco-image-container">
+                      <img src={`${IMAGE_PATH}house.jpg`} alt="House" className="eco-image" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="example-caption">
+                <p>In this example, the cat and bird switched positions. You would need to click on BOTH objects.</p>
+              </div>
             </div>
           </div>
           
           <div className="instructions-footer">
-            <button onClick={() => startStudyPhase()} className="primary-button">Start Practice</button>
+            <button onClick={() => startStudyPhase()} className="primary-button">
+              Start Practice
+            </button>
           </div>
         </div>
       </div>
@@ -344,10 +401,14 @@ const EcologicalSpatialPractice = () => {
   const renderStudyPhase = () => {
     return (
       <div className="study-phase">
-        <h2 className="phase-title">Study Phase</h2>
-        <p className="phase-instruction">Memorize the positions of these objects</p>
+        <h2 className="phase-title" style={{ textAlign: 'center', fontSize: '1.4rem', margin: '10px 0' }}>Study Phase</h2>
+        <p className="phase-instruction" style={{ textAlign: 'center', fontSize: '1.1rem', margin: '10px 0' }}>
+          Memorize the positions of these objects
+        </p>
         
-        <div className="timer-display">Time remaining: {timeRemaining}s</div>
+        <div className="timer-display" style={{ color: 'red', fontWeight: 'bold', fontSize: '1.2rem', margin: '15px 0', textAlign: 'center' }}>
+          Time remaining: {timeRemaining}s
+        </div>
           
           <div className="grid-container practice" style={getResponsiveGridStyles().gridStyles}>
             {Array(5).fill().map((_, i) => {
@@ -399,9 +460,24 @@ const EcologicalSpatialPractice = () => {
           </div>
           
           {showReadyButton && (
-          <button onClick={handleReadyClick} className="ready-button">
+          <button 
+            onClick={handleReadyClick} 
+            className="ready-button"
+            style={{ 
+              fontSize: "1.1rem", 
+              padding: "10px 20px",
+              marginTop: "20px",
+              backgroundColor: "#2196F3",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              display: "block",
+              margin: "20px auto 0"
+            }}
+          >
             I'm Ready
-            </button>
+          </button>
           )}
         </div>
     );
@@ -474,15 +550,25 @@ const EcologicalSpatialPractice = () => {
           </div>
           
           <div className="response-hint">
-            <p>Remember: You need to identify all objects that moved positions.</p>
+            <p>Remember: When objects swap positions, you need to click on BOTH objects involved in the swap.</p>
           </div>
           
           <button 
-          onClick={handleSubmit} 
+            onClick={handleSubmit} 
             className="spatial-button submit-button"
-          disabled={selectedCells.length < 2}
-        >
-          Submit
+            disabled={selectedCells.length < 2}
+            style={{ 
+              fontSize: "1.1rem", 
+              padding: "10px 20px",
+              marginTop: "15px",
+              backgroundColor: "#4285f4",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Submit Answers
           </button>
       </div>
     );
@@ -555,45 +641,72 @@ const EcologicalSpatialPractice = () => {
           </div>
           
           <div className="feedback-explanation">
-            <p>The highlighted objects are the ones that moved.</p>
+            <p>The highlighted objects are the ones that swapped positions.</p>
+            {movedPositions.length === 2 && (
+              <p>
+                The objects at positions {movedPositions.map(pos => pos + 1).join(' and ')} swapped positions.
+              </p>
+            )}
           </div>
           
         <div className="button-container" style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-          <button onClick={handlePracticeAgain} className="spatial-button">
-              Practice Again
-            </button>
-          <button onClick={handleStartTask} className="spatial-button ready-button">
-              Start Main Task
-            </button>
-          </div>
+          <button 
+            onClick={handlePracticeAgain} 
+            className="spatial-button"
+            style={{ 
+              fontSize: "1.1rem", 
+              padding: "10px 20px",
+              backgroundColor: "#2196F3",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Practice Again
+          </button>
+          <button 
+            onClick={handleStartTask} 
+            className="spatial-button ready-button"
+            style={{ 
+              fontSize: "1.1rem", 
+              padding: "10px 20px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Start Main Task
+          </button>
+        </div>
         </div>
     );
   };
 
   return (
-    <div className="spatial-screen">
-      <div className="spatial-content">
-        {!imagesLoaded ? (
-          <div className="eco-loading-container">
-            <h2>Loading Images...</h2>
-            <div className="eco-loading-bar">
-              <div 
-                className="eco-loading-progress" 
-                style={{ width: `${loadingProgress}%` }}
-              ></div>
-            </div>
-            <p>{loadingProgress}%</p>
+    <div className="spatial-memory-container">
+      {!imagesLoaded ? (
+        <div className="eco-loading-container">
+          <h2>Loading Images...</h2>
+          <div className="eco-loading-bar">
+            <div 
+              className="eco-loading-progress" 
+              style={{ width: `${loadingProgress}%` }}
+            ></div>
           </div>
-        ) : phase === 'instructions' ? (
-          renderInstructions()
-        ) : phase === 'study' ? (
-          renderStudyPhase()
-        ) : phase === 'response' ? (
-          renderResponsePhase()
-        ) : (
-          renderFeedbackPhase()
-        )}
-      </div>
+          <p>{loadingProgress}%</p>
+        </div>
+      ) : phase === 'instructions' ? (
+        renderInstructions()
+      ) : phase === 'study' ? (
+        renderStudyPhase()
+      ) : phase === 'response' ? (
+        renderResponsePhase()
+      ) : (
+        renderFeedbackPhase()
+      )}
     </div>
   );
 };

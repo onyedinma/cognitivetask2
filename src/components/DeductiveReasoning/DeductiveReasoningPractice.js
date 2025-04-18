@@ -25,83 +25,47 @@ const DeductiveReasoningPractice = () => {
   // Component state
   const [selectedCards, setSelectedCards] = useState([]);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [practiceResult, setPracticeResult] = useState({ isCorrect: false, message: '', explanation: '' });
+  const [isCorrect, setIsCorrect] = useState(false);
 
   // Toggle card selection
   const toggleCardSelection = (cardIndex) => {
     setSelectedCards(prevSelected => {
-      const isSelected = prevSelected.includes(cardIndex);
-      
-      if (isSelected) {
-        // Remove from selected cards if already selected
-        return prevSelected.filter(idx => idx !== cardIndex);
+      if (prevSelected.includes(cardIndex)) {
+        return prevSelected.filter(index => index !== cardIndex);
       } else {
-        // Add to selected cards if not already selected
-        return [...prevSelected, cardIndex];
+        if (prevSelected.length < 2) {
+          return [...prevSelected, cardIndex];
+        }
+        return prevSelected;
       }
     });
   };
 
-  // Check if selected cards match correct cards
-  const checkCorrectCards = (correctCards) => {
-    if (selectedCards.length !== 2) return false;
+  // Check if the selected cards are correct
+  const checkAnswer = () => {
+    if (selectedCards.length !== 2) return;
     
-    // Sort both arrays for comparison
-    const selectedSorted = [...selectedCards].sort((a, b) => a - b);
-    const correctSorted = [...correctCards].sort((a, b) => a - b);
+    const sortedSelected = [...selectedCards].sort();
+    const sortedCorrect = [...practicePuzzle.correctCards].sort();
     
-    return selectedSorted[0] === correctSorted[0] && selectedSorted[1] === correctSorted[1];
-  };
-
-  // Evaluate practice response
-  const evaluatePracticeResponse = () => {
-    const isCorrect = checkCorrectCards(practicePuzzle.correctCards);
+    const isAnswerCorrect = 
+      sortedSelected[0] === sortedCorrect[0] && 
+      sortedSelected[1] === sortedCorrect[1];
     
-    if (isCorrect) {
-      setPracticeResult({
-        isCorrect: true,
-        message: 'Correct! You have selected the right cards.',
-        explanation: practicePuzzle.explanation
-      });
-    } else {
-      setPracticeResult({
-        isCorrect: false,
-        message: 'Incorrect. You did not select the right cards.',
-        explanation: practicePuzzle.explanation
-      });
-    }
-    
+    setIsCorrect(isAnswerCorrect);
     setShowFeedback(true);
   };
 
-  // Handle navigation to main task
-  const handleStartMainTask = () => {
+  // Handle continue to home page
+  const handleContinue = () => {
+    // Navigate to the DeductiveReasoningMainTask component
     navigate('/deductive-reasoning/task');
   };
 
-  // Render card component
-  const renderCard = (card, index) => {
-    const isSelected = selectedCards.includes(index);
-    
-    return (
-      <div 
-        key={index} 
-        className={`deductive-card ${card.cardType} ${isSelected ? 'selected' : ''}`}
-        onClick={() => toggleCardSelection(index)}
-      >
-        <div className="card-content">
-          {card.type === 'shape' && (
-            <div className={`shape ${card.front}`}></div>
-          )}
-          {card.type === 'color' && (
-            <div className="shape"></div>
-          )}
-          {card.type === 'text' && (
-            <span className="card-text">{card.front}</span>
-          )}
-        </div>
-      </div>
-    );
+  // Handle try again
+  const handleTryAgain = () => {
+    setSelectedCards([]);
+    setShowFeedback(false);
   };
 
   // Render practice component or feedback
@@ -110,19 +74,60 @@ const DeductiveReasoningPractice = () => {
       <div className="deductive-screen">
         <div className="deductive-content">
           <div className="deductive-feedback">
-            <div className={`feedback-result ${practiceResult.isCorrect ? 'correct-answer' : 'incorrect-answer'}`}>
-              {practiceResult.message}
+            <div className={`feedback-result ${isCorrect ? 'correct-answer' : 'incorrect-answer'}`}>
+              {isCorrect ? 'Correct!' : 'Incorrect!'}
             </div>
+            
             <div className="feedback-explanation">
-              {practiceResult.explanation}
+              {isCorrect ? (
+                <p>
+                  You correctly identified that we need to check the King card and the Diamond card.
+                </p>
+              ) : (
+                <p>
+                  We need to check the King card (to verify it has a heart on the back) and the Diamond card (to verify it doesn't have a king on the back).
+                </p>
+              )}
+              
+              <p>
+                The rule states: "If a card shows a king on one side, then it has a heart symbol on the other side."
+              </p>
+              
+              <p>
+                <strong>For the King card:</strong> We need to check if it has a heart on the back, as required by the rule.
+              </p>
+              
+              <p>
+                <strong>For the Diamond card:</strong> We need to check if it has a king on the back, which would break the rule (as kings must have hearts, not diamonds, on the back).
+              </p>
+              
+              <p>
+                <strong>We don't need to check the Queen card:</strong> The rule only applies to kings, so a queen can have any symbol on its back.
+              </p>
+              
+              <p>
+                <strong>We don't need to check the Heart card:</strong> The rule doesn't say that hearts must have kings on the back, only that kings must have hearts on the back.
+              </p>
+            </div>
+            
+            <div className="deductive-navigation">
+              <button 
+                className="deductive-button deductive-continue-button" 
+                onClick={handleContinue}
+              >
+                Complete Task
+              </button>
+              
+              {!isCorrect && (
+                <button 
+                  className="deductive-button" 
+                  onClick={handleTryAgain}
+                >
+                  Try Again
+                </button>
+              )}
             </div>
           </div>
-          <button 
-            className="deductive-button continue-button" 
-            onClick={handleStartMainTask}
-          >
-            Continue to Main Task
-          </button>
         </div>
       </div>
     );
@@ -138,17 +143,72 @@ const DeductiveReasoningPractice = () => {
           </div>
         </div>
         
-        <p className="selected-count">
+        <div className="deductive-selected-count">
           Selected cards: {selectedCards.length}/2
-        </p>
+        </div>
         
-        <div className="cards-container">
-          {practicePuzzle.cards.map((card, index) => renderCard(card, index))}
+        <div className="horizontal-container">
+          <div className="playing-cards-row">
+            {/* King of Spades */}
+            <div 
+              className={`playing-card symbol-card ${selectedCards.includes(0) ? 'selected' : ''}`}
+              onClick={() => toggleCardSelection(0)}
+            >
+              <div className="card-corner top-left">
+                <span className="card-value">K</span>
+                <span className="card-suit">♠</span>
+              </div>
+              <div className="card-face">K</div>
+              <div className="card-corner bottom-right">
+                <span className="card-value">K</span>
+                <span className="card-suit">♠</span>
+              </div>
+            </div>
+            
+            {/* Queen of Diamonds */}
+            <div 
+              className={`playing-card symbol-card ${selectedCards.includes(1) ? 'selected' : ''}`}
+              onClick={() => toggleCardSelection(1)}
+            >
+              <div className="card-corner top-left">
+                <span className="card-value">Q</span>
+                <span className="card-suit">♦</span>
+              </div>
+              <div className="card-face">Q</div>
+              <div className="card-corner bottom-right">
+                <span className="card-value">Q</span>
+                <span className="card-suit">♦</span>
+              </div>
+            </div>
+            
+            {/* Heart Symbol */}
+            <div 
+              className={`playing-card heart-card ${selectedCards.includes(2) ? 'selected' : ''}`}
+              onClick={() => toggleCardSelection(2)}
+            >
+              <div className="card-symbol heart-symbol">♥</div>
+            </div>
+            
+            {/* Diamond Symbol */}
+            <div 
+              className={`playing-card heart-card ${selectedCards.includes(3) ? 'selected' : ''}`}
+              onClick={() => toggleCardSelection(3)}
+            >
+              <div className="card-symbol" style={{ color: '#F44336', fontSize: '4rem' }}>♦</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="card-labels-row">
+          <div className="card-label-container">King</div>
+          <div className="card-label-container">Queen</div>
+          <div className="card-label-container">Heart</div>
+          <div className="card-label-container">Diamond</div>
         </div>
         
         <button 
-          className="deductive-button submit-button" 
-          onClick={evaluatePracticeResponse}
+          className="deductive-button" 
+          onClick={checkAnswer}
           disabled={selectedCards.length !== 2}
         >
           Submit Answer

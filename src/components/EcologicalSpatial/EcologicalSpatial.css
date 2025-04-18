@@ -679,96 +679,84 @@ div.spatial-screen {
 }
 
 .instructions-note {
-  background-color: #f8f9fa;
-  border-left: 4px solid #4a90e2;
-  padding: 12px 15px;
-  margin-top: 10px;
+  background-color: #fff3e0;
+  padding: 10px 15px;
+  border-left: 4px solid #ff9800;
+  margin: 15px 0;
+  border-radius: 0 4px 4px 0;
 }
 
 .instructions-note p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
-/* Examples section */
+/* Example section in instructions */
 .instructions-examples {
-  background-color: #f5f7fa;
-  padding: 20px;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f0f8ff;
   border-radius: 8px;
-}
-
-.instructions-examples h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #333;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .examples-container {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 15px;
-  margin-bottom: 15px;
+  margin: 15px 0;
+  flex-wrap: wrap;
 }
 
 .example {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .example-label {
   font-weight: bold;
   margin-bottom: 10px;
-  color: #555;
 }
 
 .example-shapes {
   display: flex;
-  justify-content: center;
   gap: 10px;
-  margin-bottom: 10px;
+  background: white;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .example-arrow {
   font-size: 24px;
-  color: #777;
-  margin: 0 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
 }
 
 .example-caption {
-  text-align: center;
-  font-style: italic;
-  color: #666;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.example-caption p {
-  margin: 0;
-}
-
-/* Footer with button */
-.instructions-footer {
+.example .eco-image-container {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
   display: flex;
   justify-content: center;
-  margin-top: 15px;
+  align-items: center;
 }
 
-.primary-button {
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 25px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.primary-button:hover {
-  background-color: #357abD;
-}
-
-.primary-button:disabled {
-  background-color: #aaa;
-  cursor: not-allowed;
+.example .eco-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
 }
 
 /* Grid and shape styles */

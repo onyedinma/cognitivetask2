@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalDeductiveReasoning.css';
 
@@ -7,38 +7,72 @@ const EcologicalDeductiveReasoningTask = () => {
   
   // Component state to track the current instruction step
   const [currentStep, setCurrentStep] = useState(1);
+  const [animating, setAnimating] = useState(false);
   const totalSteps = 3;
+  
+  // State for card flipping in examples
+  const [flippedCard, setFlippedCard] = useState(null);
   
   // Handle navigation to practice section
   const handleStartPractice = () => {
-    navigate('/ecological-deductive/practice');
+    setAnimating(true);
+    setTimeout(() => {
+      navigate('/ecological-deductive/practice');
+    }, 500);
   };
 
-  // Function to go to next instruction step
+  // Function to go to next instruction step with animation
   const goToNextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+    if (currentStep < totalSteps && !animating) {
+      setAnimating(true);
+      setTimeout(() => {
+        setCurrentStep(currentStep + 1);
+        setAnimating(false);
+      }, 400);
     }
   };
 
-  // Function to go to previous instruction step
+  // Function to go to previous instruction step with animation
   const goToPrevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+    if (currentStep > 1 && !animating) {
+      setAnimating(true);
+      setTimeout(() => {
+        setCurrentStep(currentStep - 1);
+        setAnimating(false);
+      }, 400);
     }
   };
   
-  // Example cards for visualization
+  // Handle card flip
+  const handleCardFlip = (index) => {
+    setFlippedCard(flippedCard === index ? null : index);
+  };
+  
+  // Example cards for visualization with enhanced interaction
   const exampleCards = [
-    { front: 'A', back: '4', selected: true },
-    { front: 'K', back: '7', selected: false },
-    { front: '2', back: 'E', selected: false },
-    { front: '7', back: 'A', selected: true }
+    { front: 'A', back: '4', selected: true, label: 'Vowel' },
+    { front: 'K', back: '7', selected: false, label: 'Consonant' },
+    { front: '2', back: 'E', selected: false, label: 'Even Number' },
+    { front: '7', back: 'A', selected: true, label: 'Odd Number' }
   ];
+  
+  // Auto-flip timer for example cards
+  useEffect(() => {
+    if (currentStep === 3) {
+      const flipInterval = setInterval(() => {
+        setFlippedCard(prev => {
+          const next = prev === null ? 0 : (prev + 1) % exampleCards.length;
+          return next;
+        });
+      }, 3000);
+      
+      return () => clearInterval(flipInterval);
+    }
+  }, [currentStep, exampleCards.length]);
   
   return (
     <div className="eco-deductive-screen">
-      <div className="eco-deductive-content">
+      <div className={`eco-deductive-content ${animating ? 'fade-out' : 'fade-in'}`}>
         <div className="eco-deductive-header">
           <h1>Ecological Deductive Reasoning Task</h1>
           
@@ -48,7 +82,8 @@ const EcologicalDeductiveReasoningTask = () => {
               <div 
                 key={index} 
                 className={`progress-dot ${currentStep >= index + 1 ? 'active' : ''}`}
-                onClick={() => setCurrentStep(index + 1)}
+                onClick={() => !animating && setCurrentStep(index + 1)}
+                title={`Step ${index + 1}`}
               />
             ))}
           </div>
@@ -69,8 +104,12 @@ const EcologicalDeductiveReasoningTask = () => {
                   <div className="eco-instructions-image">
                     <div className="eco-instructions-cards-row">
                       {['Card 1', 'Card 2', 'Card 3', 'Card 4'].map((cardText, index) => (
-                        <div key={index} className="eco-example-card">
-                          <div className="eco-example-card-inner">
+                        <div 
+                          key={index} 
+                          className="eco-example-card"
+                          onClick={() => handleCardFlip(index + 10)}
+                        >
+                          <div className={`eco-example-card-inner ${flippedCard === index + 10 ? 'flipped' : ''}`}>
                             <div className="eco-example-card-front">
                               <span>{cardText}</span>
                             </div>
@@ -81,10 +120,13 @@ const EcologicalDeductiveReasoningTask = () => {
                         </div>
                       ))}
                     </div>
-                    <p className="eco-image-caption">You will see four cards with information on one side.</p>
+                    <p className="eco-image-caption">You will see four cards with information on one side. (Click to flip)</p>
                   </div>
                   <p>
                     Your task is to determine which cards you need to turn over to check if a given rule is being followed.
+                  </p>
+                  <p>
+                    This type of task helps assess your ability to apply logical rules to real-world scenarios.
                   </p>
                 </div>
               </div>
@@ -126,7 +168,7 @@ const EcologicalDeductiveReasoningTask = () => {
                   <div className="eco-instructions-hint">
                     <div className="hint-icon">💡</div>
                     <div className="hint-content">
-                      <p>Think carefully about which cards could provide evidence that would prove the rule is being broken.</p>
+                      <p>Think carefully about which cards could provide evidence that would prove the rule is being broken. The goal is to find the minimal set of cards needed to check the rule.</p>
                     </div>
                   </div>
                 </div>
@@ -149,10 +191,13 @@ const EcologicalDeductiveReasoningTask = () => {
                         <div 
                           key={index} 
                           className={`eco-example-card ${card.selected ? 'selected' : ''}`}
+                          onClick={() => handleCardFlip(index)}
+                          title={card.label}
                         >
-                          <div className="eco-example-card-inner">
+                          <div className={`eco-example-card-inner ${flippedCard === index ? 'flipped' : ''}`}>
                             <div className="eco-example-card-front">
                               <span>{card.front}</span>
+                              <small className="card-label">{card.label}</small>
                             </div>
                             <div className="eco-example-card-back">
                               <span>{card.back}</span>
@@ -161,6 +206,7 @@ const EcologicalDeductiveReasoningTask = () => {
                         </div>
                       ))}
                     </div>
+                    <p className="eco-image-caption">Click on any card to see what's on the other side</p>
                   </div>
                   
                   <div className="example-explanation">
@@ -183,6 +229,7 @@ const EcologicalDeductiveReasoningTask = () => {
             <button 
               className="eco-deductive-button eco-back-button" 
               onClick={goToPrevStep}
+              disabled={animating}
             >
               Previous
             </button>
@@ -192,6 +239,7 @@ const EcologicalDeductiveReasoningTask = () => {
             <button 
               className="eco-deductive-button eco-next-button" 
               onClick={goToNextStep}
+              disabled={animating}
             >
               Next
             </button>
@@ -199,6 +247,7 @@ const EcologicalDeductiveReasoningTask = () => {
             <button 
               className="eco-deductive-button eco-continue-button" 
               onClick={handleStartPractice}
+              disabled={animating}
             >
               Start Practice
             </button>

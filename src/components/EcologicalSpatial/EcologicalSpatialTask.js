@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
+// Define constant for image path
+const IMAGE_PATH = '/ecoimages/';
+
 /**
  * EcologicalSpatialTask component
  * Entry point for the Ecological Spatial Working Memory task
@@ -14,30 +17,30 @@ const EcologicalSpatialTask = () => {
 
   // Example images for animation
   const originalImages = [
-    { id: 1, src: '/ecoimages/dog.jpg', position: 0 },
-    { id: 2, src: '/ecoimages/car.jpg', position: 1 },
-    { id: 3, src: '/ecoimages/chair.jpg', position: 2 }
+    { id: 1, src: `${IMAGE_PATH}dog.jpg`, position: 0 },
+    { id: 2, src: `${IMAGE_PATH}car.jpg`, position: 1 },
+    { id: 3, src: `${IMAGE_PATH}chair.jpg`, position: 2 }
   ];
 
   // Different swap configurations
   const swaps = [
     // Swap 1: dog and car
     [
-      { id: 1, src: '/ecoimages/dog.jpg', position: 1 },
-      { id: 2, src: '/ecoimages/car.jpg', position: 0 },
-      { id: 3, src: '/ecoimages/chair.jpg', position: 2 }
+      { id: 1, src: `${IMAGE_PATH}dog.jpg`, position: 1 },
+      { id: 2, src: `${IMAGE_PATH}car.jpg`, position: 0 },
+      { id: 3, src: `${IMAGE_PATH}chair.jpg`, position: 2 }
     ],
     // Swap 2: dog and chair
     [
-      { id: 1, src: '/ecoimages/dog.jpg', position: 2 },
-      { id: 2, src: '/ecoimages/car.jpg', position: 1 },
-      { id: 3, src: '/ecoimages/chair.jpg', position: 0 }
+      { id: 1, src: `${IMAGE_PATH}dog.jpg`, position: 2 },
+      { id: 2, src: `${IMAGE_PATH}car.jpg`, position: 1 },
+      { id: 3, src: `${IMAGE_PATH}chair.jpg`, position: 0 }
     ],
     // Swap 3: car and chair
     [
-      { id: 1, src: '/ecoimages/dog.jpg', position: 0 },
-      { id: 2, src: '/ecoimages/car.jpg', position: 2 },
-      { id: 3, src: '/ecoimages/chair.jpg', position: 1 }
+      { id: 1, src: `${IMAGE_PATH}dog.jpg`, position: 0 },
+      { id: 2, src: `${IMAGE_PATH}car.jpg`, position: 2 },
+      { id: 3, src: `${IMAGE_PATH}chair.jpg`, position: 1 }
     ]
   ];
 

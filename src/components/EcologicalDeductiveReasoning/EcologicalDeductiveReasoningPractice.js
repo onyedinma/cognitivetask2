@@ -1,52 +1,52 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './EcologicalDeductiveReasoning.css';
 
-const IMAGE_PATH = '/images/deductimages/';
+const IMAGE_PATH = '/deducimages/';
 
 // Practice puzzles
 const puzzles = [
   {
-    question: "If a fruit is red on the outside, then it must be sweet.",
+    question: "If Amy treats sick children in the hospital, then she must be a doctor.",
     cards: [
       {
         id: 1,
-        type: 'p',
-        front: 'Red Apple',
-        back: 'Sweet',
-        frontImage: `${IMAGE_PATH}red_apple.jpg`,
-        backText: 'This fruit is sweet'
+        type: 'image',
+        frontText: "Treats children",
+        frontImage: `${IMAGE_PATH}doctor-patient.jpg`,
+        backText: "Treats children in hospital",
+        selected: false
       },
       {
         id: 2,
-        type: 'not-p',
-        front: 'Green Apple',
-        back: 'Sour',
-        frontImage: `${IMAGE_PATH}green_apple.jpg`,
-        backText: 'This fruit is sour'
+        type: 'image',
+        frontText: "Teaching",
+        frontImage: `${IMAGE_PATH}teacher.jpg`,
+        backText: "Teaching in classroom",
+        selected: false
       },
       {
         id: 3,
-        type: 'q',
-        front: 'Sweet Fruit',
-        back: 'Yellow Banana',
-        frontImage: `${IMAGE_PATH}banana.jpg`,
-        backText: 'This fruit is yellow'
+        type: 'text',
+        frontText: "Doctor",
+        backText: "Doctor",
+        selected: false
       },
       {
         id: 4,
-        type: 'not-q',
-        front: 'Sour Fruit',
-        back: 'Red Grapefruit',
-        frontImage: `${IMAGE_PATH}grapefruit.jpg`,
-        backText: 'This fruit is red'
+        type: 'text',
+        frontText: "Teacher",
+        backText: "Teacher",
+        selected: false
       }
     ],
     correctAnswer: [1, 4],
-    explanation: "You need to check if all red fruits are sweet (P implies Q), so you need to check the 'Red Apple' card (P) to see if it's sweet. You also need to check the 'Sour Fruit' card (not-Q) to make sure it's not red on the outside."
+    explanation: "To test the rule 'If Amy treats sick children in the hospital, then she must be a doctor', we need to find cases that could potentially violate this rule. The rule is in the form 'If P, then Q', where P is 'treats sick children in hospital' and Q is 'is a doctor'. The rule is violated when P is true but Q is false. So we need to check cases where someone treats children in a hospital (Card 1) and cases where someone is not a doctor (Card 4 - Teacher). We don't need to check Card 2 (Teaching) or Card 3 (Doctor) because they don't directly test the rule - even if they were flipped, they couldn't violate the 'If P, then Q' statement."
   }
 ];
 
 const EcologicalDeductiveReasoningPractice = () => {
+  const navigate = useNavigate();
   const [selectedCards, setSelectedCards] = useState([]);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -130,8 +130,8 @@ const EcologicalDeductiveReasoningPractice = () => {
     if (!showExplanation) {
       setShowExplanation(true);
     } else {
-      // Navigate to main task
-      window.location.href = '/ecological-deductive/task';
+      // Navigate directly to main task using React Router
+      navigate('/ecological-deductive/task');
     }
   };
 
@@ -144,12 +144,12 @@ const EcologicalDeductiveReasoningPractice = () => {
   // Show loading screen if images are not loaded
   if (!imagesLoaded) {
     return (
-      <div className="task-screen">
-        <div className="loading-container">
+      <div className="eco-deductive-screen">
+        <div className="eco-loading-container">
           <h2>Loading Task...</h2>
-          <div className="loading-bar">
+          <div className="eco-loading-bar">
             <div 
-              className="loading-progress" 
+              className="eco-loading-progress" 
               style={{ width: `${loadingProgress}%` }}
             ></div>
           </div>
@@ -162,69 +162,83 @@ const EcologicalDeductiveReasoningPractice = () => {
   const puzzle = puzzles[0]; // Only one practice puzzle
 
   return (
-    <div className="deductive-reasoning-container">
-      <h1>Practice: Ecological Deductive Reasoning</h1>
-      
-      <div className="puzzle-question">
-        <p>{puzzle.question}</p>
-        {selectedCards.length > 0 && (
-          <p className="selected-count">
-            You have selected {selectedCards.length} card{selectedCards.length !== 1 ? 's' : ''}.
-          </p>
-        )}
-      </div>
-      
-      <div className="cards-container">
-        {puzzle.cards.map((card) => (
-          <div 
-            key={card.id}
-            className={`card ${selectedCards.includes(card.id) ? 'selected' : ''}`}
-            onClick={() => toggleCardSelection(card.id)}
-          >
-            <div className="card-front">
-              <img src={card.frontImage} alt={card.front} className="card-image" />
-              <div className="card-label">{card.front}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {!showFeedback ? (
-        <button 
-          className="submit-button"
-          onClick={checkAnswer}
-          disabled={selectedCards.length === 0}
-        >
-          Submit Answer
-        </button>
-      ) : (
-        <div className="feedback-container">
-          <h2 className={isCorrect ? 'correct-feedback' : 'incorrect-feedback'}>
-            {isCorrect ? 'Correct!' : 'Not quite right.'}
-          </h2>
+    <div className="eco-deductive-screen">
+      <div className="eco-deductive-content">
+        <div className="eco-deductive-header">
+          <h1>Practice: Ecological Deductive Reasoning</h1>
           
-          {showExplanation ? (
-            <>
-              <p className="explanation">{puzzle.explanation}</p>
-              <button className="continue-button" onClick={handleContinue}>
-                Continue to Main Task
-              </button>
-            </>
-          ) : (
-            <>
-              {isCorrect ? (
-                <button className="continue-button" onClick={handleContinue}>
-                  See Explanation
-                </button>
-              ) : (
-                <button className="try-again-button" onClick={handleTryAgain}>
-                  Try Again
-                </button>
-              )}
-            </>
+          <div className="eco-deductive-question">
+            <p>{puzzle.question}</p>
+          </div>
+          {selectedCards.length > 0 && (
+            <p className="eco-selected-count">
+              Selected cards: {selectedCards.length}/2
+            </p>
           )}
         </div>
-      )}
+        
+        <div className="eco-cards-container">
+          {puzzle.cards.map((card) => (
+            <div 
+              key={card.id}
+              className={`eco-deductive-card ${selectedCards.includes(card.id) ? 'selected' : ''}`}
+              onClick={() => toggleCardSelection(card.id)}
+            >
+              <div className="eco-card-content">
+                {card.type === 'image' ? (
+                  <div className="eco-card-img-container">
+                    <img 
+                      src={card.frontImage} 
+                      alt={card.frontText} 
+                      className="eco-card-image"
+                    />
+                    <div className="eco-card-svg-label">{card.frontText}</div>
+                  </div>
+                ) : (
+                  <span className="eco-card-text">{card.frontText}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {!showFeedback ? (
+          <button 
+            className="eco-deductive-button eco-submit-button"
+            onClick={checkAnswer}
+            disabled={selectedCards.length !== 2}
+          >
+            Submit Answer
+          </button>
+        ) : (
+          <div className="eco-deductive-feedback">
+            <div className={`eco-feedback-result ${isCorrect ? 'eco-correct-answer' : 'eco-incorrect-answer'}`}>
+              {isCorrect ? 'Correct!' : 'Not quite right.'}
+            </div>
+            
+            {showExplanation ? (
+              <>
+                <div className="eco-feedback-explanation">{puzzle.explanation}</div>
+                <button className="eco-deductive-button eco-continue-button" onClick={handleContinue}>
+                  Continue to Main Task
+                </button>
+              </>
+            ) : (
+              <>
+                {isCorrect ? (
+                  <button className="eco-deductive-button eco-continue-button" onClick={handleContinue}>
+                    See Explanation
+                  </button>
+                ) : (
+                  <button className="eco-deductive-button" onClick={handleTryAgain}>
+                    Try Again
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

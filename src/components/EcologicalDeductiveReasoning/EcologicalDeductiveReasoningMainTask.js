@@ -11,6 +11,40 @@ const teacher = `${IMAGE_PATH}teacher.jpg`;
 const dogBarking = `${IMAGE_PATH}dog-barking.jpg`;
 const cat = `${IMAGE_PATH}cat.jpg`;
 
+// SVG images for rain puzzle
+const rainingSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <!-- Dark cloud -->
+  <path d="M25,40 Q25,20 45,20 Q60,20 60,35 Q80,30 80,50 Q80,70 60,70 Q50,70 45,70 Q30,70 25,60 Q15,60 15,50 Q15,40 25,40" fill="#607D8B"/>
+  <!-- Rain drops -->
+  <path d="M30,75 L26,85" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M40,75 L36,85" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M50,75 L46,85" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M60,75 L56,85" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M70,75 L66,85" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M35,65 L31,75" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M45,65 L41,75" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M55,65 L51,75" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M65,65 L61,75" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+const clearSkySvg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <!-- Sun -->
+  <circle cx="50" cy="50" r="20" fill="#FFD600"/>
+  <!-- Sun rays -->
+  <line x1="50" y1="20" x2="50" y2="10" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="80" x2="50" y2="90" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <line x1="20" y1="50" x2="10" y2="50" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <line x1="80" y1="50" x2="90" y2="50" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <line x1="30" y1="30" x2="20" y2="20" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <line x1="70" y1="30" x2="80" y2="20" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <line x1="30" y1="70" x2="20" y2="80" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <line x1="70" y1="70" x2="80" y2="80" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <!-- Small cloud in distance -->
+  <path d="M75,40 Q75,35 80,35 Q85,35 85,40 Q90,38 90,42 Q90,48 85,48 Q80,48 75,45 Q70,48 70,42 Q70,38 75,40" fill="#E0E0E0"/>
+</svg>`;
+
 // All images used in the component - for preloading
 const allImages = [beer, juice, doctorPatient, teacher, dogBarking, cat];
 
@@ -41,8 +75,8 @@ const mainPuzzles = [
   {
     question: "If it's raining, then the ground is wet.",
     cards: [
-      { front: "Raining", back: "Raining", type: "text" },
-      { front: "Not raining", back: "Not raining", type: "text" },
+      { front: "Raining", back: "Raining", type: "svg", svg: rainingSvg },
+      { front: "Not raining", back: "Not raining", type: "svg", svg: clearSkySvg },
       { front: "Ground is wet", back: "Ground is wet", type: "text" },
       { front: "Ground is dry", back: "Ground is dry", type: "text" }
     ],
@@ -200,6 +234,13 @@ const EcologicalDeductiveReasoningMainTask = () => {
   const renderCard = (card, index) => {
     const isSelected = selectedCards.includes(index);
     
+    // Determine text length class for text cards
+    const getTextClass = (text) => {
+      if (text.length > 30) return 'very-long-text';
+      if (text.length > 15) return 'long-text';
+      return '';
+    };
+    
     return (
       <div 
         key={index} 
@@ -208,13 +249,30 @@ const EcologicalDeductiveReasoningMainTask = () => {
       >
         <div className="eco-card-content">
           {card.type === 'text' ? (
-            <span className="eco-card-text">{card.front}</span>
+            <span className={`eco-card-text ${getTextClass(card.front)}`}>{card.front}</span>
+          ) : card.type === 'svg' ? (
+            <div className="eco-card-svg-container">
+              <div className="eco-card-svg" dangerouslySetInnerHTML={{ __html: card.svg }}></div>
+              <div className="eco-card-svg-label">{card.front}</div>
+            </div>
+          ) : card.type === 'drink' ? (
+            <div className="eco-card-img-container">
+              <img 
+                src={card.image} 
+                alt={card.front} 
+                className="eco-card-image"
+              />
+              <div className="eco-card-svg-label">{card.front}</div>
+            </div>
           ) : (
-            <img 
-              src={card.image} 
-              alt={card.front} 
-              className="eco-card-image" 
-            />
+            <div className="eco-card-img-container">
+              <img 
+                src={card.image} 
+                alt={card.front} 
+                className="eco-card-image"
+              />
+              <div className="eco-card-svg-label">{card.front}</div>
+            </div>
           )}
         </div>
       </div>

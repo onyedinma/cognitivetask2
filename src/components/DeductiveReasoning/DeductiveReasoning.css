@@ -19,12 +19,40 @@
   justify-content: center;
   min-height: calc(100vh - 120px);
   margin: 0;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .deductive-header {
   text-align: center;
   margin-bottom: 30px;
   width: 100%;
+}
+
+.deductive-header h1 {
+  font-size: 2.2rem;
+  margin: 15px 0;
+  color: #2c3e50;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  padding-bottom: 15px;
+  position: relative;
+}
+
+.deductive-header h1:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #2196F3, #4CAF50);
+  border-radius: 2px;
 }
 
 .deductive-question {
@@ -41,7 +69,97 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.cards-container {
+.deductive-instructions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.deductive-section {
+  margin-bottom: 25px;
+}
+
+.deductive-section h2 {
+  color: #1976D2;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  text-align: center;
+  position: relative;
+  font-weight: 600;
+}
+
+.deductive-section h2:after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background-color: #2196F3;
+  border-radius: 2px;
+}
+
+.deductive-section p {
+  color: #455a64;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  font-size: 1.1rem;
+}
+
+.deductive-section strong {
+  color: #0d47a1;
+  font-weight: 600;
+}
+
+/* Steps list for how to play */
+.deductive-steps-list {
+  counter-reset: step-counter;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.deductive-steps-list li {
+  display: flex;
+  margin-bottom: 15px;
+  position: relative;
+  padding-left: 15px;
+  align-items: center;
+}
+
+.step-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #2196F3, #1565C0);
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+}
+
+.step-content {
+  padding-top: 5px;
+}
+
+.step-content p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* Card styling */
+.deductive-cards-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -53,99 +171,212 @@
 
 .deductive-card {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid #333;
-  border-radius: 4px;
-  margin: 0 15px 35px;
+  transition: all 0.3s ease;
+  margin: 10px;
   background-color: white;
-}
-
-.deductive-card.selected {
-  transform: translateY(-3px);
-  border-color: #2196F3;
-  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-}
-
-.card-content {
-  width: 100%;
-  height: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+}
+
+.deductive-card.selected {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(33, 150, 243, 0.3);
+  border: 2px solid #2196F3;
+}
+
+.deductive-card.shape-card {
   background-color: white;
-  overflow: hidden;
 }
 
-.card-text {
-  font-size: 1.8rem;
-  font-weight: bold;
+.deductive-card.color-card {
+  border: 1px solid #ddd;
+}
+
+.deductive-card-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.deductive-shape {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.deductive-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: black;
+}
+
+.deductive-square {
+  width: 100px;
+  height: 100px;
+  background-color: black;
+}
+
+.deductive-triangle {
+  width: 0;
+  height: 0;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 86.6px solid black;
+}
+
+.deductive-card-label {
+  font-size: 1rem;
   color: #333;
-}
-
-.card-image {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-}
-
-.deductive-feedback {
-  margin: 30px auto;
-  max-width: 600px;
+  margin-top: 15px;
   text-align: center;
+  font-weight: 600;
 }
 
-.feedback-result {
-  font-size: 1.5rem;
+/* Example section styling */
+.deductive-example {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.deductive-example-rule {
+  background-color: #E8F5E9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-left: 4px solid #4CAF50;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+}
+
+.deductive-example-rule p {
+  margin: 0;
+  color: #1B5E20;
+  font-weight: 500;
+  text-align: center;
+  font-size: 1.15rem;
+}
+
+.deductive-example-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 25px 0;
+}
+
+.deductive-example-card {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.deductive-example-card.selected {
+  border: 2px solid #2196F3;
+  box-shadow: 0 5px 10px rgba(33, 150, 243, 0.3);
+}
+
+.deductive-example-card.shape {
+  background-color: white;
+}
+
+.deductive-example-card.circle-shape {
+  position: relative;
+}
+
+.deductive-example-card.circle-shape:after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-color: black;
+  border-radius: 50%;
+}
+
+.deductive-example-card.square-shape {
+  position: relative;
+}
+
+.deductive-example-card.square-shape:after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-color: black;
+}
+
+.deductive-example-card.color {
+  border: 1px solid #ddd;
+}
+
+.deductive-example-card.yellow {
+  background-color: #FDD835;
+}
+
+.deductive-example-card.red {
+  background-color: #F44336;
+}
+
+.deductive-example-explanation {
+  margin-top: 30px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 25px;
+}
+
+.deductive-example-explanation h3 {
+  color: #1976D2;
   margin-bottom: 20px;
-  padding: 15px 20px;
-  border-radius: 8px;
-}
-
-.correct-answer {
-  color: #4CAF50;
-  background-color: rgba(76, 175, 80, 0.1);
-}
-
-.incorrect-answer {
-  color: #F44336;
-  background-color: rgba(244, 67, 54, 0.1);
-}
-
-.feedback-explanation {
-  font-size: 1.1rem;
-  line-height: 1.5;
-  margin-bottom: 30px;
-  color: #555;
-}
-
-.deductive-results {
   text-align: center;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 30px;
-  background-color: #f7f7f7;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.explanation-reason {
+  background-color: #F5F5F5;
+  padding: 20px 25px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-.results-item {
-  margin: 15px 0;
-  font-size: 1.2rem;
-  color: #333;
+.explanation-reason p {
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
-.results-value {
-  font-weight: bold;
-  color: #2196F3;
+.explanation-reason p:last-child {
+  margin-bottom: 0;
 }
 
-.selected-count {
+.explanation-reason p strong {
+  color: #0D47A1;
+}
+
+.deductive-selected-count {
   margin: 15px 0;
   font-size: 1.1rem;
   color: #555;
+  text-align: center;
 }
 
 .deductive-button {
@@ -173,54 +404,23 @@
   box-shadow: none;
 }
 
-.continue-button {
+.deductive-continue-button {
   background-color: #4CAF50;
 }
 
-.continue-button:hover {
+.deductive-continue-button:hover {
   background-color: #45a049;
 }
 
-.submit-button {
-  background-color: #2196F3;
-}
-
-.submit-button:hover {
-  background-color: #0b7dda;
-}
-
-.complete-button {
+.deductive-start-button {
   background-color: #9C27B0;
-}
-
-.complete-button:hover {
-  background-color: #7B1FA2;
-}
-
-/* Instructions Container */
-.instructions-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.instructions-section {
-  margin-bottom: 20px;
-}
-
-.instructions-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: #444;
-}
-
-.instructions-section p {
+  margin-top: 30px;
+  padding: 15px 30px;
   font-size: 1.1rem;
-  line-height: 1.5;
-  color: #555;
-  margin-bottom: 15px;
+}
+
+.deductive-start-button:hover {
+  background-color: #7B1FA2;
 }
 
 /* Responsive adjustments */
@@ -228,6 +428,21 @@
   .deductive-card {
     width: 160px;
     height: 160px;
+  }
+  
+  .deductive-shape {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .deductive-circle {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .deductive-square {
+    width: 80px;
+    height: 80px;
   }
 }
 
@@ -237,13 +452,33 @@
     height: 140px;
   }
   
+  .deductive-shape {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .deductive-circle {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .deductive-square {
+    width: 70px;
+    height: 70px;
+  }
+  
   .deductive-question {
     font-size: 1.1rem;
     padding: 12px 15px;
   }
   
-  .card-text {
-    font-size: 1.2rem;
+  .deductive-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .deductive-example-card {
+    width: 80px;
+    height: 80px;
   }
 }
 
@@ -253,7 +488,22 @@
     height: 120px;
   }
   
-  .cards-container {
+  .deductive-shape {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .deductive-circle {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .deductive-square {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .deductive-cards-container {
     gap: 10px;
     padding: 10px;
   }
@@ -262,98 +512,302 @@
     padding: 10px 20px;
     font-size: 0.9rem;
   }
+  
+  .deductive-section p {
+    font-size: 1rem;
+  }
+  
+  .step-number {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+  
+  .deductive-example-card {
+    width: 70px;
+    height: 70px;
+  }
 }
 
-/* Shape styles */
-.shape {
+/* Playing card styles */
+.playing-card {
+  width: 120px;
+  height: 180px;
+  border-radius: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  margin: 10px;
+  transition: all 0.3s ease;
 }
 
-.shape-card .card-content {
-  padding: 25px;
-  background-color: white !important;
+.playing-card.selected {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(33, 150, 243, 0.3);
+  border: 2px solid #2196F3;
 }
 
-.circle {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: black;
-  aspect-ratio: 1/1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.square {
-  width: 80px;
-  height: 80px;
-  background-color: black;
-}
-
-.triangle {
-  width: 0;
-  height: 0;
-  border-left: 40px solid transparent;
-  border-right: 40px solid transparent;
-  border-bottom: 80px solid black;
-  background-color: transparent !important;
-}
-
-/* Color styles */
-.color-card .card-content {
-  padding: 0;
-  background-color: transparent;
-}
-
-.color-card.selected .card-content {
-  background-color: transparent !important;
-}
-
-.color-card .shape {
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-}
-
-.color-card {
-  overflow: hidden;
-}
-
-.red .shape {
-  background-color: #ff0000 !important;
-}
-
-.yellow .shape {
-  background-color: #ffff00 !important;
-}
-
-/* Hide text labels */
-.color-text, .shape-text {
-  display: none;
-}
-
-/* Selection indicator */
-.deductive-card::after {
-  content: "Click to Select";
+.card-corner {
   position: absolute;
-  bottom: -25px;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #555;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.deductive-card.selected::after {
-  content: "Selected";
+.card-corner.top-left {
+  top: 10px;
+  left: 10px;
+}
+
+.card-corner.bottom-right {
+  bottom: 10px;
+  right: 10px;
+  transform: rotate(180deg);
+}
+
+.card-value {
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #2196F3;
+  line-height: 1;
 }
 
-/* Remove checkbox styles as they're no longer needed */
-.selection-checkbox {
-  display: none;
+.card-suit {
+  font-size: 1.2rem;
+  line-height: 1;
+  color: #D32F2F;
+}
+
+.card-face {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.card-symbol {
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heart-symbol {
+  color: #D32F2F;
+  font-size: 4rem;
+}
+
+.king-symbol {
+  font-size: 4rem;
+  color: #333;
+}
+
+.symbol-card {
+  background-color: white;
+  border: 1px solid #ddd;
+}
+
+.heart-card {
+  border: 1px solid #ddd;
+}
+
+.deductive-example-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 20px;
+  margin: 25px 0;
+  overflow-x: auto;
+  padding: 15px 5px;
+}
+
+.horizontal-cards {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 15px;
+}
+
+.card-label {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Media queries for responsive playing cards */
+@media (max-width: 768px) {
+  .playing-card {
+    width: 90px;
+    height: 140px;
+  }
+  
+  .card-value {
+    font-size: 1.2rem;
+  }
+  
+  .card-suit {
+    font-size: 1rem;
+  }
+  
+  .card-face {
+    font-size: 2.5rem;
+  }
+  
+  .heart-symbol, .king-symbol {
+    font-size: 3rem;
+  }
+  
+  .card-symbol {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .playing-card {
+    width: 70px;
+    height: 110px;
+  }
+  
+  .card-value {
+    font-size: 1rem;
+  }
+  
+  .card-suit {
+    font-size: 0.8rem;
+  }
+  
+  .card-face {
+    font-size: 2rem;
+  }
+  
+  .heart-symbol, .king-symbol {
+    font-size: 2.5rem;
+  }
+  
+  .card-symbol {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Horizontal card layout */
+.horizontal-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.playing-cards-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
+  min-width: max-content;
+}
+
+.card-labels-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.card-label-container {
+  width: 120px;
+  text-align: center;
+  font-weight: 500;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+/* Feedback styles */
+.deductive-feedback {
+  margin: 30px auto;
+  max-width: 700px;
+  text-align: center;
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.feedback-result {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.correct-answer {
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.incorrect-answer {
+  color: #F44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.feedback-explanation {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 30px;
+  color: #333;
+  text-align: left;
+}
+
+.deductive-navigation {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+/* Responsive adjustments for horizontal layout */
+@media (max-width: 768px) {
+  .card-label-container {
+    width: 90px;
+    font-size: 1rem;
+  }
+  
+  .playing-cards-row {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-label-container {
+    width: 70px;
+    font-size: 0.9rem;
+  }
+  
+  .playing-cards-row {
+    gap: 10px;
+  }
+  
+  .deductive-navigation {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .deductive-navigation button {
+    width: 100%;
+    margin: 5px 0;
+  }
 }
