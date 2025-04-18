@@ -38,8 +38,8 @@ const ShapeCountingMainTask = () => {
     { level: 5, shapes: 12 }
   ];
   
-  // Maximum attempts per level
-  const maxAttempts = 2;
+  // Set maximum attempts to 1
+  const maxAttempts = 1;
   
   // Shapes for the task
   const shapes = ['square', 'triangle', 'circle'];
@@ -159,38 +159,26 @@ const ShapeCountingMainTask = () => {
     // Record result for this level and attempt
     const trialResult = {
       level: currentLevel,
-      attempt: currentAttempt,
+      attempt: 1, // Always 1 since we're only doing one trial per level
       correctCounts: { ...correctCounts },
       userCounts: { ...userCounts },
       correct: isCorrect,
       timestamp: new Date().toISOString()
     };
     
-    // Only add the result if we don't already have a successful attempt for this level
-    const existingSuccessfulAttempt = results.find(
-      r => r.level === currentLevel && r.correct
-    );
-    
-    if (!existingSuccessfulAttempt) {
-      setResults(prevResults => [...prevResults, trialResult]);
-    }
+    // Add result to results array
+    setResults(prevResults => [...prevResults, trialResult]);
     
     setTrialComplete(true);
     setShowResponse(false);
-    setShowFeedback(true);
     
-    // Decide what happens next based on the result
-    if (isCorrect) {
-      // If correct, move to next level
-      if (currentLevel >= levels.length) {
-        // If this was the last level, game complete
-        setTaskComplete(true);
-      }
+    // Instead of showing feedback, immediately move to next level or complete task
+    if (currentLevel < levels.length) {
+      // Move to next level
+      setCurrentLevel(prev => prev + 1);
     } else {
-      // If incorrect and this was the second attempt, game over
-      if (currentAttempt >= maxAttempts) {
-        setGameOver(true);
-      }
+      // Game completed
+      setTaskComplete(true);
     }
   };
   
@@ -200,42 +188,23 @@ const ShapeCountingMainTask = () => {
     checkResponse();
   };
   
-  // Continue to next level or retry current level
+  // Continue to next level or complete task - this function is now only used for the results screen
   const continueTask = () => {
     if (trialComplete) {
-      const lastResult = results[results.length - 1];
-      
-      if (lastResult.correct) {
+      if (currentLevel < levels.length) {
         // Move to next level
-        if (currentLevel < levels.length) {
-          // First update the level, then start the sequence in a separate effect
-          // to ensure the current level state is updated before generating the sequence
-          setCurrentLevel(prev => prev + 1);
-          setCurrentAttempt(1);
-          setShowFeedback(false);
-        } else {
-          // Game completed successfully
-          setTaskComplete(true);
-        }
+        setCurrentLevel(prev => prev + 1);
+        setShowFeedback(false);
       } else {
-        // Failed attempt
-        if (currentAttempt < maxAttempts) {
-          // Try again same level
-          setCurrentAttempt(prev => prev + 1);
-          setShowFeedback(false);
-          startSequence();
-        } else {
-          // Game over
-          setGameOver(true);
-          setTaskComplete(true);
-        }
+        // Game completed
+        setTaskComplete(true);
       }
     }
   };
   
   // Effect to start sequence after level change
   useEffect(() => {
-    if (!taskComplete && !showFeedback) {
+    if (!taskComplete) {
       const timer = setTimeout(() => {
         startSequence();
       }, 500); // Short delay to ensure state is updated
@@ -243,7 +212,7 @@ const ShapeCountingMainTask = () => {
       timersRef.current.push(timer);
       return () => clearTimeout(timer);
     }
-  }, [currentLevel, currentAttempt, showFeedback, taskComplete]);
+  }, [currentLevel, taskComplete]);
   
   // Navigate back to tasks menu
   const returnToMenu = () => {
@@ -255,26 +224,8 @@ const ShapeCountingMainTask = () => {
     setExportingCSV(true);
     
     try {
-      // Format results for CSV - only include the best outcome for each level
-      const processedResults = [];
-      const levelsTracked = new Set();
-      
-      // First add all successful attempts
-      results.filter(r => r.correct).forEach(result => {
-        processedResults.push(result);
-        levelsTracked.add(result.level);
-      });
-      
-      // Then add the last attempts for levels without successes
-      results.forEach(result => {
-        if (!levelsTracked.has(result.level) && result.attempt === maxAttempts) {
-          processedResults.push(result);
-          levelsTracked.add(result.level);
-        }
-      });
-      
-      // Sort by level
-      processedResults.sort((a, b) => a.level - b.level);
+      // Format results for CSV - simply use all level results since there's only one attempt per level
+      const processedResults = [...results].sort((a, b) => a.level - b.level);
       
       const csvContent = processedResults.map(result => {
         return [
@@ -335,34 +286,14 @@ const ShapeCountingMainTask = () => {
     setter(prev => Math.max(prev - 1, 0));
   };
   
-  // Calculate overall performance
+  // Calculate overall performance - simplified for one attempt per level
   const calculatePerformance = () => {
-    // Process results to only include the best attempt for each level
-    const bestResults = [];
-    const levelsCompleted = new Set();
-    
-    // First add all successful attempts
-    results.filter(r => r.correct).forEach(result => {
-      if (!levelsCompleted.has(result.level)) {
-        bestResults.push(result);
-        levelsCompleted.add(result.level);
-      }
-    });
-    
-    // Then add the last attempts for levels without successes
-    results.forEach(result => {
-      if (!levelsCompleted.has(result.level) && result.attempt === maxAttempts) {
-        bestResults.push(result);
-        levelsCompleted.add(result.level);
-      }
-    });
-    
-    const correctCount = bestResults.filter(result => result.correct).length;
+    const correctCount = results.filter(result => result.correct).length;
     return {
       correct: correctCount,
-      total: bestResults.length,
-      percentage: bestResults.length > 0 ? Math.round((correctCount / bestResults.length) * 100) : 0,
-      highestLevel: Math.max(...Array.from(levelsCompleted))
+      total: results.length,
+      percentage: results.length > 0 ? Math.round((correctCount / results.length) * 100) : 0,
+      highestLevel: results.length > 0 ? Math.max(...results.map(r => r.level)) : 1
     };
   };
   
@@ -375,11 +306,11 @@ const ShapeCountingMainTask = () => {
   return (
     <div className="task-screen">
       {!taskComplete && (
-        <h1>Shape Counting Task - {getLevelName(currentLevel)} - Attempt {currentAttempt}/{maxAttempts}</h1>
+        <h1>Shape Counting Task</h1>
       )}
       
       {taskComplete && (
-        <h1>Shape Counting Task - {gameOver ? 'Game Over' : 'Complete'}</h1>
+        <h1>Shape Counting Task - Complete</h1>
       )}
       
       {showingShapes && (
@@ -445,43 +376,9 @@ const ShapeCountingMainTask = () => {
         </div>
       )}
       
-      {showFeedback && !taskComplete && (
-        <div className="feedback-section">
-          <h2>{getLevelName(currentLevel)} - Attempt {currentAttempt} Feedback</h2>
-          
-          {trialComplete && (
-            <>
-              <div className="counts-comparison">
-                <div className="correct-counts">
-                  <h3>Correct Counts:</h3>
-                  <p>Squares: <span className="important">{correctCounts.squares}</span></p>
-                  <p>Triangles: <span className="important">{correctCounts.triangles}</span></p>
-                  <p>Circles: <span className="important">{correctCounts.circles}</span></p>
-                </div>
-                
-                <div className="user-counts">
-                  <h3>Your Counts:</h3>
-                  <p>Squares: <span className={squareCount === correctCounts.squares ? 'correct' : 'incorrect'}>{squareCount}</span></p>
-                  <p>Triangles: <span className={triangleCount === correctCounts.triangles ? 'correct' : 'incorrect'}>{triangleCount}</span></p>
-                  <p>Circles: <span className={circleCount === correctCounts.circles ? 'correct' : 'incorrect'}>{circleCount}</span></p>
-                </div>
-              </div>
-              
-              <div className="trial-controls">
-                <button onClick={continueTask} className="continue-button">
-                  {results[results.length - 1]?.correct 
-                    ? (currentLevel < levels.length ? `Continue to ${getLevelName(currentLevel + 1)}` : 'See Results') 
-                    : (currentAttempt < maxAttempts ? `Try ${getLevelName(currentLevel)} Again` : 'See Results')}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-      
       {taskComplete && (
         <div className="results-section">
-          <h2>{gameOver ? 'Game Over' : 'Task Complete!'}</h2>
+          <h2>Task Complete!</h2>
           
           {results.length > 0 && (
             <>
@@ -503,7 +400,6 @@ const ShapeCountingMainTask = () => {
                     <tr>
                       <th>Level</th>
                       <th>Shapes</th>
-                      <th>Best Attempt</th>
                       <th>Squares</th>
                       <th>Triangles</th>
                       <th>Circles</th>
@@ -531,7 +427,6 @@ const ShapeCountingMainTask = () => {
                         <tr key={levelConfig.level} className={bestAttempt.correct ? 'correct-row' : 'incorrect-row'}>
                           <td>{levelConfig.level}</td>
                           <td>{levelConfig.shapes}</td>
-                          <td>{bestAttempt.attempt}</td>
                           <td>
                             {bestAttempt.userCounts.squares}/{bestAttempt.correctCounts.squares}
                           </td>
@@ -567,9 +462,9 @@ const ShapeCountingMainTask = () => {
         </div>
       )}
       
-      {!showingShapes && !showResponse && !showFeedback && !taskComplete && (
+      {!showingShapes && !showResponse && !taskComplete && (
         <div className="loading">
-          Preparing shapes for {getLevelName(currentLevel)}...
+          Preparing shapes...
         </div>
       )}
     </div>

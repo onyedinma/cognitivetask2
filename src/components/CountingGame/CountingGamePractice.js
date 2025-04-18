@@ -47,7 +47,8 @@ const CountingGamePractice = () => {
   
   // Generate a sequence of random objects
   const generateSequence = () => {
-    const sequenceLength = 5 + Math.floor(Math.random() * 5); // 5-10 objects
+    // Set sequence length to exactly 6 objects
+    const sequenceLength = 6;
     const sequence = [];
     const counts = { bills: 0, buses: 0, faces: 0 };
     
@@ -62,6 +63,7 @@ const CountingGamePractice = () => {
       else if (object === 'face') counts.faces++;
     }
     
+    console.log(`Practice sequence generated with exactly ${sequenceLength} objects`);
     return { sequence, counts };
   };
   
@@ -84,11 +86,11 @@ const CountingGamePractice = () => {
     // Store correct counts for feedback
     setCorrectCounts(counts);
     
-    // Display objects one by one
+    // Display objects one by one with precise timing
     sequence.forEach((object, index) => {
       // Show object
       const showTimer = setTimeout(() => {
-        console.log(`Showing object: ${object}`);
+        console.log(`Showing object ${index + 1}/${sequence.length}: ${object}`);
         setCurrentObject(object);
       }, index * 1500); // Show each object for 1.5 seconds
       
@@ -101,6 +103,13 @@ const CountingGamePractice = () => {
         }, (index * 1500) + 1000); // Show for 1 second, blank for 0.5 seconds
         
         timersRef.current.push(hideTimer);
+      } else {
+        // For the last object, ensure it's hidden before showing the response form
+        const hideLastTimer = setTimeout(() => {
+          setCurrentObject(null);
+        }, (index * 1500) + 1000);
+        
+        timersRef.current.push(hideLastTimer);
       }
     });
     
@@ -109,7 +118,7 @@ const CountingGamePractice = () => {
       setShowingObjects(false);
       setCurrentObject(null);
       setShowResponse(true);
-    }, sequence.length * 1500);
+    }, (sequence.length * 1500) + 500); // Add a small buffer after the last object
     
     timersRef.current.push(responseTimer);
   };
@@ -135,6 +144,7 @@ const CountingGamePractice = () => {
       }
     });
     
+    // Show feedback after practice attempt
     setShowResponse(false);
     setShowFeedback(true);
     setPracticeAttempts(prev => prev + 1);
@@ -146,7 +156,7 @@ const CountingGamePractice = () => {
     checkResponse();
   };
   
-  // Continue practice or go to main task
+  // These functions are kept for compatibility but no longer used
   const continuePractice = () => {
     // Reset counts
     setBillCount(0);
@@ -185,7 +195,7 @@ const CountingGamePractice = () => {
   
   return (
     <div className="task-screen">
-      <h1>Counting Game Practice</h1>
+      <h1>Counting Game Practice (Level 2: 6 Objects)</h1>
       
       {showingObjects && (
         <div className="object-display">
@@ -282,9 +292,9 @@ const CountingGamePractice = () => {
             
             <div className="user-counts">
               <h3>Your Counts:</h3>
-              <p>$5 Bills: <span className={billCount === correctCounts.bills ? 'correct' : 'incorrect'}>{billCount}</span></p>
-              <p>UTA Buses: <span className={busCount === correctCounts.buses ? 'correct' : 'incorrect'}>{busCount}</span></p>
-              <p>Faces: <span className={faceCount === correctCounts.faces ? 'correct' : 'incorrect'}>{faceCount}</span></p>
+              <p>$5 Bills: <span className={result.userCounts.bills === correctCounts.bills ? 'correct' : 'incorrect'}>{result.userCounts.bills}</span></p>
+              <p>UTA Buses: <span className={result.userCounts.buses === correctCounts.buses ? 'correct' : 'incorrect'}>{result.userCounts.buses}</span></p>
+              <p>Faces: <span className={result.userCounts.faces === correctCounts.faces ? 'correct' : 'incorrect'}>{result.userCounts.faces}</span></p>
             </div>
           </div>
           
@@ -293,11 +303,9 @@ const CountingGamePractice = () => {
               Continue Practice
             </button>
             
-            {practiceAttempts >= 2 && (
-              <button onClick={goToMainTask} className="main-task-button">
-                I'm Ready for Main Task
-              </button>
-            )}
+            <button onClick={goToMainTask} className="main-task-button">
+              Continue to Main Task
+            </button>
           </div>
         </div>
       )}

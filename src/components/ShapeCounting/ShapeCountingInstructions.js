@@ -118,6 +118,19 @@ const ShapeCountingInstructions = () => {
             <li>Focus and pay attention to each shape as it appears</li>
           </ul>
         </div>
+        
+        <div className="instruction-card">
+          <h2>Levels Information</h2>
+          <p>The task consists of 5 levels with an increasing number of shapes:</p>
+          <ul className="instruction-list">
+            <li>Level 1: 4 shapes</li>
+            <li>Level 2: 6 shapes</li>
+            <li>Level 3: 8 shapes</li>
+            <li>Level 4: 10 shapes</li>
+            <li>Level 5: 12 shapes</li>
+          </ul>
+          <p>You will practice with 6 shapes before starting the main task.</p>
+        </div>
       </div>
       
       <div className="navigation-buttons">

@@ -20,12 +20,11 @@ const CountingGameMainTask = () => {
   const [showResponse, setShowResponse] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [trialComplete, setTrialComplete] = useState(false);
-  const [currentTrial, setCurrentTrial] = useState(1);
+  const [currentLevel, setCurrentLevel] = useState(1);
   const [billCount, setBillCount] = useState(0);
-  const [coinCount, setCoinCount] = useState(0);
   const [busCount, setBusCount] = useState(0);
   const [faceCount, setFaceCount] = useState(0);
-  const [correctCounts, setCorrectCounts] = useState({ bills: 0, coins: 0, buses: 0, faces: 0 });
+  const [correctCounts, setCorrectCounts] = useState({ bills: 0, buses: 0, faces: 0 });
   const [results, setResults] = useState([]);
   const [taskComplete, setTaskComplete] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
@@ -33,11 +32,14 @@ const CountingGameMainTask = () => {
   // Refs to store and clear timers
   const timersRef = useRef([]);
   
-  // Total number of trials for the main task
-  const totalTrials = 5;
-  
-  // Objects for the task
-  const objects = ['bill', 'bus', 'face'];
+  // Level configuration
+  const levels = [
+    { level: 1, objects: 4 },
+    { level: 2, objects: 6 },
+    { level: 3, objects: 8 },
+    { level: 4, objects: 10 },
+    { level: 5, objects: 12 }
+  ];
   
   // Object image mapping
   const objectImages = {
@@ -54,28 +56,36 @@ const CountingGameMainTask = () => {
   
   // Generate a sequence of random objects
   const generateSequence = useCallback(() => {
+    const currentLevelConfig = levels[currentLevel - 1];
+    const sequenceLength = currentLevelConfig.objects;
+    
     const sequence = [];
-    const counts = { bills: 0, coins: 0, buses: 0, faces: 0 };
+    const counts = { bills: 0, buses: 0, faces: 0 };
     
-    // Generate 10-15 random objects
-    const length = Math.floor(Math.random() * 6) + 10;
-    
-    for (let i = 0; i < length; i++) {
-      const object = ['bill', 'coin', 'bus', 'face'][Math.floor(Math.random() * 4)];
+    // Generate exactly the number of objects for this level
+    for (let i = 0; i < sequenceLength; i++) {
+      const object = ['bill', 'bus', 'face'][Math.floor(Math.random() * 3)];
       sequence.push(object);
       
       // Count occurrences
       if (object === 'bill') counts.bills++;
-      else if (object === 'coin') counts.coins++;
       else if (object === 'bus') counts.buses++;
       else if (object === 'face') counts.faces++;
     }
     
+    // Double-check the total number of objects equals the required amount
+    const totalObjects = counts.bills + counts.buses + counts.faces;
+    console.log(`Level ${currentLevel} - Total objects: ${totalObjects}, Expected: ${sequenceLength}`);
+    
+    if (totalObjects !== sequenceLength) {
+      console.error(`Object count mismatch: got ${totalObjects}, expected ${sequenceLength}`);
+    }
+    
     return { sequence, counts };
-  }, []);
+  }, [currentLevel, levels]);
   
   // Start showing the objects
-  const startSequence = useCallback(() => {
+  const startSequence = () => {
     // Clear any existing timers
     clearAllTimers();
     
@@ -93,28 +103,48 @@ const CountingGameMainTask = () => {
     
     // Generate a new sequence
     const { sequence, counts } = generateSequence();
+    console.log(`Level ${currentLevel} - Generated sequence:`, sequence);
+    console.log(`Level ${currentLevel} - Correct counts:`, counts);
     
-    // Start showing objects one by one
-    let index = 0;
-    const showNextObject = () => {
-      if (index < sequence.length) {
-        setCurrentObject(sequence[index]);
-        index++;
+    // Store correct counts for feedback
+    setCorrectCounts(counts);
+    
+    // Display objects one by one with precise timing
+    sequence.forEach((object, index) => {
+      // Show object
+      const showTimer = setTimeout(() => {
+        console.log(`Showing object ${index + 1}/${sequence.length}: ${object}`);
+        setCurrentObject(object);
+      }, index * 1500); // Show each object for 1.5 seconds
+      
+      timersRef.current.push(showTimer);
+      
+      // Hide object (except for the last one)
+      if (index < sequence.length - 1) {
+        const hideTimer = setTimeout(() => {
+          setCurrentObject(null);
+        }, (index * 1500) + 1000); // Show for 1 second, blank for 0.5 seconds
         
-        // Schedule next object
-        const timer = setTimeout(showNextObject, 1000);
-        timersRef.current.push(timer);
+        timersRef.current.push(hideTimer);
       } else {
-        // All objects shown, show response screen
-        setShowingObjects(false);
-        setShowResponse(true);
+        // For the last object, ensure it's hidden before showing the response form
+        const hideLastTimer = setTimeout(() => {
+          setCurrentObject(null);
+        }, (index * 1500) + 1000);
+        
+        timersRef.current.push(hideLastTimer);
       }
-    };
+    });
     
-    // Start the sequence
-    const timer = setTimeout(showNextObject, 1000);
-    timersRef.current.push(timer);
-  }, [clearAllTimers, generateSequence]);
+    // Show response form after all objects
+    const responseTimer = setTimeout(() => {
+      setShowingObjects(false);
+      setCurrentObject(null);
+      setShowResponse(true);
+    }, (sequence.length * 1500) + 500); // Add a small buffer after the last object
+    
+    timersRef.current.push(responseTimer);
+  };
   
   // Check user's response and record result
   const checkResponse = () => {
@@ -129,25 +159,29 @@ const CountingGameMainTask = () => {
       busCount === correctCounts.buses && 
       faceCount === correctCounts.faces;
     
-    // Record result for this trial
+    // Record result for this level
     const trialResult = {
-      trial: currentTrial,
+      level: currentLevel,
       correctCounts: { ...correctCounts },
       userCounts: { ...userCounts },
       correct: isCorrect,
       timestamp: new Date().toISOString()
     };
     
+    // Add result to results array
     setResults(prevResults => [...prevResults, trialResult]);
-    setTrialComplete(true);
     
-    // Check if task is complete
-    if (currentTrial >= totalTrials) {
+    setTrialComplete(true);
+    setShowResponse(false);
+    
+    // Instead of showing feedback, immediately move to next level or complete task
+    if (currentLevel < levels.length) {
+      // Move to next level
+      setCurrentLevel(prev => prev + 1);
+    } else {
+      // Game completed
       setTaskComplete(true);
     }
-    
-    setShowResponse(false);
-    setShowFeedback(true);
   };
   
   // Handle form submission
@@ -156,14 +190,17 @@ const CountingGameMainTask = () => {
     checkResponse();
   };
   
-  // Continue to next trial or finish task
+  // Continue to next level or complete task - this function is now only used for the results screen
   const continueTask = () => {
-    if (currentTrial < totalTrials) {
-      setCurrentTrial(prev => prev + 1);
-      setShowFeedback(false);
-      startSequence();
-    } else {
-      setTaskComplete(true);
+    if (trialComplete) {
+      if (currentLevel < levels.length) {
+        // Move to next level
+        setCurrentLevel(prev => prev + 1);
+        setShowFeedback(false);
+      } else {
+        // Game completed
+        setTaskComplete(true);
+      }
     }
   };
   
@@ -177,11 +214,14 @@ const CountingGameMainTask = () => {
     setExportingCSV(true);
     
     try {
-      // Format results for CSV
-      const csvContent = results.map(result => {
+      // Format results for CSV - sort by level
+      const processedResults = [...results].sort((a, b) => a.level - b.level);
+      
+      const csvContent = processedResults.map(result => {
         return [
           result.timestamp,
-          result.trial,
+          result.level,
+          levels[result.level - 1].objects,
           result.correctCounts.bills,
           result.correctCounts.buses,
           result.correctCounts.faces,
@@ -193,7 +233,7 @@ const CountingGameMainTask = () => {
       });
       
       // Add header row
-      const header = 'Timestamp,Trial,CorrectBills,CorrectBuses,CorrectFaces,UserBills,UserBuses,UserFaces,Correct';
+      const header = 'Timestamp,Level,ObjectCount,CorrectBills,CorrectBuses,CorrectFaces,UserBills,UserBuses,UserFaces,Correct';
       const csv = [header, ...csvContent].join('\n');
       
       // Create and download file
@@ -213,8 +253,9 @@ const CountingGameMainTask = () => {
     }
   };
   
-  // Start task when component mounts
+  // Start task when component mounts (only once)
   useEffect(() => {
+    console.log("Component mounted - starting first sequence");
     const timer = setTimeout(() => {
       startSequence();
     }, 1000);
@@ -225,31 +266,56 @@ const CountingGameMainTask = () => {
     return () => {
       clearAllTimers();
     };
-  }, [startSequence, clearAllTimers]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array with eslint disable - startSequence and clearAllTimers omitted to prevent infinite loops
+  
+  // Effect to start sequence after level change
+  useEffect(() => {
+    if (!taskComplete) {
+      // Skip on initial mount
+      if (currentLevel > 1) {
+        console.log(`Starting new sequence for level ${currentLevel}`);
+        const timer = setTimeout(() => {
+          startSequence();
+        }, 500); // Short delay to ensure state is updated
+        
+        timersRef.current.push(timer);
+        return () => clearTimeout(timer);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLevel, taskComplete]); // startSequence and timersRef omitted to prevent infinite loops
   
   // Increment/decrement handlers for number inputs
   const handleIncrement = (setter) => {
-    setter(prev => Math.min(prev + 1, 9));
+    setter(prev => Math.min(prev + 1, 12));
   };
   
   const handleDecrement = (setter) => {
     setter(prev => Math.max(prev - 1, 0));
   };
   
-  // Calculate overall performance
+  // Calculate performance for results screen
   const calculatePerformance = () => {
     const correctCount = results.filter(result => result.correct).length;
     return {
       correct: correctCount,
       total: results.length,
-      percentage: Math.round((correctCount / results.length) * 100)
+      percentage: Math.round((correctCount / results.length) * 100),
+      highestLevel: results.length > 0 ? Math.max(...results.map(r => r.level)) : 1
     };
+  };
+  
+  // Get descriptive level name
+  const getLevelName = (level) => {
+    const levelConfig = levels[level - 1];
+    return `Level ${level} (${levelConfig.objects} objects)`;
   };
   
   return (
     <div className="task-screen">
       {!taskComplete && (
-        <h1>Counting Game - Trial {currentTrial} of {totalTrials}</h1>
+        <h1>Counting Game</h1>
       )}
       
       {taskComplete && (
@@ -293,7 +359,7 @@ const CountingGameMainTask = () => {
                   value={billCount} 
                   onChange={(e) => setBillCount(parseInt(e.target.value) || 0)}
                   min="0" 
-                  max="9"
+                  max="12"
                 />
                 <button type="button" onClick={() => handleIncrement(setBillCount)}>+</button>
               </div>
@@ -308,7 +374,7 @@ const CountingGameMainTask = () => {
                   value={busCount} 
                   onChange={(e) => setBusCount(parseInt(e.target.value) || 0)}
                   min="0" 
-                  max="9"
+                  max="12"
                 />
                 <button type="button" onClick={() => handleIncrement(setBusCount)}>+</button>
               </div>
@@ -323,7 +389,7 @@ const CountingGameMainTask = () => {
                   value={faceCount} 
                   onChange={(e) => setFaceCount(parseInt(e.target.value) || 0)}
                   min="0" 
-                  max="9"
+                  max="12"
                 />
                 <button type="button" onClick={() => handleIncrement(setFaceCount)}>+</button>
               </div>
@@ -331,38 +397,6 @@ const CountingGameMainTask = () => {
             
             <button type="submit" className="submit-button">Submit</button>
           </form>
-        </div>
-      )}
-      
-      {showFeedback && !taskComplete && (
-        <div className="feedback-section">
-          <h2>Trial {currentTrial} Feedback</h2>
-          
-          {trialComplete && (
-            <>
-              <div className="counts-comparison">
-                <div className="correct-counts">
-                  <h3>Correct Counts:</h3>
-                  <p>$5 Bills: <span className="important">{correctCounts.bills}</span></p>
-                  <p>UTA Buses: <span className="important">{correctCounts.buses}</span></p>
-                  <p>Faces: <span className="important">{correctCounts.faces}</span></p>
-                </div>
-                
-                <div className="user-counts">
-                  <h3>Your Counts:</h3>
-                  <p>$5 Bills: <span className={billCount === correctCounts.bills ? 'correct' : 'incorrect'}>{billCount}</span></p>
-                  <p>UTA Buses: <span className={busCount === correctCounts.buses ? 'correct' : 'incorrect'}>{busCount}</span></p>
-                  <p>Faces: <span className={faceCount === correctCounts.faces ? 'correct' : 'incorrect'}>{faceCount}</span></p>
-                </div>
-              </div>
-              
-              <div className="trial-controls">
-                <button onClick={continueTask} className="continue-button">
-                  {currentTrial < totalTrials ? 'Continue to Next Trial' : 'See Results'}
-                </button>
-              </div>
-            </>
-          )}
         </div>
       )}
       
@@ -375,39 +409,54 @@ const CountingGameMainTask = () => {
               <div className="performance-summary">
                 <h3>Overall Performance</h3>
                 <p>
-                  You correctly counted all objects in {calculatePerformance().correct} out of {calculatePerformance().total} trials 
+                  Highest level reached: <strong>{getLevelName(calculatePerformance().highestLevel)}</strong>
+                </p>
+                <p>
+                  Levels passed: <strong>{calculatePerformance().correct}</strong> out of <strong>{calculatePerformance().total}</strong> 
                   ({calculatePerformance().percentage}%)
                 </p>
               </div>
               
               <div className="results-table-container">
-                <h3>Trial Details</h3>
+                <h3>Level Details</h3>
                 <table className="results-table">
                   <thead>
                     <tr>
-                      <th>Trial</th>
+                      <th>Level</th>
+                      <th>Objects</th>
                       <th>$5 Bills</th>
                       <th>UTA Buses</th>
                       <th>Faces</th>
-                      <th>Correct</th>
+                      <th>Passed</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {results.map((result, index) => (
-                      <tr key={index} className={result.correct ? 'correct-row' : 'incorrect-row'}>
-                        <td>{result.trial}</td>
-                        <td>
-                          {result.userCounts.bills}/{result.correctCounts.bills}
-                        </td>
-                        <td>
-                          {result.userCounts.buses}/{result.correctCounts.buses}
-                        </td>
-                        <td>
-                          {result.userCounts.faces}/{result.correctCounts.faces}
-                        </td>
-                        <td>{result.correct ? 'Yes' : 'No'}</td>
-                      </tr>
-                    ))}
+                    {levels.map((levelConfig) => {
+                      // Find the attempt for this level if it exists
+                      const levelAttempt = results.find(
+                        r => r.level === levelConfig.level
+                      );
+                      
+                      // Only show levels that were attempted
+                      if (!levelAttempt) return null;
+                      
+                      return (
+                        <tr key={levelConfig.level} className={levelAttempt.correct ? 'correct-row' : 'incorrect-row'}>
+                          <td>{levelConfig.level}</td>
+                          <td>{levelConfig.objects}</td>
+                          <td>
+                            {levelAttempt.userCounts.bills}/{levelAttempt.correctCounts.bills}
+                          </td>
+                          <td>
+                            {levelAttempt.userCounts.buses}/{levelAttempt.correctCounts.buses}
+                          </td>
+                          <td>
+                            {levelAttempt.userCounts.faces}/{levelAttempt.correctCounts.faces}
+                          </td>
+                          <td>{levelAttempt.correct ? 'Yes' : 'No'}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -430,7 +479,7 @@ const CountingGameMainTask = () => {
         </div>
       )}
       
-      {!showingObjects && !showResponse && !showFeedback && !taskComplete && (
+      {!showingObjects && !showResponse && !taskComplete && (
         <div className="loading">
           Preparing objects...
         </div>

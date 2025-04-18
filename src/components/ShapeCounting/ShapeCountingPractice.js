@@ -173,7 +173,7 @@ const ShapeCountingPractice = () => {
   
   return (
     <div className="task-screen">
-      <h1>Shape Counting Practice (6 Shapes)</h1>
+      <h1>Shape Counting Practice (Level 2: 6 Shapes)</h1>
       
       {showingShapes && (
         <div className="shape-display">

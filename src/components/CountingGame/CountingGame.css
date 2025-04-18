@@ -57,7 +57,7 @@
 }
 
 /* Note: These background images will be set using style attributes in the React components */
-.example-object.dollar-bill {
+.example-object.dollar-bill, .example-object.bill {
   /* Placeholder for styling, image will be set inline */
 }
 
@@ -67,6 +67,97 @@
 
 .example-object.face {
   /* Placeholder for styling, image will be set inline */
+}
+
+/* Instructions Cards */
+.instruction-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.instruction-card h2 {
+  color: #2196F3;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+}
+
+/* Interactive Animation */
+.example-animation {
+  margin: 1.5rem 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+.animated-object-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 250px;
+}
+
+.animated-object {
+  width: 150px;
+  height: 150px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-bottom: 1rem;
+}
+
+.animation-progress {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #2196F3;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.current-counts {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.current-counts span {
+  font-weight: bold;
+  color: #333;
+}
+
+.example-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.replay-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.replay-button:hover {
+  background-color: #0b7dda;
 }
 
 /* Response Section */
