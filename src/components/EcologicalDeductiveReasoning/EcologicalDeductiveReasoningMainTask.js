@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import './EcologicalDeductiveReasoning.css';
 
 // Define constants for paths to images
-const beer = '/deducimages/beer.jpg';
-const juice = '/deducimages/juice.jpg';
-const doctorPatient = '/deducimages/doctor-patient.jpg';
-const teacher = '/deducimages/teacher.jpg';
-const dogBarking = '/deducimages/dog-barking.jpg';
-const cat = '/deducimages/cat.jpg';
+const IMAGE_PATH = '/deducimages/';
+const beer = `${IMAGE_PATH}beer.jpg`;
+const juice = `${IMAGE_PATH}juice.jpg`;
+const doctorPatient = `${IMAGE_PATH}doctor-patient.jpg`;
+const teacher = `${IMAGE_PATH}teacher.jpg`;
+const dogBarking = `${IMAGE_PATH}dog-barking.jpg`;
+const cat = `${IMAGE_PATH}cat.jpg`;
 
 // All images used in the component - for preloading
 const allImages = [beer, juice, doctorPatient, teacher, dogBarking, cat];
@@ -38,15 +39,15 @@ const mainPuzzles = [
     explanation: "Correct answer: 'Mary and Jane hang out' and 'Mary and Jane are not friends'. You need to check if they hang out (to verify they are friends) and if they are not friends (to verify they don't hang out)."
   },
   {
-    question: "If Amy treats sick children in the hospital, then she must be a doctor.",
+    question: "If it's raining, then the ground is wet.",
     cards: [
-      { front: "Doctor", back: "Doctor", type: "text" },
-      { front: "Teacher", back: "Teacher", type: "text" },
-      { front: "Treats children", back: "Treats children", type: "image", image: doctorPatient },
-      { front: "Teaching", back: "Teaching", type: "image", image: teacher }
+      { front: "Raining", back: "Raining", type: "text" },
+      { front: "Not raining", back: "Not raining", type: "text" },
+      { front: "Ground is wet", back: "Ground is wet", type: "text" },
+      { front: "Ground is dry", back: "Ground is dry", type: "text" }
     ],
-    correctCards: [1, 2],  // Teacher and Treats children
-    explanation: "Correct answer: Teacher and 'Treats children'. You need to check if someone treating children is a doctor and if a teacher might also be treating children."
+    correctCards: [0, 3],  // "Raining" and "Ground is dry"
+    explanation: "Correct answer: 'Raining' and 'Ground is dry'. You need to check if when it's raining the ground is wet (the rule requires this) and if when the ground is dry it's not raining (to verify the rule is consistent)."
   },
   {
     question: "If an animal barks, then it must be a dog.",

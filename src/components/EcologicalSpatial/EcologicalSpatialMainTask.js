@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
-// Import all images from Ecoimages folder
+// Import all images from Ecoimages folder with correct paths
 const dog = '/ecoimages/dog.jpg';
 const cat = '/ecoimages/cat.jpg';
 const bird = '/ecoimages/bird.jpg';
@@ -79,7 +79,6 @@ const EcologicalSpatialMainTask = () => {
   const [results, setResults] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [showReadyButton, setShowReadyButton] = useState(false);
-  const [trialCount, setTrialCount] = useState(1); // Track trials for each level (1 or 2)
   const [recordedLevels, setRecordedLevels] = useState([]); // Track which levels have been recorded
   
   // Refs for timer management and configuration
@@ -125,7 +124,7 @@ const EcologicalSpatialMainTask = () => {
 
   // Effect for starting new level or cleaning up
   useEffect(() => {
-    // Clear any previous timers when starting a new level or trial
+    // Clear any previous timers when starting a new level
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -159,7 +158,7 @@ const EcologicalSpatialMainTask = () => {
         readyButtonTimerRef.current = null;
       }
     };
-  }, [currentLevel, trialCount, completed, imagesLoaded]);
+  }, [currentLevel, completed, imagesLoaded]);
 
   // Calculate grid dimensions based on current level
   const getGridDimensions = () => {
@@ -210,6 +209,9 @@ const EcologicalSpatialMainTask = () => {
     // Create a deep copy of the shapes array
     const shapesCopy = JSON.parse(JSON.stringify(originalShapes));
     
+    // Keep track of shapes that will move
+    const movedShapeIds = [];
+    
     // Get indices of shapes to swap
     const shapesToSwap = [];
     const availableIndices = Array.from({ length: shapesCopy.length }, (_, i) => i);
@@ -218,6 +220,8 @@ const EcologicalSpatialMainTask = () => {
       if (availableIndices.length === 0) break;
       const randomIndex = Math.floor(Math.random() * availableIndices.length);
       shapesToSwap.push(availableIndices[randomIndex]);
+      // Store the ID of shapes that will move
+      movedShapeIds.push(shapesCopy[availableIndices[randomIndex]].id);
       availableIndices.splice(randomIndex, 1);
     }
     
@@ -230,12 +234,16 @@ const EcologicalSpatialMainTask = () => {
       shapesCopy[shapesToSwap[i + 1]].position = temp;
     }
     
+    // Get the new positions of moved shapes
+    const swappedPositions = movedShapeIds.map(id => 
+      shapesCopy.find(shape => shape.id === id).position
+    );
+    
     // Log the shapes that were swapped for debugging
-    console.log("Moved shapes:", shapesCopy.filter((shape, index) => 
-      shapesToSwap.includes(index)).map(s => ({
+    console.log("Moved objects:", shapesCopy.filter(shape => 
+      movedShapeIds.includes(shape.id)).map(s => ({
         id: s.id,
         imageName: s.imageName,
-        imageSrc: s.imageSrc,
         position: s.position
       }))
     );
@@ -243,7 +251,7 @@ const EcologicalSpatialMainTask = () => {
     setMovedShapes(shapesCopy);
     return {
       movedShapes: shapesCopy,
-      swappedPositions: shapesToSwap.map(index => shapesCopy[index].position)
+      swappedPositions: swappedPositions
     };
   };
 
@@ -348,45 +356,47 @@ const EcologicalSpatialMainTask = () => {
   const handleSubmit = () => {
     if (phase !== 'response') return;
     
-    // Find all positions that have changed
-    const changedPositions = [];
-    const changedShapePairs = [];
+    // Find all positions that have moved objects
+    const movedPositions = [];
+    const movedObjectPairs = [];
     
-    // Compare original and moved shapes to find all changed positions
+    // Compare original and moved shapes to find all objects that moved
     shapes.forEach(originalShape => {
       const movedShape = movedShapes.find(s => s.id === originalShape.id);
       if (originalShape.position !== movedShape.position) {
-        changedPositions.push(originalShape.position);
-        changedPositions.push(movedShape.position);
-        changedShapePairs.push({
-          from: originalShape.position,
-          to: movedShape.position
+        // Record the current position (in the response grid) of moved objects
+        movedPositions.push(movedShape.position);
+        movedObjectPairs.push({
+          id: originalShape.id,
+          imageName: originalShape.imageName,
+          fromPosition: originalShape.position,
+          toPosition: movedShape.position
         });
       }
     });
     
-    // Count correct selections (shapes that changed and were selected)
-    const correctSelections = selectedCells.filter(pos => changedPositions.includes(pos));
+    // Count correct selections (objects that moved and were selected)
+    const correctSelections = selectedCells.filter(pos => movedPositions.includes(pos));
     
-    // Count incorrect selections (shapes that didn't change but were selected)
-    const incorrectSelections = selectedCells.filter(pos => !changedPositions.includes(pos));
+    // Count incorrect selections (objects that didn't move but were selected)
+    const incorrectSelections = selectedCells.filter(pos => !movedPositions.includes(pos));
     
     // Calculate level score (correct - incorrect)
     const levelScore = Math.max(0, correctSelections.length - incorrectSelections.length);
     
-    // Check if level was passed (score >= 50% of possible changes)
-    const possibleChanges = changedPositions.length;
-    const isLevelPassed = levelScore >= possibleChanges * 0.5;
+    // Check if level was passed (score >= 50% of possible moved objects)
+    const totalMovedObjects = movedPositions.length;
+    const isLevelPassed = levelScore >= totalMovedObjects * 0.5;
     
-    console.log(`Level ${currentLevel}, Trial ${trialCount}: Passed = ${isLevelPassed}, Score = ${levelScore}/${possibleChanges}`);
+    console.log(`Level ${currentLevel}: Score = ${levelScore}/${totalMovedObjects} (${correctSelections.length} correct, ${incorrectSelections.length} incorrect)`);
     
     // Provide feedback
-    if (correctSelections.length === changedPositions.length && incorrectSelections.length === 0) {
-      setFeedbackMessage('Perfect! You identified all the changes correctly.');
+    if (correctSelections.length === totalMovedObjects && incorrectSelections.length === 0) {
+      setFeedbackMessage('Perfect! You correctly identified all the objects that moved.');
     } else if (correctSelections.length > 0) {
-      setFeedbackMessage(`You identified ${correctSelections.length} out of ${changedPositions.length} changes correctly, with ${incorrectSelections.length} incorrect selections.`);
+      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedObjects} moved objects, with ${incorrectSelections.length} incorrect selections.`);
     } else {
-      setFeedbackMessage('You didn\'t identify any changes correctly.');
+      setFeedbackMessage(`You didn't identify any moved objects correctly. ${totalMovedObjects} objects moved in this level.`);
     }
     
     // Store result for current attempt
@@ -394,10 +404,9 @@ const EcologicalSpatialMainTask = () => {
       level: currentLevel,
       correctSelections: correctSelections.length,
       incorrectSelections: incorrectSelections.length,
-      totalChanges: changedPositions.length,
+      totalMovedObjects: totalMovedObjects,
       score: levelScore,
-      changedPairs: changedShapePairs,
-      trial: trialCount,
+      movedObjectPairs: movedObjectPairs,
       passed: isLevelPassed
     };
     
@@ -406,7 +415,7 @@ const EcologicalSpatialMainTask = () => {
     
     // Update total score and max score
     setScore(prev => prev + levelScore);
-    setMaxScore(prev => prev + changedPositions.length);
+    setMaxScore(prev => prev + totalMovedObjects);
     
     // If the level was passed, mark it as recorded so we don't repeat it
     if (isLevelPassed) {
@@ -424,87 +433,51 @@ const EcologicalSpatialMainTask = () => {
   const handleNextLevel = () => {
     if (phase !== 'feedback') return;
     
-    // Get the most recent result for the current level and trial
-    const currentLevelResults = results.filter(r => r.level === currentLevel);
-    const latestResult = currentLevelResults[currentLevelResults.length - 1];
+    // Get the most recent result
+    const latestResult = results[results.length - 1];
     
-    // If we're at level 5, always end the game after feedback
+    // After each level, always progress to the next level regardless of performance
+    // End the task when we complete level 5
     if (currentLevel === 5) {
       setCompleted(true);
-      return;
-    }
-    
-    // If the player passed this level, move to the next level
-    if (latestResult && latestResult.passed) {
+    } else {
+      // Move to the next level
       setCurrentLevel(prev => prev + 1);
-      setTrialCount(1);
-      return;
-    }
-    
-    // If this was the first trial and it was failed, go to second trial
-    if (trialCount === 1) {
-      setTrialCount(2);
-      return;
-    }
-    
-    // If this was the second trial and it was failed, end the game
-    if (trialCount === 2) {
-      setCompleted(true);
     }
   };
 
   const exportResults = () => {
     // Prepare CSV content
-    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Changes', 'Score', 'Pass/Fail'];
+    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Moved Objects', 'Score'];
     const csvRows = [headers];
     
-    // Get the best result for each level
-    const bestResults = [];
-    const seenLevels = new Set();
-    
-    // Process results to get best outcome per level
-    results.forEach(result => {
-      if (!seenLevels.has(result.level)) {
-        bestResults.push(result);
-        seenLevels.add(result.level);
-      } else {
-        // Compare with existing result for this level
-        const existingIndex = bestResults.findIndex(r => r.level === result.level);
-        if (existingIndex >= 0) {
-          const existingResult = bestResults[existingIndex];
-          // Replace if this result is better (higher score)
-          if (result.score > existingResult.score) {
-            bestResults[existingIndex] = result;
-          }
-        }
-      }
-    });
-    
     // Add results to CSV
-    bestResults.forEach(result => {
-      const passed = result.score >= result.totalChanges * 0.5 ? 'Pass' : 'Fail';
+    results.forEach(result => {
       csvRows.push([
         result.level,
         result.correctSelections,
         result.incorrectSelections,
-        result.totalChanges,
-        result.score,
-        passed
+        result.totalMovedObjects,
+        result.score
       ]);
     });
     
-    // Add summary row
-    csvRows.push(['Total', '', '', maxScore, score, '']);
+    // Add a summary row
+    const totalScore = results.reduce((sum, r) => sum + r.score, 0);
+    const totalPossible = results.reduce((sum, r) => sum + r.totalMovedObjects, 0);
     
-    // Convert to CSV
+    csvRows.push(['Summary', '', '', totalPossible, totalScore]);
+    
+    // Convert to CSV format
     const csvContent = csvRows.map(row => row.join(',')).join('\n');
     
-    // Create file and download
+    // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'spatial_memory_results.csv');
+    link.setAttribute('download', 'ecological_spatial_results.csv');
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -719,7 +692,7 @@ const EcologicalSpatialMainTask = () => {
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
                         {phase === 'study' && 'Study Phase: Memorize positions'}
                         {phase === 'response' && 'Response Phase: Click moved shapes'}
-                        {phase === 'feedback' && `Feedback: Level ${currentLevel}, Trial ${trialCount}`}
+                        {phase === 'feedback' && `Feedback: Level ${currentLevel}`}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ fontSize: '0.8rem' }}>Level {currentLevel}/5</div>
@@ -785,15 +758,9 @@ const EcologicalSpatialMainTask = () => {
                     }}>
                       <p className="feedback-message" style={{ fontSize: '1.1rem', margin: '0 0 10px' }}>{feedbackMessage}</p>
                       <p style={{ fontSize: '0.9rem', color: '#666', margin: '0 0 10px' }}>
-                        {trialCount === 1 ? (
-                          isLevelComplete(currentLevel) ? 
-                            `First attempt successful! You'll move to level ${currentLevel < 5 ? currentLevel + 1 : 'complete'} next.` : 
-                            "First attempt unsuccessful. You'll get one more try."
-                        ) : (
-                          isLevelComplete(currentLevel) ?
-                            `Second attempt successful! You'll move to level ${currentLevel < 5 ? currentLevel + 1 : 'complete'} next.` :
-                            "Second attempt unsuccessful. The task will end now."
-                        )}
+                        {currentLevel < 5 ? 
+                          `Moving to level ${currentLevel + 1} next.` : 
+                          "This is the final level. The task will end now."}
                       </p>
                       
                       {renderGrid()}
@@ -884,16 +851,14 @@ const EcologicalSpatialMainTask = () => {
               boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
             }}>
               <button 
+                onClick={handleNextLevel} 
                 className="spatial-button next-button"
-                onClick={handleNextLevel}
                 style={{
                   width: '200px',
                   margin: '0 auto'
                 }}
               >
-                {currentLevel === 5 ? 'Show Final Results' : 
-                  (isLevelComplete(currentLevel) ? 'Next Level' : 
-                    (trialCount === 1 ? 'Try Again' : 'End Task'))}
+                {currentLevel === 5 ? 'Show Final Results' : 'Next Level'}
               </button>
             </div>
           )}

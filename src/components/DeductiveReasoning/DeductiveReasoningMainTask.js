@@ -12,60 +12,15 @@ const DeductiveReasoningMainTask = () => {
   // Define the main puzzles (Wason Selection Tasks)
   const mainPuzzles = [
     {
-      question: "If a card has a vowel on one side, then it has an even number on the other side.",
+      question: "If a vowel is on one side of a card, then an even number is on the other side.",
       cards: [
         { front: "A", back: "4", type: "text", cardType: "text-card" },
-        { front: "K", back: "7", type: "text", cardType: "text-card" },
-        { front: "2", back: "U", type: "text", cardType: "text-card" },
+        { front: "B", back: "7", type: "text", cardType: "text-card" },
+        { front: "2", back: "K", type: "text", cardType: "text-card" },
         { front: "7", back: "E", type: "text", cardType: "text-card" }
       ],
       correctCards: [0, 3],  // A and 7 (0-indexed)
       explanation: "Correct answer: A and 7. You need to check if A has an even number on the back (the rule requires this) and if 7 has a vowel on the back (which would break the rule)."
-    },
-    {
-      question: "If a student passes all their exams, then they graduate.",
-      cards: [
-        { front: "Passed all exams", back: "Graduated", type: "text", cardType: "text-card" },
-        { front: "Failed some exams", back: "Did not graduate", type: "text", cardType: "text-card" },
-        { front: "Graduated", back: "Passed all exams", type: "text", cardType: "text-card" },
-        { front: "Did not graduate", back: "Failed some exams", type: "text", cardType: "text-card" }
-      ],
-      correctCards: [0, 3],  // "Passed all exams" and "Did not graduate"
-      explanation: "Correct answer: 'Passed all exams' and 'Did not graduate'. You need to check if someone who passed all exams graduated (the rule requires this) and if someone who didn't graduate passed all exams (which would break the rule)."
-    },
-    {
-      question: "If a person is drinking alcohol, then they must be over 21 years old.",
-      cards: [
-        { front: "Drinking alcohol", back: "25 years old", type: "text", cardType: "text-card" },
-        { front: "Drinking soda", back: "16 years old", type: "text", cardType: "text-card" },
-        { front: "30 years old", back: "Drinking alcohol", type: "text", cardType: "text-card" },
-        { front: "17 years old", back: "Drinking alcohol", type: "text", cardType: "text-card" }
-      ],
-      correctCards: [0, 3],  // "Drinking alcohol" and "17 years old"
-      explanation: "Correct answer: 'Drinking alcohol' and '17 years old'. You need to check if someone drinking alcohol is over 21 (the rule requires this) and if someone who is 17 is drinking alcohol (which would break the rule)."
-    },
-    {
-      question: "If it's raining, then the ground is wet.",
-      cards: [
-        { front: "Raining", back: "Ground is wet", type: "text", cardType: "text-card" },
-        { front: "Not raining", back: "Ground is dry", type: "text", cardType: "text-card" },
-        { front: "Ground is wet", back: "Raining", type: "text", cardType: "text-card" },
-        { front: "Ground is dry", back: "Not raining", type: "text", cardType: "text-card" }
-      ],
-      correctCards: [0, 3],  // "Raining" and "Ground is dry"
-      explanation: "Correct answer: 'Raining' and 'Ground is dry'. You need to check if when it's raining the ground is wet (the rule requires this) and if when the ground is dry it's not raining (to verify the rule is consistent)."
-    },
-    // Adding examples from the original JavaScript Task7Module with visual elements
-    {
-      question: "If a card has a consonant on one side, then it has an odd number on the other side.",
-      cards: [
-        { front: "Z", back: "7", type: "text", cardType: "text-card" },
-        { front: "E", back: "2", type: "text", cardType: "text-card" },
-        { front: "4", back: "B", type: "text", cardType: "text-card" },
-        { front: "7", back: "F", type: "text", cardType: "text-card" }
-      ],
-      correctCards: [0, 2],  // Z and 4
-      explanation: "Correct answer: Z and 4. You need to check the Z card (consonant, to verify it has an odd number on the other side) and the 4 card (even number, to verify it doesn't have a consonant on the other side)."
     },
     {
       question: "If a card has an even number on one side, then it has the color yellow on the other side.",

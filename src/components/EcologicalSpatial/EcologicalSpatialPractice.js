@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
-// Import images from Ecoimages folder
+// Import images from Ecoimages folder with correct paths
 const dog = '/ecoimages/dog.jpg';
 const cat = '/ecoimages/cat.jpg';
 const bird = '/ecoimages/bird.jpg';
@@ -132,14 +132,24 @@ const EcologicalSpatialPractice = () => {
     } while (pos1 === pos2);
     
     // Store which positions were swapped for later evaluation
-    const changedPositions = [pos1, pos2];
-    setMovedPositions(changedPositions);
+    // These are the positions in the FINAL arrangement where objects moved
+    const movedShapeIds = [
+      shapesCopy.find(s => s.position === pos1).id,
+      shapesCopy.find(s => s.position === pos2).id
+    ];
     
     // Swap the positions
     const temp = shapesCopy[pos1].position;
     shapesCopy[pos1].position = shapesCopy[pos2].position;
     shapesCopy[pos2].position = temp;
     
+    // Now set the moved positions based on where these objects ended up
+    const movedPositionsAfterSwap = [
+      shapesCopy.find(s => s.id === movedShapeIds[0]).position,
+      shapesCopy.find(s => s.id === movedShapeIds[1]).position
+    ];
+    
+    setMovedPositions(movedPositionsAfterSwap);
     setMovedShapes(shapesCopy);
     return shapesCopy;
   };
@@ -223,14 +233,15 @@ const EcologicalSpatialPractice = () => {
     const correctSelections = selectedCells.filter(pos => changedPositions.includes(pos));
     const incorrectSelections = selectedCells.filter(pos => !changedPositions.includes(pos));
     
-    if (correctSelections.length === changedPositions.length && incorrectSelections.length === 0) {
-      setFeedbackMessage('Perfect! You correctly identified the shapes that changed position.');
+    // Get total number of moved objects
+    const totalMovedObjects = changedPositions.length;
+    
+    if (correctSelections.length === totalMovedObjects && incorrectSelections.length === 0) {
+      setFeedbackMessage('Perfect! You correctly identified all the objects that moved.');
     } else if (correctSelections.length > 0) {
-      setFeedbackMessage(`You identified ${correctSelections.length} out of ${changedPositions.length} changes correctly, with ${incorrectSelections.length} incorrect selections.`);
+      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedObjects} moved objects, with ${incorrectSelections.length} incorrect selections.`);
     } else {
-      // Add 1 to each position for user-friendly numbering (starting from 1 instead of 0)
-      const positionDisplay = changedPositions.map(pos => pos + 1).join(' and ');
-      setFeedbackMessage(`You didn't identify any changes correctly. The correct answer was shapes ${positionDisplay}.`);
+      setFeedbackMessage(`You didn't identify any moved objects correctly. ${totalMovedObjects} objects moved in this trial.`);
     }
     
     setPhase('feedback');
@@ -401,7 +412,7 @@ const EcologicalSpatialPractice = () => {
     return (
       <div className="response-phase">
         <h2 className="phase-title">Response Phase</h2>
-        <p className="response-instruction">Click on the objects that changed position</p>
+        <p className="response-instruction">Click on the objects that moved</p>
           
           <div className="grid-container practice" style={getResponsiveGridStyles().gridStyles}>
             {Array(5).fill().map((_, i) => {
@@ -462,6 +473,10 @@ const EcologicalSpatialPractice = () => {
             })}
           </div>
           
+          <div className="response-hint">
+            <p>Remember: You need to identify all objects that moved positions.</p>
+          </div>
+          
           <button 
           onClick={handleSubmit} 
             className="spatial-button submit-button"
@@ -486,16 +501,16 @@ const EcologicalSpatialPractice = () => {
           <div className="grid-container practice" style={getResponsiveGridStyles().gridStyles}>
             {Array(5).fill().map((_, i) => {
               const shape = movedShapes.find(s => s.position === i);
-              const didChange = movedPositions.includes(i);
+              const didMove = movedPositions.includes(i);
             const { imageSize } = getResponsiveGridStyles();
               
               return (
                 <div 
                   key={i} 
-                  className={`grid-cell ${didChange ? 'selected' : ''}`}
+                  className={`grid-cell ${didMove ? 'moved' : ''}`}
                   style={{ 
-                    background: didChange ? '#e3f2fd' : 'white',
-                    border: didChange ? '2px solid #2196F3' : '1px solid #ddd',
+                    background: didMove ? '#e3f2fd' : 'white',
+                    border: didMove ? '2px solid #2196F3' : '1px solid #ddd',
                     borderRadius: '4px',
                     transition: 'all 0.2s ease',
                     padding: '5px',
@@ -537,6 +552,10 @@ const EcologicalSpatialPractice = () => {
                 </div>
               );
             })}
+          </div>
+          
+          <div className="feedback-explanation">
+            <p>The highlighted objects are the ones that moved.</p>
           </div>
           
         <div className="button-container" style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}>

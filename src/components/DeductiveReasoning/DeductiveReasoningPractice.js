@@ -11,15 +11,15 @@ const DeductiveReasoningPractice = () => {
   
   // Define practice puzzle (Wason Selection Task)
   const practicePuzzle = {
-    question: "If a card has a circle on one side, then it has the color yellow on the other side.",
+    question: "If a card shows a king on one side, then it has a heart symbol on the other side.",
     cards: [
-      { front: "yellow", back: "square", type: "color", cardType: "color-card yellow" },
-      { front: "red", back: "circle", type: "color", cardType: "color-card red" },
-      { front: "square", back: "red", type: "shape", cardType: "shape-card" },
-      { front: "circle", back: "yellow", type: "shape", cardType: "shape-card" }
+      { front: "King", back: "Heart", type: "text", cardType: "text-card" },
+      { front: "Queen", back: "Spade", type: "text", cardType: "text-card" },
+      { front: "Heart", back: "Jack", type: "text", cardType: "text-card" },
+      { front: "Diamond", back: "King", type: "text", cardType: "text-card" }
     ],
-    correctCards: [3, 1],  // Circle and Red (0-indexed)
-    explanation: "You need to check the circle card (to see if it has yellow on the other side) and the red card (to make sure it doesn't have a circle on the other side)."
+    correctCards: [0, 3],  // "King" and "Diamond"
+    explanation: "You need to check the 'King' card (to see if it has a heart on the other side) and the 'Diamond' card (to make sure it doesn't have a king on the other side, which would break the rule)."
   };
 
   // Component state

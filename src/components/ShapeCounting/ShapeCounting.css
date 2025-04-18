@@ -45,6 +45,10 @@
   background-color: #FF9800;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #FFB74D, #FF9800);
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Response Section */
@@ -577,6 +581,7 @@
   .shape.circle {
     width: 80px;
     height: 80px;
+    aspect-ratio: 1/1;
   }
   
   .response-section, .feedback-section, .results-section {
@@ -689,6 +694,10 @@
   background-color: #FF9800;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #FFB74D, #FF9800);
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Example Counts */
@@ -847,6 +856,10 @@
   background-color: #FF9800;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #FFB74D, #FF9800);
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .animation-progress {

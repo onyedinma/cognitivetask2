@@ -6,43 +6,43 @@ const IMAGE_PATH = '/images/deductimages/';
 // Practice puzzles
 const puzzles = [
   {
-    question: "You are at a friend's party. There are some cookies on the table. Your friend says: \"If the cookies are chocolate chip, then they're homemade.\" Which cards would you need to turn over to check if this rule is being followed?",
+    question: "If a fruit is red on the outside, then it must be sweet.",
     cards: [
       {
         id: 1,
         type: 'p',
-        front: 'Chocolate Chip Cookie',
-        back: 'Homemade',
-        frontImage: `${IMAGE_PATH}chocolate_chip_cookie.jpg`,
-        backText: 'This cookie is homemade'
+        front: 'Red Apple',
+        back: 'Sweet',
+        frontImage: `${IMAGE_PATH}red_apple.jpg`,
+        backText: 'This fruit is sweet'
       },
       {
         id: 2,
         type: 'not-p',
-        front: 'Vanilla Cookie',
-        back: 'Store-bought',
-        frontImage: `${IMAGE_PATH}vanilla_cookie.jpg`,
-        backText: 'This cookie is store-bought'
+        front: 'Green Apple',
+        back: 'Sour',
+        frontImage: `${IMAGE_PATH}green_apple.jpg`,
+        backText: 'This fruit is sour'
       },
       {
         id: 3,
         type: 'q',
-        front: 'Homemade Cookie',
-        back: 'Chocolate Chip',
-        frontImage: `${IMAGE_PATH}homemade_cookie.jpg`,
-        backText: 'This cookie is chocolate chip'
+        front: 'Sweet Fruit',
+        back: 'Yellow Banana',
+        frontImage: `${IMAGE_PATH}banana.jpg`,
+        backText: 'This fruit is yellow'
       },
       {
         id: 4,
         type: 'not-q',
-        front: 'Store-bought Cookie',
-        back: 'Oatmeal Raisin',
-        frontImage: `${IMAGE_PATH}storebought_cookie.jpg`,
-        backText: 'This cookie is oatmeal raisin'
+        front: 'Sour Fruit',
+        back: 'Red Grapefruit',
+        frontImage: `${IMAGE_PATH}grapefruit.jpg`,
+        backText: 'This fruit is red'
       }
     ],
     correctAnswer: [1, 4],
-    explanation: "You need to check if all chocolate chip cookies are homemade (P implies Q), so you need to check the chocolate chip cookie (P) to see if it's homemade. You also need to check the store-bought cookie (not-Q) to make sure it's not chocolate chip."
+    explanation: "You need to check if all red fruits are sweet (P implies Q), so you need to check the 'Red Apple' card (P) to see if it's sweet. You also need to check the 'Sour Fruit' card (not-Q) to make sure it's not red on the outside."
   }
 ];
 
@@ -131,7 +131,7 @@ const EcologicalDeductiveReasoningPractice = () => {
       setShowExplanation(true);
     } else {
       // Navigate to main task
-      window.location.href = '/ecological-deductive-reasoning/main';
+      window.location.href = '/ecological-deductive/task';
     }
   };
 
