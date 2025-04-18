@@ -55,34 +55,26 @@ const CountingGameMainTask = () => {
   }, []);
   
   // Generate a sequence of random objects
-  const generateSequence = useCallback(() => {
-    const currentLevelConfig = levels[currentLevel - 1];
-    const sequenceLength = currentLevelConfig.objects;
+  const generateSequence = (level) => {
+    const levelConfig = levels[level - 1];
+    const objectCount = levelConfig.objects;
     
     const sequence = [];
     const counts = { bills: 0, buses: 0, faces: 0 };
     
-    // Generate exactly the number of objects for this level
-    for (let i = 0; i < sequenceLength; i++) {
-      const object = ['bill', 'bus', 'face'][Math.floor(Math.random() * 3)];
-      sequence.push(object);
+    for (let i = 0; i < objectCount; i++) {
+      const randomIndex = Math.floor(Math.random() * 3);
+      const objectType = ['bill', 'bus', 'face'][randomIndex];
       
-      // Count occurrences
-      if (object === 'bill') counts.bills++;
-      else if (object === 'bus') counts.buses++;
-      else if (object === 'face') counts.faces++;
-    }
-    
-    // Double-check the total number of objects equals the required amount
-    const totalObjects = counts.bills + counts.buses + counts.faces;
-    console.log(`Level ${currentLevel} - Total objects: ${totalObjects}, Expected: ${sequenceLength}`);
-    
-    if (totalObjects !== sequenceLength) {
-      console.error(`Object count mismatch: got ${totalObjects}, expected ${sequenceLength}`);
+      sequence.push(objectType);
+      
+      if (objectType === 'bill') counts.bills++;
+      if (objectType === 'bus') counts.buses++;
+      if (objectType === 'face') counts.faces++;
     }
     
     return { sequence, counts };
-  }, [currentLevel, levels]);
+  };
   
   // Start showing the objects
   const startSequence = () => {
@@ -102,7 +94,7 @@ const CountingGameMainTask = () => {
     setFaceCount(0);
     
     // Generate a new sequence
-    const { sequence, counts } = generateSequence();
+    const { sequence, counts } = generateSequence(currentLevel);
     console.log(`Level ${currentLevel} - Generated sequence:`, sequence);
     console.log(`Level ${currentLevel} - Correct counts:`, counts);
     

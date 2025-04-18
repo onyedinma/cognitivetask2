@@ -195,7 +195,7 @@ const CountingGamePractice = () => {
   
   return (
     <div className="task-screen">
-      <h1>Counting Game Practice (Level 2: 6 Objects)</h1>
+      <h1>Counting Game Practice</h1>
       
       {showingObjects && (
         <div className="object-display">
