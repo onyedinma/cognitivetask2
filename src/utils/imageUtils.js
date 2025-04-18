@@ -16,21 +16,21 @@ export const getNoCacheUrl = (url) => {
 
 /**
  * Get all image paths from assets directory for preloading
- * @returns {Array} Array of image URLs from assets directory
+ * @returns {Array} Array of image URLs from public directory
  */
 export const getPublicImages = () => {
-  // Get images from the assets directory
+  // Get images from the public directory
   const publicImages = [];
   
-  // Add counting images
-  try {
-    const countingContext = require.context('../assets/images/counting', false, /\.(png|jpe?g|svg)$/);
-    countingContext.keys().forEach(key => {
-      publicImages.push(countingContext(key));
-    });
-  } catch (error) {
-    console.warn('Error loading counting images:', error);
-  }
+  // Add counting images (hardcoded since require.context doesn't work with public folder)
+  const countingImages = [
+    '/counting/5dollar.jpg',
+    '/counting/bus.jpg',
+    '/counting/face.jpg'
+  ];
+  
+  // Add images to the array
+  publicImages.push(...countingImages);
   
   return publicImages;
 };

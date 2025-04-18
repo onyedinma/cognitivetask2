@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CountingGame.css';
 
-// Import images
-import dollarBillImage from '../../assets/images/counting/5dollar.jpg';
-import busImage from '../../assets/images/counting/bus.jpg';
-import faceImage from '../../assets/images/counting/face.jpg';
+// Import images - update paths to use public folder
+const dollarBillImage = '/counting/5dollar.jpg';
+const busImage = '/counting/bus.jpg';
+const faceImage = '/counting/face.jpg';
 
 /**
  * CountingGameMainTask component

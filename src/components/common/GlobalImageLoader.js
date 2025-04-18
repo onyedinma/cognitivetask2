@@ -15,9 +15,13 @@ const GlobalImageLoader = () => {
     
     const loadImages = async () => {
       try {
-        // Get images from the counting directory
-        const countingContext = require.context('../../assets/images/counting', false, /\.(png|jpe?g|svg)$/);
-        const imageFiles = countingContext.keys();
+        // Define the counting images (hardcoded since we can't use require.context with public folder)
+        const imageFiles = [
+          '/counting/5dollar.jpg',
+          '/counting/bus.jpg',
+          '/counting/face.jpg'
+        ];
+        
         const totalImages = imageFiles.length;
         
         if (totalImages === 0) {
@@ -42,14 +46,14 @@ const GlobalImageLoader = () => {
         };
         
         // Preload images
-        imageFiles.forEach(key => {
+        imageFiles.forEach(imagePath => {
           const img = new Image();
           img.onload = handleImageLoad;
           img.onerror = () => {
-            console.warn(`Failed to load image: ${key}`);
+            console.warn(`Failed to load image: ${imagePath}`);
             handleImageLoad();
           };
-          img.src = countingContext(key);
+          img.src = imagePath;
           imageElements.push(img);
         });
         
