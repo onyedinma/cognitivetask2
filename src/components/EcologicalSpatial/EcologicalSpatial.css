@@ -143,12 +143,8 @@ div.spatial-screen {
 
 /* Heart shape with consistent size */
 .shape-heart {
-  clip-path: polygon(
-    50% 0%, 60% 10%, 75% 10%, 90% 25%, 100% 40%, 
-    90% 60%, 75% 75%, 60% 85%, 50% 100%,
-    40% 85%, 25% 75%, 10% 60%, 0% 40%, 
-    10% 25%, 25% 10%, 40% 10%
-  );
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  background-color: #e53935 !important; /* Force red color for heart */
 }
 
 /* Timer */

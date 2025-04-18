@@ -27,8 +27,8 @@ const SpatialMemoryMainTask = () => {
   const [results, setResults] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [showReadyButton, setShowReadyButton] = useState(false);
-  const [trialCount, setTrialCount] = useState(1); // Track trials for each level (1 or 2)
-  const [recordedLevels, setRecordedLevels] = useState([]); // Track which levels have been recorded
+  const [trialCount, setTrialCount] = useState(1); // Track trials for each level (always 1)
+  const [recordedLevels, setRecordedLevels] = useState([]); // Track level results
   
   // Refs for timer management and configuration
   const timerRef = useRef(null);
@@ -231,7 +231,7 @@ const SpatialMemoryMainTask = () => {
         readyButtonTimerRef.current = null;
       }
     };
-  }, [currentLevel, trialCount, completed]);
+  }, [currentLevel, completed]);
 
   const handleCellClick = (position) => {
     if (phase !== 'response') return;
@@ -245,53 +245,60 @@ const SpatialMemoryMainTask = () => {
     });
   };
 
-  // This function checks if the current level has been passed in any trial
+  // This function is simplified since we no longer need to check if a level is complete
+  // We keep it to avoid breaking references, but it always returns true
   const isLevelComplete = (levelNum) => {
-    return recordedLevels.includes(levelNum);
+    return true;
   };
 
   const handleSubmit = () => {
     if (phase !== 'response') return;
     
-    // Find all positions that have changed
-    const changedPositions = [];
+    // Find all shapes that have moved from their original positions
+    const movedShapeIds = [];
+    const shapesCurrentPositions = new Map(); // Map of shape ID to its current position
     const changedShapePairs = [];
     
-    // Compare original and moved shapes to find all changed positions
+    // Compare original and moved shapes to find all shapes that moved
     shapes.forEach(originalShape => {
       const movedShape = movedShapes.find(s => s.id === originalShape.id);
       if (originalShape.position !== movedShape.position) {
-        changedPositions.push(originalShape.position);
-        changedPositions.push(movedShape.position);
+        movedShapeIds.push(originalShape.id);
+        // Store only the current position of moved shapes
+        shapesCurrentPositions.set(originalShape.id, movedShape.position);
         changedShapePairs.push({
+          id: originalShape.id,
           from: originalShape.position,
           to: movedShape.position
         });
       }
     });
     
-    // Count correct selections (shapes that changed and were selected)
-    const correctSelections = selectedCells.filter(pos => changedPositions.includes(pos));
+    // Get array of current positions of moved shapes
+    const movedPositions = Array.from(shapesCurrentPositions.values());
     
-    // Count incorrect selections (shapes that didn't change but were selected)
-    const incorrectSelections = selectedCells.filter(pos => !changedPositions.includes(pos));
+    // Count correct selections (current positions of moved shapes that were selected)
+    const correctSelections = selectedCells.filter(pos => movedPositions.includes(pos));
     
-    // Calculate level score (correct - incorrect)
+    // Count incorrect selections (positions that were selected but don't contain moved shapes)
+    const incorrectSelections = selectedCells.filter(pos => !movedPositions.includes(pos));
+    
+    // Calculate level score: +1 for each correct, -1 for each incorrect
     const levelScore = Math.max(0, correctSelections.length - incorrectSelections.length);
     
-    // Check if level was passed (score >= 50% of possible changes)
-    const possibleChanges = changedPositions.length;
-    const isLevelPassed = levelScore >= possibleChanges * 0.5;
+    // Always record the level result
+    const totalMovedShapes = movedShapeIds.length;
+    const isLevelPassed = correctSelections.length > incorrectSelections.length; // Pass if more correct than incorrect
     
-    console.log(`Level ${currentLevel}, Trial ${trialCount}: Passed = ${isLevelPassed}, Score = ${levelScore}/${possibleChanges}`);
+    console.log(`Level ${currentLevel}: Score = ${levelScore}/${totalMovedShapes} (${correctSelections.length} correct, ${incorrectSelections.length} incorrect)`);
     
-    // Provide feedback
-    if (correctSelections.length === changedPositions.length && incorrectSelections.length === 0) {
-      setFeedbackMessage('Perfect! You identified all the changes correctly.');
+    // Provide feedback - focus on the number of shapes that moved
+    if (correctSelections.length === totalMovedShapes && incorrectSelections.length === 0) {
+      setFeedbackMessage('Perfect! You identified all the moved shapes correctly.');
     } else if (correctSelections.length > 0) {
-      setFeedbackMessage(`You identified ${correctSelections.length} out of ${changedPositions.length} changes correctly, with ${incorrectSelections.length} incorrect selections.`);
+      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedShapes} moved shapes, with ${incorrectSelections.length} incorrect selections.`);
     } else {
-      setFeedbackMessage('You didn\'t identify any changes correctly.');
+      setFeedbackMessage(`You didn't identify any moved shapes correctly. There were ${totalMovedShapes} shapes that changed positions.`);
     }
     
     // Store result for current attempt
@@ -299,10 +306,9 @@ const SpatialMemoryMainTask = () => {
       level: currentLevel,
       correctSelections: correctSelections.length,
       incorrectSelections: incorrectSelections.length,
-      totalChanges: changedPositions.length,
+      totalMovedShapes: totalMovedShapes,
       score: levelScore,
       changedPairs: changedShapePairs,
-      trial: trialCount,
       passed: isLevelPassed
     };
     
@@ -311,17 +317,15 @@ const SpatialMemoryMainTask = () => {
     
     // Update total score and max score
     setScore(prev => prev + levelScore);
-    setMaxScore(prev => prev + changedPositions.length);
+    setMaxScore(prev => prev + totalMovedShapes);
     
-    // If the level was passed, mark it as recorded so we don't repeat it
-    if (isLevelPassed) {
-      setRecordedLevels(prev => {
-        if (!prev.includes(currentLevel)) {
-          return [...prev, currentLevel];
-        }
-        return prev;
-      });
-    }
+    // Always add the level to recordedLevels
+    setRecordedLevels(prev => {
+      if (!prev.includes(currentLevel)) {
+        return [...prev, currentLevel];
+      }
+      return prev;
+    });
     
     setPhase('feedback');
   };
@@ -329,38 +333,19 @@ const SpatialMemoryMainTask = () => {
   const handleNextLevel = () => {
     if (phase !== 'feedback') return;
     
-    // Get the most recent result for the current level and trial
-    const currentLevelResults = results.filter(r => r.level === currentLevel);
-    const latestResult = currentLevelResults[currentLevelResults.length - 1];
-    
-    // If we're at level 5, always end the game after feedback
+    // If we're at the last level (5), end the task
     if (currentLevel === 5) {
       setCompleted(true);
       return;
     }
     
-    // If the player passed this level, move to the next level
-    if (latestResult && latestResult.passed) {
-      setCurrentLevel(prev => prev + 1);
-      setTrialCount(1);
-      return;
-    }
-    
-    // If this was the first trial and it was failed, go to second trial
-    if (trialCount === 1) {
-      setTrialCount(2);
-      return;
-    }
-    
-    // If this was the second trial and it was failed, end the game
-    if (trialCount === 2) {
-      setCompleted(true);
-    }
+    // Always move to the next level regardless of performance
+    setCurrentLevel(prev => prev + 1);
   };
 
   const exportResults = () => {
     // Prepare CSV content
-    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Changes', 'Score', 'Pass/Fail'];
+    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Moved Shapes', 'Score', 'Pass/Fail'];
     const csvRows = [headers];
     
     // Get the best result for each level
@@ -387,12 +372,12 @@ const SpatialMemoryMainTask = () => {
     
     // Add results to CSV
     bestResults.forEach(result => {
-      const passed = result.score >= result.totalChanges * 0.5 ? 'Pass' : 'Fail';
+      const passed = result.correctSelections > result.incorrectSelections ? 'Pass' : 'Fail';
       csvRows.push([
         result.level,
         result.correctSelections,
         result.incorrectSelections,
-        result.totalChanges,
+        result.totalMovedShapes,
         result.score,
         passed
       ]);
@@ -601,7 +586,7 @@ const SpatialMemoryMainTask = () => {
                   <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
                     {phase === 'study' && 'Study Phase: Memorize positions'}
                     {phase === 'response' && 'Response Phase: Click moved shapes'}
-                    {phase === 'feedback' && `Feedback: Level ${currentLevel}, Trial ${trialCount}`}
+                    {phase === 'feedback' && `Feedback: Level ${currentLevel}`}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ fontSize: '0.8rem' }}>Level {currentLevel}/5</div>
@@ -667,15 +652,10 @@ const SpatialMemoryMainTask = () => {
                 }}>
                   <p className="feedback-message" style={{ fontSize: '1.1rem', margin: '0 0 10px' }}>{feedbackMessage}</p>
                   <p style={{ fontSize: '0.9rem', color: '#666', margin: '0 0 10px' }}>
-                    {trialCount === 1 ? (
-                      isLevelComplete(currentLevel) ? 
-                        `First attempt successful! You'll move to level ${currentLevel < 5 ? currentLevel + 1 : 'complete'} next.` : 
-                        "First attempt unsuccessful. You'll get one more try."
-                    ) : (
-                      isLevelComplete(currentLevel) ?
-                        `Second attempt successful! You'll move to level ${currentLevel < 5 ? currentLevel + 1 : 'complete'} next.` :
-                        "Second attempt unsuccessful. The task will end now."
-                    )}
+                    {currentLevel < 5 ? 
+                      `Level ${currentLevel} completed. Moving to level ${currentLevel + 1} next.` : 
+                      "Level 5 completed. This is the final level."
+                    }
                   </p>
                   
                   {renderGrid()}
@@ -773,9 +753,7 @@ const SpatialMemoryMainTask = () => {
               margin: '0 auto'
             }}
           >
-            {currentLevel === 5 ? 'Show Final Results' : 
-              (isLevelComplete(currentLevel) ? 'Next Level' : 
-                (trialCount === 1 ? 'Try Again' : 'End Task'))}
+            {currentLevel === 5 ? 'Show Final Results' : 'Next Level'}
           </button>
         </div>
       )}
