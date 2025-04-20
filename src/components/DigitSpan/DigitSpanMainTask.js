@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { TASK_CONFIG } from '../../config';
+import { getNextTask } from '../../utils/taskSequence';
 import './DigitSpan.css';
 
 /**
@@ -274,8 +275,16 @@ const DigitSpanMainTask = () => {
     
     localStorage.setItem('digitSpanResults', JSON.stringify(updatedResults));
     
-    // Navigate back to the main tasks screen
-    navigate('/');
+    // Navigate to the next task in the sequence
+    const currentTaskId = isBackward ? 'digit-span-backward' : 'digit-span-forward';
+    const nextTask = getNextTask(currentTaskId);
+    
+    if (nextTask) {
+      navigate(nextTask.path);
+    } else {
+      // If no next task, navigate back to home
+      navigate('/');
+    }
   };
   
   return (

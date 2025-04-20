@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DeductiveReasoning.css';
+import { getNextTask, isLastTask } from '../../utils/taskSequence';
 
 /**
  * DeductiveReasoningMainTask component
@@ -8,6 +9,9 @@ import './DeductiveReasoning.css';
  */
 const DeductiveReasoningMainTask = () => {
   const navigate = useNavigate();
+  
+  // Current task ID for sequence navigation
+  const currentTaskId = 'deductive-reasoning';
   
   // Define the main puzzles (Wason Selection Tasks)
   const mainPuzzles = [
@@ -152,6 +156,48 @@ const DeductiveReasoningMainTask = () => {
     
     navigate('/home');
   };
+  
+  // Navigate to the next task in the sequence
+  const handleNextTask = () => {
+    // Save results first (same as handleComplete)
+    try {
+      const studentId = localStorage.getItem('studentId') || 'unknown';
+      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
+      
+      const exportData = {
+        task: 'deductive_reasoning',
+        studentId: studentId,
+        counterBalance: counterBalance,
+        results: results,
+        timestamp: new Date().toISOString(),
+        score: {
+          correct: results.filter(result => result.isCorrect).length,
+          total: results.length,
+          accuracy: results.length > 0 
+            ? Math.round((results.filter(result => result.isCorrect).length / results.length) * 100) 
+            : 0
+        }
+      };
+      
+      // Get existing results or initialize new array
+      const existingResults = JSON.parse(localStorage.getItem('taskResults') || '[]');
+      existingResults.push(exportData);
+      localStorage.setItem('taskResults', JSON.stringify(existingResults));
+      
+      console.log('Deductive Reasoning results saved:', exportData);
+    } catch (error) {
+      console.error('Error saving results:', error);
+    }
+    
+    // Get the next task and navigate to it
+    const nextTask = getNextTask(currentTaskId);
+    if (nextTask) {
+      navigate(nextTask.path);
+    } else {
+      // If there's no next task, go home
+      navigate('/home');
+    }
+  };
 
   // Render shape based on type
   const renderShape = (shape) => {
@@ -173,6 +219,10 @@ const DeductiveReasoningMainTask = () => {
     const totalCount = results.length;
     const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
     
+    // Get the next task in the sequence
+    const nextTask = getNextTask(currentTaskId);
+    const isLast = isLastTask(currentTaskId);
+    
     return (
       <div className="deductive-screen">
         <div className="deductive-content">
@@ -189,12 +239,23 @@ const DeductiveReasoningMainTask = () => {
             </div>
           </div>
           
-          <button 
-            className="deductive-button complete-button" 
-            onClick={handleComplete}
-          >
-            Complete Task
-          </button>
+          <div className="deductive-navigation">
+            {!isLast && nextTask && (
+              <button 
+                className="deductive-button next-task-button" 
+                onClick={handleNextTask}
+              >
+                Continue to {nextTask.name}
+              </button>
+            )}
+            
+            <button 
+              className="deductive-button complete-button" 
+              onClick={handleComplete}
+            >
+              Return to Home
+            </button>
+          </div>
         </div>
       </div>
     );

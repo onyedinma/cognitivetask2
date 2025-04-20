@@ -10,10 +10,8 @@ const ObjectSpanMainTask = () => {
   
   // State variables
   const [currentState, setCurrentState] = useState('ready'); // ready, displaying, responding, feedback, complete
-  const [sequence, setSequence] = useState([]);
-  const [currentSpan, setCurrentSpan] = useState(TASK_CONFIG.objectSpan.minSpan);
-  const [currentAttempt, setCurrentAttempt] = useState(1);
   const [currentRound, setCurrentRound] = useState(1);
+  const [currentAttempt, setCurrentAttempt] = useState(1);
   const [maxSpanReached, setMaxSpanReached] = useState(0);
   const [userResponse, setUserResponse] = useState('');
   const [lastResponse, setLastResponse] = useState('');
@@ -24,8 +22,16 @@ const ObjectSpanMainTask = () => {
   const [studentId, setStudentId] = useState('');
   const [counterBalance, setCounterBalance] = useState('');
   
+  // Store the current sequence separately
+  const [currentSequence, setCurrentSequence] = useState([]);
+  
   const responseInputRef = useRef(null);
   const isBackward = direction === 'backward';
+
+  // Calculate the span for a given round
+  const getSpanForRound = (round) => {
+    return TASK_CONFIG.objectSpan.minSpan + (round - 1);
+  };
 
   // Load student info from localStorage
   useEffect(() => {
@@ -34,29 +40,57 @@ const ObjectSpanMainTask = () => {
     
     setStudentId(savedStudentId);
     setCounterBalance(savedCounterBalance);
+    
+    // Generate initial sequence for round 1
+    prepareRound(1, 1);
   }, []);
 
-  // Generate a sequence
-  const generateSequence = () => {
+  // Generate a new sequence for the specified round
+  const generateSequenceForRound = (round) => {
+    const spanLength = getSpanForRound(round);
+    console.log(`Generating sequence for Round ${round} with span ${spanLength}`);
+    
     const newSequence = [];
-    for (let i = 0; i < currentSpan; i++) {
+    for (let i = 0; i < spanLength; i++) {
       // Random object from 1-9
       const randomObjectId = Math.floor(Math.random() * 9) + 1;
       newSequence.push(randomObjectId);
     }
     return newSequence;
   };
-
-  // Start displaying sequence
-  const startSequence = () => {
+  
+  // Prepare for a new round/attempt
+  const prepareRound = (round, attempt) => {
+    console.log(`Preparing Round ${round}, Attempt ${attempt}`);
+    
+    // Generate the sequence for this round
+    const sequence = generateSequenceForRound(round);
+    
+    // Update state with the new sequence
+    setCurrentSequence(sequence);
+    setCurrentRound(round);
+    setCurrentAttempt(attempt);
+    
+    // Schedule starting the sequence
+    setTimeout(() => {
+      startDisplayingSequence(sequence);
+    }, 50);
+  };
+  
+  // Start displaying a given sequence
+  const startDisplayingSequence = (sequence) => {
+    console.log(`Starting to display sequence with ${sequence.length} objects`);
+    
     setCurrentState('displaying');
     setCurrentIndex(0);
-    const newSequence = generateSequence();
-    setSequence(newSequence);
-    setCurrentObject(TASK_CONFIG.objectSpan.objectMapping[newSequence[0]]);
     
-    // Schedule display of objects
-    displayObjects(newSequence);
+    // Show the first object
+    if (sequence.length > 0) {
+      setCurrentObject(TASK_CONFIG.objectSpan.objectMapping[sequence[0]]);
+    }
+    
+    // Display the objects one by one
+    displayObjects(sequence);
   };
   
   // Display objects one by one
@@ -109,7 +143,7 @@ const ObjectSpanMainTask = () => {
     }
     
     // Get expected sequence of object names
-    let expectedSequence = sequence.map(index => 
+    let expectedSequence = currentSequence.map(index => 
       TASK_CONFIG.objectSpan.objectMapping[index].name
     );
     
@@ -151,6 +185,9 @@ const ObjectSpanMainTask = () => {
       }
     }
     
+    // Calculate the current span based on the round
+    const currentSpan = getSpanForRound(currentRound);
+    
     // Store the result
     const newResult = {
       participant_id: studentId,
@@ -181,66 +218,39 @@ const ObjectSpanMainTask = () => {
   // Handle task response based on correctness
   const handleTaskResponse = (responseIsCorrect) => {
     if (responseIsCorrect) {
-      // If this was the first attempt at this span length
-      if (currentAttempt === 1) {
-        // Move to next span length
-        const newSpan = currentSpan + 1;
-        setCurrentSpan(newSpan);
-        setCurrentAttempt(1);
-        setMaxSpanReached(Math.max(maxSpanReached, currentSpan));
-        
-        // Check if we've reached the maximum span
-        if (newSpan > TASK_CONFIG.objectSpan.maxSpan) {
-          // Reached maximum span, end task
-          setCurrentState('complete');
-          return;
-        }
-        
-        // Check if we've completed all rounds
-        const newRound = currentRound + 1;
-        setCurrentRound(newRound);
-        if (newRound > TASK_CONFIG.objectSpan.mainTaskRounds) {
-          // Completed all rounds, end task
-          setCurrentState('complete');
-          return;
-        } else {
-          // Continue with next span length
-          startSequence();
-        }
-      } else {
-        // Second successful attempt, move to next span
-        const newSpan = currentSpan + 1;
-        setCurrentSpan(newSpan);
-        setCurrentAttempt(1);
-        setMaxSpanReached(Math.max(maxSpanReached, currentSpan));
-        
-        // Check if we've reached the maximum span
-        if (newSpan > TASK_CONFIG.objectSpan.maxSpan) {
-          // Reached maximum span, end task
-          setCurrentState('complete');
-          return;
-        }
-        
-        // Check if we've completed all rounds
-        const newRound = currentRound + 1;
-        setCurrentRound(newRound);
-        if (newRound > TASK_CONFIG.objectSpan.mainTaskRounds) {
-          // Completed all rounds, end task
-          setCurrentState('complete');
-          return;
-        } else {
-          // Continue with next span length
-          startSequence();
-        }
+      // Record current max span reached
+      const currentSpan = getSpanForRound(currentRound);
+      setMaxSpanReached(prevMax => Math.max(prevMax, currentSpan));
+      
+      // Move to next round
+      const newRound = currentRound + 1;
+      
+      // Check if we've completed all rounds
+      if (newRound > TASK_CONFIG.objectSpan.mainTaskRounds) {
+        // Completed all rounds, end task
+        setCurrentState('complete');
+        return;
       }
+      
+      // Calculate the span for the next round
+      const newSpan = getSpanForRound(newRound);
+      
+      // Check if we've reached the maximum span
+      if (newSpan > TASK_CONFIG.objectSpan.maxSpan) {
+        // Reached maximum span, end task
+        setCurrentState('complete');
+        return;
+      }
+      
+      // Prepare for the next round
+      prepareRound(newRound, 1);
     } else {
-      // If this was the first attempt and we haven't exceeded rounds
-      if (currentAttempt === 1 && currentRound <= TASK_CONFIG.objectSpan.mainTaskRounds) {
+      // If this was the first attempt, give a second chance
+      if (currentAttempt === 1) {
         // Give second attempt at same span length
-        setCurrentAttempt(2);
-        startSequence();
+        prepareRound(currentRound, 2);
       } else {
-        // Failed both attempts or exceeded rounds, end task
+        // Failed both attempts, end the task
         setCurrentState('complete');
         return;
       }
@@ -274,11 +284,6 @@ const ObjectSpanMainTask = () => {
     UTILS.downloadCSV(csvContent, filename);
   };
   
-  // Start sequence when component mounts
-  useEffect(() => {
-    startSequence();
-  }, []);
-
   // Navigation handlers
   const handleBackToTasks = () => {
     navigate('/object-span');
@@ -312,11 +317,11 @@ const ObjectSpanMainTask = () => {
             )}
           </div>
           <p className="sequence-progress">
-            Object {currentIndex + 1} of {sequence.length}
+            Object {currentIndex + 1} of {currentSequence.length}
           </p>
           <p className="task-progress">
             Round {currentRound}/{TASK_CONFIG.objectSpan.mainTaskRounds} | 
-            Span {currentSpan} | 
+            Span {getSpanForRound(currentRound)} | 
             Attempt {currentAttempt}
           </p>
         </div>
@@ -343,7 +348,7 @@ const ObjectSpanMainTask = () => {
           <p className="hint">Separate object names with spaces. Names are not case-sensitive.</p>
           <div className="task-metadata-inline">
             <p>Round {currentRound}/{TASK_CONFIG.objectSpan.mainTaskRounds} • 
-            Span {currentSpan} • 
+            Span {getSpanForRound(currentRound)} • 
             Attempt {currentAttempt}</p>
           </div>
           
