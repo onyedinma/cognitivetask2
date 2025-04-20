@@ -162,8 +162,8 @@
 }
 
 .object-display {
-  width: 160px;
-  height: 160px;
+  width: 200px;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -171,8 +171,8 @@
 }
 
 .object-image {
-  max-width: 130px;
-  max-height: 130px;
+  max-width: 180px;
+  max-height: 180px;
   object-fit: contain;
 }
 
@@ -511,8 +511,8 @@
 }
 
 .example-object {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
   margin: 0 5px;
 }
@@ -611,8 +611,18 @@
   }
   
   .object-display {
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
+  }
+  
+  .object-image {
+    max-width: 160px;
+    max-height: 160px;
+  }
+  
+  .example-object {
+    width: 80px;
+    height: 80px;
   }
 }
 

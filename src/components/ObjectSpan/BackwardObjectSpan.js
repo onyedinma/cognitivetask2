@@ -60,10 +60,6 @@ const BackwardObjectSpan = () => {
     navigate('/object-span/backward/practice');
   };
 
-  const navigateBack = () => {
-    navigate('/object-span');
-  };
-
   // Show loading screen if images are not loaded
   if (!imagesLoaded) {
     return (
@@ -108,10 +104,6 @@ const BackwardObjectSpan = () => {
 
       <button onClick={startPractice} className="start-button">
         Start Practice
-      </button>
-      
-      <button onClick={navigateBack} className="back-button">
-        Back to Object Span Tasks
       </button>
     </div>
   );
