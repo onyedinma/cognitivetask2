@@ -318,7 +318,7 @@ const DigitSpanMainTask = () => {
     <div className="task-screen">
       {!taskComplete ? (
         <>
-          <h1>{title} - Span {currentSpan} (Attempt {currentAttempt}/2)</h1>
+          <h1>{title}</h1>
           
           {showingSequence && (
             <div className="digit-display">

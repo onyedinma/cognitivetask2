@@ -35,8 +35,6 @@ const ForwardDigitSpan = () => {
       <button onClick={startPractice} className="start-button">
         Start Practice
       </button>
-      
-      <Link to="/digit-span" className="back-button">Back to Digit Span</Link>
     </div>
   );
 };

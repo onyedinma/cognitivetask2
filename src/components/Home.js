@@ -1,47 +1,78 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 
 const Home = () => {
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const startAssessment = () => {
+    // Navigate to Forward Digit Span task
+    navigate('/digit-span/forward');
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
   return (
     <div className="welcome-screen">
       <h1>Cognitive Task Assessment</h1>
-      <p>Welcome to the React-based implementation of the Cognitive Tasks.</p>
-      <p>Please choose a task to begin:</p>
       
-      <div className="task-buttons">
-        <Link to="/object-span" className="task-button">
-          Object Span Task
-        </Link>
-        <Link to="/digit-span" className="task-button">
-          Digit Span Task
-        </Link>
-        <Link to="/shape-counting" className="task-button">
-          Shape Counting Task
-        </Link>
-        <Link to="/counting-game" className="task-button">
-          Counting Game (Ecological)
-        </Link>
-        <Link to="/spatial-memory" className="task-button">
-          Spatial Working Memory
-        </Link>
-        <Link to="/ecological-spatial" className="task-button">
-          Ecological Spatial Memory
-        </Link>
-        <Link to="/ecological-deductive" className="task-button">
-          Ecological Deductive Reasoning
-        </Link>
-        <Link to="/deductive-reasoning" className="task-button">
-          Deductive Reasoning
-        </Link>
-        <Link to="/combined-questionnaire" className="task-button">
-          Questionnaires
-        </Link>
-        {/* Add more task buttons as they are implemented */}
+      {/* Menu button */}
+      <div className="menu-container">
+        <button className="menu-button" onClick={toggleMenu}>
+          <span className="menu-icon">≡</span> {menuOpen ? 'Close Menu' : 'Menu'}
+        </button>
+        
+        {/* Dropdown menu */}
+        {menuOpen && (
+          <div className="task-dropdown">
+            <h3>Available Tasks</h3>
+            <Link to="/digit-span/forward" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Forward Digit Span
+            </Link>
+            <Link to="/digit-span/backward" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Backward Digit Span
+            </Link>
+            <Link to="/object-span/forward" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Forward Object Span
+            </Link>
+            <Link to="/object-span/backward" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Backward Object Span
+            </Link>
+            <Link to="/shape-counting" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Shape Counting Task
+            </Link>
+            <Link to="/counting-game" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Counting Game (Ecological)
+            </Link>
+            <Link to="/spatial-memory" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Spatial Working Memory
+            </Link>
+            <Link to="/ecological-spatial" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Ecological Spatial Memory
+            </Link>
+            <Link to="/ecological-deductive" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Ecological Deductive Reasoning
+            </Link>
+            <Link to="/deductive-reasoning" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Deductive Reasoning
+            </Link>
+            <Link to="/combined-questionnaire" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+              Questionnaires
+            </Link>
+          </div>
+        )}
       </div>
       
-      <div className="version-info">
-        <p>This is the modern implementation (v2). <a href="/">Click here for the original version</a>.</p>
+      <div className="start-container">
+        <button 
+          className="start-button" 
+          onClick={startAssessment}
+        >
+          Start Assessment
+        </button>
       </div>
     </div>
   );

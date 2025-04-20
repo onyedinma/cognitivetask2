@@ -3,11 +3,17 @@
   margin: 0 auto;
   padding: 40px 20px;
   text-align: center;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .welcome-screen h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
+  font-size: 2.8rem;
+  margin-bottom: 40px;
   color: #333;
 }
 
@@ -18,68 +24,155 @@
   line-height: 1.5;
 }
 
-.task-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  margin: 40px 0;
+/* Menu styling */
+.menu-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
 }
 
-.task-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 200px;
-  padding: 15px 20px;
+.menu-button {
   background-color: #4285f4;
   color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 500;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.task-button:hover {
+.menu-button:hover {
   background-color: #3367d6;
   transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.version-info {
-  margin-top: 50px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+.menu-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
-.version-info p {
-  font-size: 0.9rem;
-  color: #777;
+.task-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 280px;
+  padding: 15px;
+  text-align: left;
+  z-index: 101;
+  animation: fadeIn 0.3s ease;
 }
 
-.version-info a {
-  color: #4285f4;
+.task-dropdown h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.dropdown-item {
+  display: block;
+  color: #333;
   text-decoration: none;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
-.version-info a:hover {
-  text-decoration: underline;
+.dropdown-item:hover {
+  background-color: #f0f7ff;
+  color: #4285f4;
+  transform: translateX(5px);
 }
 
+/* Start button styling */
+.start-container {
+  margin-top: 40px;
+}
+
+.start-button {
+  background-color: #34a853;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 18px 40px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(52, 168, 83, 0.3);
+  transition: all 0.3s ease;
+  animation: pulse 2s infinite;
+}
+
+.start-button:hover {
+  background-color: #2d9249;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(52, 168, 83, 0.4);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 10px rgba(52, 168, 83, 0.3);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 6px 15px rgba(52, 168, 83, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 10px rgba(52, 168, 83, 0.3);
+  }
+}
+
+/* Responsive styles */
 @media (max-width: 600px) {
   .welcome-screen h1 {
     font-size: 2rem;
+    margin-bottom: 30px;
   }
   
-  .welcome-screen p {
-    font-size: 1rem;
+  .menu-container {
+    top: 10px;
+    right: 10px;
   }
   
-  .task-button {
-    min-width: 150px;
-    padding: 12px 15px;
-    font-size: 1rem;
+  .menu-button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .task-dropdown {
+    width: 250px;
+    top: 45px;
+  }
+  
+  .start-button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
   }
 } 
