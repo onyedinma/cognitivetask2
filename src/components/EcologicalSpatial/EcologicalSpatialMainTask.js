@@ -532,8 +532,8 @@ const EcologicalSpatialMainTask = () => {
   };
 
   const handleNextTask = () => {
-    // Navigate to the Deductive Reasoning task
-    navigate('/deductive-reasoning-task');
+    // Navigate to the standard Deductive Reasoning task
+    navigate('/deductive-reasoning');
   };
 
   // Memoize the grid rendering to prevent unnecessary re-renders
@@ -862,24 +862,27 @@ const EcologicalSpatialMainTask = () => {
           ) : (
             <div className="completion-screen" style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
               <h1>Task Complete!</h1>
-              <p>You've completed the Spatial Memory Task.</p>
-              <p className="score-item">Final score: <span className="score-value">{score} / {maxScore}</span></p>
-              <p className="score-item">Highest level reached: <span className="score-value">{currentLevel}</span></p>
               
-              <div className="action-buttons">
+              <div className="action-buttons" style={{ marginTop: '30px' }}>
                 <button 
                   className="spatial-button next-button" 
                   onClick={handleNextTask} 
                   style={{ 
                     fontSize: '1.2rem', 
                     padding: '12px 24px',
-                    animation: 'pulse 2s infinite' // Add pulsing animation to draw attention
+                    animation: 'pulse 2s infinite', // Add pulsing animation to draw attention
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                    margin: '0 auto',
+                    display: 'block',
+                    minWidth: '250px'
                   }}
                 >
-                  Next Task →
-                </button>
-                <button className="spatial-button home-button" onClick={handleReturnHome}>
-                  Return to Home
+                  Next Task: Deductive Reasoning
                 </button>
               </div>
             </div>
@@ -961,7 +964,7 @@ const EcologicalSpatialMainTask = () => {
               margin: '0 auto'
             }}
           >
-            {currentLevel === 5 ? 'Show Final Results' : 'Next Level'}
+            {currentLevel === 5 ? 'Finish' : 'Next Level'}
           </button>
         </div>
       )}
