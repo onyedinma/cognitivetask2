@@ -223,11 +223,64 @@ const EcologicalDeductiveReasoningMainTask = () => {
       localStorage.setItem('taskResults', JSON.stringify(existingResults));
       
       console.log('Ecological Deductive Reasoning results saved:', exportData);
+      
+      // Export results to CSV
+      const csvData = [];
+      // Add header row
+      csvData.push(['Task', 'Student ID', 'Counter Balance', 'Trial', 'Question', 'Is Correct', 'Selected Cards', 'Correct Cards', 'Timestamp']);
+      
+      // Add data rows
+      results.forEach((result, index) => {
+        csvData.push([
+          'ecological_deductive_reasoning',
+          studentId,
+          counterBalance,
+          index + 1,
+          result.question || '',
+          result.isCorrect ? '1' : '0',
+          JSON.stringify(result.selectedCards || []),
+          JSON.stringify(result.correctCards || []),
+          result.timestamp || ''
+        ]);
+      });
+      
+      // Add summary row
+      const totalCorrect = results.filter(result => result.isCorrect).length;
+      const accuracy = results.length > 0 
+        ? Math.round((totalCorrect / results.length) * 100) 
+        : 0;
+        
+      csvData.push([
+        'ecological_deductive_reasoning_summary',
+        studentId,
+        counterBalance,
+        '',
+        '',
+        `${totalCorrect}/${results.length}`,
+        `${accuracy}%`,
+        '',
+        exportData.timestamp
+      ]);
+      
+      // Create CSV content
+      let csvContent = csvData.map(row => row.join(',')).join('\n');
+      
+      // Create and download CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `ecological_deductive_reasoning_${studentId}_${new Date().toISOString()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
-      console.error('Error saving results:', error);
+      console.error('Error saving or exporting results:', error);
     }
     
-    navigate('/home');
+    // Navigate to the questionnaires task
+    navigate('/combined-questionnaire');
   };
 
   // Render card component
@@ -299,32 +352,36 @@ const EcologicalDeductiveReasoningMainTask = () => {
 
   // Render results screen
   if (showResults) {
-    const correctCount = results.filter(result => result.isCorrect).length;
-    const totalCount = results.length;
-    const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
-    
     return (
       <div className="eco-deductive-screen">
         <div className="eco-deductive-content">
-          <div className="eco-deductive-results">
-            <h2>Results</h2>
-            <div className="eco-results-item">
-              Correct answers: <span className="eco-results-value">{correctCount}</span>
-            </div>
-            <div className="eco-results-item">
-              Total problems: <span className="eco-results-value">{totalCount}</span>
-            </div>
-            <div className="eco-results-item">
-              Accuracy: <span className="eco-results-value">{accuracy}%</span>
+          <div className="completion-screen">
+            <h1>Task Complete</h1>
+            
+            <div className="nav-buttons">
+              <button 
+                className="eco-deductive-button eco-complete-button" 
+                onClick={handleComplete}
+                style={{
+                  fontSize: '1.5rem',
+                  padding: '16px 32px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                  margin: '30px auto',
+                  display: 'block',
+                  minWidth: '300px',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Next Task: Questionnaires
+              </button>
             </div>
           </div>
-          
-          <button 
-            className="eco-deductive-button eco-complete-button" 
-            onClick={handleComplete}
-          >
-            Complete Task
-          </button>
         </div>
       </div>
     );

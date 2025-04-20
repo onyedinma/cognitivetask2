@@ -173,6 +173,10 @@ const CountingGameMainTask = () => {
     } else {
       // Game completed
       setTaskComplete(true);
+      // Automatically export results when task completes
+      setTimeout(() => {
+        exportToCSV();
+      }, 500);
     }
   };
   
@@ -199,6 +203,11 @@ const CountingGameMainTask = () => {
   // Navigate back to tasks menu
   const returnToMenu = () => {
     navigate('/');
+  };
+  
+  // Navigate to the next task (Spatial Working Memory)
+  const handleNextTask = () => {
+    navigate('/spatial-memory');
   };
   
   // Export results to CSV
@@ -394,80 +403,28 @@ const CountingGameMainTask = () => {
       
       {taskComplete && (
         <div className="results-section">
-          <h2>Task Results</h2>
+          <h2>Task Complete!</h2>
           
-          {results.length > 0 && (
-            <>
-              <div className="performance-summary">
-                <h3>Overall Performance</h3>
-                <p>
-                  Highest level reached: <strong>{getLevelName(calculatePerformance().highestLevel)}</strong>
-                </p>
-                <p>
-                  Levels passed: <strong>{calculatePerformance().correct}</strong> out of <strong>{calculatePerformance().total}</strong> 
-                  ({calculatePerformance().percentage}%)
-                </p>
-              </div>
-              
-              <div className="results-table-container">
-                <h3>Level Details</h3>
-                <table className="results-table">
-                  <thead>
-                    <tr>
-                      <th>Level</th>
-                      <th>Objects</th>
-                      <th>$5 Bills</th>
-                      <th>UTA Buses</th>
-                      <th>Faces</th>
-                      <th>Passed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {levels.map((levelConfig) => {
-                      // Find the attempt for this level if it exists
-                      const levelAttempt = results.find(
-                        r => r.level === levelConfig.level
-                      );
-                      
-                      // Only show levels that were attempted
-                      if (!levelAttempt) return null;
-                      
-                      return (
-                        <tr key={levelConfig.level} className={levelAttempt.correct ? 'correct-row' : 'incorrect-row'}>
-                          <td>{levelConfig.level}</td>
-                          <td>{levelConfig.objects}</td>
-                          <td>
-                            {levelAttempt.userCounts.bills}/{levelAttempt.correctCounts.bills}
-                          </td>
-                          <td>
-                            {levelAttempt.userCounts.buses}/{levelAttempt.correctCounts.buses}
-                          </td>
-                          <td>
-                            {levelAttempt.userCounts.faces}/{levelAttempt.correctCounts.faces}
-                          </td>
-                          <td>{levelAttempt.correct ? 'Yes' : 'No'}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              
-              <div className="export-controls">
-                <button 
-                  onClick={exportToCSV} 
-                  className="export-button"
-                  disabled={exportingCSV}
-                >
-                  {exportingCSV ? 'Exporting...' : 'Export Results to CSV'}
-                </button>
-                
-                <button onClick={returnToMenu} className="menu-button">
-                  Return to Tasks Menu
-                </button>
-              </div>
-            </>
-          )}
+          <button 
+            onClick={handleNextTask} 
+            style={{
+              fontSize: '1.5rem',
+              padding: '16px 32px',
+              fontWeight: 'bold',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+              margin: '30px auto',
+              display: 'block',
+              minWidth: '300px',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Next Task: Spatial Working Memory
+          </button>
         </div>
       )}
       

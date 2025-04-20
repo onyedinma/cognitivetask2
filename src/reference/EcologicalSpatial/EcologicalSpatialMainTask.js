@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EcologicalSpatial.css';
 
@@ -80,77 +80,51 @@ const EcologicalSpatialMainTask = () => {
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [showReadyButton, setShowReadyButton] = useState(false);
   const [recordedLevels, setRecordedLevels] = useState([]); // Track which levels have been recorded
-
+  
   // Refs for timer management and configuration
   const timerRef = useRef(null);
   const studyTimerRef = useRef(null);
   const readyButtonTimerRef = useRef(null);
 
-  // More efficient preloading with status tracking
+  // Preload images when component mounts
   useEffect(() => {
-    let isMounted = true; // Track component mount state
     let loadedCount = 0;
     const totalImages = allImagePaths.length;
-    const imageElements = []; // Keep references to avoid memory leaks
     
     const preloadImage = (src) => {
       return new Promise((resolve) => {
         const img = new Image();
-        imageElements.push(img); // Store reference
-        
+        img.src = src;
         img.onload = () => {
-          if (isMounted) {
-            loadedCount++;
-            setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
-          }
-          resolve(true);
+          loadedCount++;
+          setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
+          resolve();
         };
-        
         img.onerror = () => {
           console.warn(`Failed to load image: ${src}`);
-          if (isMounted) {
-            loadedCount++;
-            setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
-          }
-          resolve(false);
+          loadedCount++;
+          setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
+          resolve(); // Resolve anyway to not block other images
         };
-        
-        img.src = src;
       });
     };
 
     const loadAllImages = async () => {
       try {
-        const results = await Promise.all(allImagePaths.map(src => preloadImage(src)));
-        if (isMounted) {
-          console.log(`Successfully loaded ${results.filter(Boolean).length}/${totalImages} images`);
-          setImagesLoaded(true);
-        }
+        await Promise.all(allImagePaths.map(src => preloadImage(src)));
+        setImagesLoaded(true);
       } catch (error) {
         console.error('Error preloading images:', error);
-        if (isMounted) {
-          setImagesLoaded(true); // Continue anyway
-        }
+        setImagesLoaded(true); // Continue anyway
       }
     };
 
     loadAllImages();
-    
-    // Cleanup function to prevent memory leaks and state updates after unmount
-    return () => {
-      isMounted = false;
-      imageElements.forEach(img => {
-        img.onload = null;
-        img.onerror = null;
-      });
-    };
   }, []);
 
-  // Update the useEffect to ensure it doesn't get stuck
+  // Effect for starting new level or cleaning up
   useEffect(() => {
-    console.log(`useEffect triggered. Level: ${currentLevel}, Phase: ${phase}, Completed: ${completed}, ImagesLoaded: ${imagesLoaded}`);
-    
-    // Clean up all timers first
+    // Clear any previous timers when starting a new level
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -164,16 +138,9 @@ const EcologicalSpatialMainTask = () => {
       readyButtonTimerRef.current = null;
     }
     
-    // Only start the level if we're not in completed state, images are loaded, and phase is 'study'
-    if (!completed && imagesLoaded && phase === 'study') {
-      console.log(`Starting level ${currentLevel}`);
+    // Only start the level if we're not in completed state and images are loaded
+    if (!completed && imagesLoaded) {
       startLevel();
-    }
-    
-    // Export results when completed state becomes true
-    if (completed && results.length > 0) {
-      console.log('Task completed, exporting results...');
-      exportResults();
     }
     
     return () => {
@@ -191,7 +158,7 @@ const EcologicalSpatialMainTask = () => {
         readyButtonTimerRef.current = null;
       }
     };
-  }, [currentLevel, completed, imagesLoaded, phase]);
+  }, [currentLevel, completed, imagesLoaded]);
 
   // Calculate grid dimensions based on current level
   const getGridDimensions = () => {
@@ -305,16 +272,10 @@ const EcologicalSpatialMainTask = () => {
     
     // Move shapes instead of reshuffling all positions
     moveShapes(originalShapes);
-    
-    // Add a slight delay before changing phase for better transition
-    setTimeout(() => {
-      setPhase('response');
-    }, 150);
+    setPhase('response');
   };
 
   const startLevel = () => {
-    console.log(`startLevel called for level ${currentLevel}`);
-    
     // Clear any existing timers first
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -330,8 +291,6 @@ const EcologicalSpatialMainTask = () => {
     }
     
     const newShapes = generateShapes();
-    console.log(`Generated ${newShapes.length} shapes for level ${currentLevel}`);
-    
     setPhase('study');
     setSelectedCells([]);
     setTimeRemaining(30);
@@ -484,9 +443,6 @@ const EcologicalSpatialMainTask = () => {
     } else {
       // Move to the next level
       setCurrentLevel(prev => prev + 1);
-      // Set phase back to study to allow proper transition
-      // Don't call startLevel() directly here - let the useEffect handle it based on the state changes
-      setPhase('study');
     }
   };
 
@@ -531,13 +487,7 @@ const EcologicalSpatialMainTask = () => {
     navigate('/');
   };
 
-  const handleNextTask = () => {
-    // Navigate to the Deductive Reasoning task
-    navigate('/deductive-reasoning-task');
-  };
-
-  // Memoize the grid rendering to prevent unnecessary re-renders
-  const renderGrid = useCallback(() => {
+  const renderGrid = () => {
     const dimensions = getGridDimensions();
     const displayShapes = phase === 'study' ? shapes : movedShapes;
     const totalCells = dimensions.columns * dimensions.rows;
@@ -656,8 +606,6 @@ const EcologicalSpatialMainTask = () => {
                         maxHeight: '100%',
                         objectFit: 'contain'
                       }}
-                      loading="eager" // Prioritize image loading
-                      decoding="async" // Allow asynchronous image decoding
                     />
                     {phase === 'feedback' && isChangedPosition && (
                       <div style={{
@@ -687,15 +635,7 @@ const EcologicalSpatialMainTask = () => {
         </div>
       </div>
     );
-  }, [
-    phase, 
-    shapes, 
-    movedShapes, 
-    selectedCells, 
-    currentLevel, 
-    getGridDimensions, 
-    handleCellClick
-  ]);
+  };
 
   // Render method - no early returns for loading state
   return (
@@ -714,257 +654,214 @@ const EcologicalSpatialMainTask = () => {
           </div>
         </div>
       ) : (
-    <>
-      <div className="spatial-screen" style={{ 
+        <>
+          <div className="spatial-screen" style={{ 
             height: 'calc(100vh - 40px)', 
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <div className="spatial-content" style={{ 
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          padding: '10px',
-          boxSizing: 'border-box'
-        }}>
-          {!completed ? (
-            <>
-              <div className="instruction-container" style={{ 
-                padding: '5px',
-                marginBottom: '5px',
-                background: 'white',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                flexShrink: 0,
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  width: '100%',
-                  height: '100%'
-                }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
-                    {phase === 'study' && 'Study Phase: Memorize positions'}
-                    {phase === 'response' && 'Response Phase: Click moved objects'}
-                    {phase === 'feedback' && `Feedback: Level ${currentLevel}`}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ fontSize: '0.8rem' }}>Level {currentLevel}/5</div>
-                    
-                    {/* Smaller progress bar */}
-                    <div style={{ width: '60px', height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div 
-                        style={{ 
-                          width: `${(currentLevel / 5) * 100}%`, 
-                          height: '100%', 
-                          backgroundColor: '#2196F3', 
-                          borderRadius: '4px',
-                          transition: 'width 0.5s ease-out'  // Smooth transition for progress bar
-                        }} 
-                      />
-                    </div>
-                    
-                    {/* Always reserve space for timer, show 0s when not in study phase */}
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div className="spatial-content" style={{ 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              padding: '10px',
+              boxSizing: 'border-box'
+            }}>
+              {!completed ? (
+                <>
+                  <div className="instruction-container" style={{ 
+                    padding: '5px',
+                    marginBottom: '5px',
+                    background: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                    flexShrink: 0,
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ 
-                      fontSize: '0.8rem', 
-                      color: phase === 'study' ? '#e53935' : 'transparent', 
-                      fontWeight: 'bold',
-                      marginLeft: '5px',
-                      whiteSpace: 'nowrap',
-                      width: '30px',
-                      textAlign: 'right'
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      width: '100%',
+                      height: '100%'
                     }}>
-                      {phase === 'study' ? `${timeRemaining}s` : '0s'}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
+                        {phase === 'study' && 'Study Phase: Memorize positions'}
+                        {phase === 'response' && 'Response Phase: Click moved shapes'}
+                        {phase === 'feedback' && `Feedback: Level ${currentLevel}`}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ fontSize: '0.8rem' }}>Level {currentLevel}/5</div>
+                        
+                        {/* Smaller progress bar */}
+                        <div style={{ width: '60px', height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ width: `${(currentLevel / 5) * 100}%`, height: '100%', backgroundColor: '#2196F3', borderRadius: '4px' }} />
+                        </div>
+                        
+                        {/* Always reserve space for timer, show 0s when not in study phase */}
+                        <div style={{ 
+                          fontSize: '0.8rem', 
+                          color: phase === 'study' ? '#e53935' : 'transparent', 
+                          fontWeight: 'bold',
+                          marginLeft: '5px',
+                          whiteSpace: 'nowrap',
+                          width: '30px',
+                          textAlign: 'right'
+                        }}>
+                          {phase === 'study' ? `${timeRemaining}s` : '0s'}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              {phase === 'study' && (
-                <div className="phase-container" 
-                  style={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    animation: 'fadeIn 0.3s ease-in-out' // Add fade-in animation
-                  }}
-                >
-                  {renderGrid()}
-                </div>
-              )}
-              
-              {phase === 'response' && (
-                <div className="phase-container" 
-                  style={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    animation: 'fadeIn 0.3s ease-in-out' // Add fade-in animation
-                  }}
-                >
-                  {renderGrid()}
-                </div>
-              )}
-              
-              {phase === 'feedback' && (
-                <div className="phase-container" 
-                  style={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    animation: 'fadeIn 0.3s ease-in-out' // Add fade-in animation
-                  }}
-                >
-                  <p className="feedback-message" 
-                    style={{ 
-                      fontSize: '1.1rem', 
-                      margin: '0 0 10px',
-                      animation: 'slideInTop 0.4s ease-out' // Add slide-in animation
-                    }}
-                  >
-                    {feedbackMessage}
-                  </p>
-                  <p 
-                    style={{ 
-                      fontSize: '0.9rem', 
-                      color: '#666', 
-                      margin: '0 0 10px',
-                      animation: 'slideInTop 0.5s ease-out' // Add slide-in animation with delay
-                    }}
-                  >
-                    {currentLevel < 5 ? 
-                      `Moving to level ${currentLevel + 1} next.` : 
-                      "This is the final level. The task will end now."}
-                  </p>
                   
-                  {renderGrid()}
+                  {phase === 'study' && (
+                    <div className="phase-container" style={{ 
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      {renderGrid()}
+                    </div>
+                  )}
+                  
+                  {phase === 'response' && (
+                    <div className="phase-container" style={{ 
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      {renderGrid()}
+                    </div>
+                  )}
+                  
+                  {phase === 'feedback' && (
+                    <div className="phase-container" style={{ 
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      <p className="feedback-message" style={{ fontSize: '1.1rem', margin: '0 0 10px' }}>{feedbackMessage}</p>
+                      <p style={{ fontSize: '0.9rem', color: '#666', margin: '0 0 10px' }}>
+                        {currentLevel < 5 ? 
+                          `Moving to level ${currentLevel + 1} next.` : 
+                          "This is the final level. The task will end now."}
+                      </p>
+                      
+                      {renderGrid()}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="completion-screen">
+                  <h1>Task Complete!</h1>
+                  <p>You've completed the Spatial Memory Task.</p>
+                  <p className="score-item">Final score: <span className="score-value">{score} / {maxScore}</span></p>
+                  <p className="score-item">Highest level reached: <span className="score-value">{currentLevel}</span></p>
+                  
+                  <div className="action-buttons">
+                    <button className="spatial-button export-button" onClick={exportResults}>
+                      Export Results (CSV)
+                    </button>
+                    <button className="spatial-button home-button" onClick={handleReturnHome}>
+                      Return to Home
+                    </button>
+                  </div>
                 </div>
               )}
-            </>
-          ) : (
-            <div className="completion-screen" style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
-              <h1>Task Complete!</h1>
-              <p>You've completed the Spatial Memory Task.</p>
-              <p className="score-item">Final score: <span className="score-value">{score} / {maxScore}</span></p>
-              <p className="score-item">Highest level reached: <span className="score-value">{currentLevel}</span></p>
-              
-              <div className="action-buttons">
-                <button 
-                  className="spatial-button next-button" 
-                  onClick={handleNextTask} 
-                  style={{ 
-                    fontSize: '1.2rem', 
-                    padding: '12px 24px',
-                    animation: 'pulse 2s infinite' // Add pulsing animation to draw attention
-                  }}
-                >
-                  Next Task →
-                </button>
-                <button className="spatial-button home-button" onClick={handleReturnHome}>
-                  Return to Home
-                </button>
-              </div>
+            </div>
+          </div>
+
+          {/* Fixed buttons positioned outside the main content container */}
+          {phase === 'study' && showReadyButton && (
+            <div style={{
+              position: 'fixed',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.95)',
+              padding: '10px 0',
+              zIndex: 100,
+              boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+            }}>
+              <button 
+                className="spatial-button ready-button"
+                onClick={handleReadyClick}
+                style={{
+                  width: '250px',
+                  margin: '0 auto'
+                }}
+              >
+                I'm ready to identify changes
+              </button>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Fixed buttons positioned outside the main content container - don't show during transitions */}
-      {phase === 'study' && showReadyButton && (
-        <div style={{
-          position: 'fixed',
-          bottom: '0',
-          left: '0',
-          right: '0',
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.95)',
-          padding: '10px 0',
-          zIndex: 100,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-          animation: 'slideInBottom 0.3s ease-out' // Add slide-in animation
-        }}>
-          <button 
-            className="spatial-button ready-button"
-            onClick={handleReadyClick}
-            style={{
-              width: '250px',
-              margin: '0 auto'
-            }}
-          >
-            I'm ready to identify changes
-          </button>
-        </div>
-      )}
-      
-      {phase === 'response' && (
-        <div style={{
-          position: 'fixed',
-          bottom: '0',
-          left: '0',
-          right: '0',
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.95)',
-          padding: '10px 0',
-          zIndex: 100,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-          animation: 'slideInBottom 0.3s ease-out' // Add slide-in animation
-        }}>
-          <button 
-            className="spatial-button submit-button"
-            onClick={handleSubmit}
-            style={{
-              width: '200px',
-              margin: '0 auto'
-            }}
-          >
-            <span style={{ marginRight: '5px' }}>✓</span> Submit Answers
-          </button>
-        </div>
-      )}
-      
-      {phase === 'feedback' && (
-        <div style={{
-          position: 'fixed',
-          bottom: '0',
-          left: '0',
-          right: '0',
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.95)',
-          padding: '10px 0',
-          zIndex: 100,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-          animation: 'slideInBottom 0.3s ease-out' // Add slide-in animation
-        }}>
-          <button 
-            onClick={handleNextLevel}
-            className="spatial-button next-button"
-            style={{
-              width: '200px',
-              margin: '0 auto'
-            }}
-          >
-            {currentLevel === 5 ? 'Show Final Results' : 'Next Level'}
-          </button>
-        </div>
-      )}
+          
+          {phase === 'response' && (
+            <div style={{
+              position: 'fixed',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.95)',
+              padding: '10px 0',
+              zIndex: 100,
+              boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+            }}>
+              <button 
+                className="spatial-button submit-button"
+                onClick={handleSubmit}
+                style={{
+                  width: '200px',
+                  margin: '0 auto'
+                }}
+              >
+                <span style={{ marginRight: '5px' }}>✓</span> Submit Answers
+              </button>
+            </div>
+          )}
+          
+          {phase === 'feedback' && (
+            <div style={{
+              position: 'fixed',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.95)',
+              padding: '10px 0',
+              zIndex: 100,
+              boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+            }}>
+              <button 
+                onClick={handleNextLevel} 
+                className="spatial-button next-button"
+                style={{
+                  width: '200px',
+                  margin: '0 auto'
+                }}
+              >
+                {currentLevel === 5 ? 'Show Final Results' : 'Next Level'}
+              </button>
+            </div>
+          )}
         </>
       )}
     </>

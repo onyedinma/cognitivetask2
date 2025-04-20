@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { TASK_CONFIG, UTILS, EXPORT_FORMATS } from '../../config';
+import { getNextTask } from '../../utils/taskSequence';
 import './ObjectSpan.css';
 import ObjectReference from './ObjectReference';
 
@@ -229,6 +230,10 @@ const ObjectSpanMainTask = () => {
       if (newRound > TASK_CONFIG.objectSpan.mainTaskRounds) {
         // Completed all rounds, end task
         setCurrentState('complete');
+        // Automatically export results when task completes
+        setTimeout(() => {
+          exportResultsAsCSV();
+        }, 500);
         return;
       }
       
@@ -239,6 +244,10 @@ const ObjectSpanMainTask = () => {
       if (newSpan > TASK_CONFIG.objectSpan.maxSpan) {
         // Reached maximum span, end task
         setCurrentState('complete');
+        // Automatically export results when task completes
+        setTimeout(() => {
+          exportResultsAsCSV();
+        }, 500);
         return;
       }
       
@@ -252,6 +261,10 @@ const ObjectSpanMainTask = () => {
       } else {
         // Failed both attempts, end the task
         setCurrentState('complete');
+        // Automatically export results when task completes
+        setTimeout(() => {
+          exportResultsAsCSV();
+        }, 500);
         return;
       }
     }
@@ -291,6 +304,17 @@ const ObjectSpanMainTask = () => {
 
   const handleReturnHome = () => {
     navigate('/');
+  };
+  
+  // Navigate to the next task (from Forward to Backward or Backward to Shape Counting)
+  const handleNextTask = () => {
+    if (isBackward) {
+      // If in backward mode, navigate to Shape Counting Task
+      navigate('/shape-counting');
+    } else {
+      // If in forward mode, navigate to backward mode
+      navigate('/object-span/backward');
+    }
   };
 
   // Start the main task
@@ -361,23 +385,27 @@ const ObjectSpanMainTask = () => {
         <div className="results-container">
           <h2>Task Complete</h2>
           
-          <div className="results-summary">
-            <p>Maximum span reached: <strong>{maxSpanReached}</strong></p>
-            <p>Rounds completed: <strong>{currentRound - 1}/{TASK_CONFIG.objectSpan.mainTaskRounds}</strong></p>
-            <p>Total correct sequences: <strong>{results.filter(r => r.is_correct).length}</strong></p>
-            <p>Final Score: <strong>{maxSpanReached}</strong></p>
-          </div>
-          
-          <button onClick={exportResultsAsCSV} className="export-button">
-            Export Results as CSV
-          </button>
-          
           <div className="nav-buttons">
-            <button onClick={handleBackToTasks} className="back-button">
-              Back to Object Span Tasks
-            </button>
-            <button onClick={handleReturnHome} className="home-button">
-              Return to Home
+            <button 
+              onClick={handleNextTask} 
+              className="next-button"
+              style={{
+                fontSize: '1.5rem',
+                padding: '16px 32px',
+                fontWeight: 'bold',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                margin: '30px auto',
+                display: 'block',
+                minWidth: '300px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              {isBackward ? 'Next Task: Shape Counting Standardized' : 'Next Task: Backward Recall'}
             </button>
           </div>
         </div>

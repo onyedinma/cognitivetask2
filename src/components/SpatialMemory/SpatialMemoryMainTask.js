@@ -29,7 +29,7 @@ const SpatialMemoryMainTask = () => {
   const [showReadyButton, setShowReadyButton] = useState(false);
   const [trialCount, setTrialCount] = useState(1); // Track trials for each level (always 1)
   const [recordedLevels, setRecordedLevels] = useState([]); // Track level results
-  
+
   // Refs for timer management and configuration
   const timerRef = useRef(null);
   const studyTimerRef = useRef(null);
@@ -78,15 +78,51 @@ const SpatialMemoryMainTask = () => {
     // Create a deep copy of the shapes array
     const shapesCopy = JSON.parse(JSON.stringify(originalShapes));
     
-    // Get indices of shapes to swap
+    // Get indices of shapes to swap, ensuring we don't swap identical shapes
     const shapesToSwap = [];
-    const availableIndices = Array.from({ length: shapesCopy.length }, (_, i) => i);
+    let swapAttempts = 0;
+    const maxSwapAttempts = 100; // Safety to prevent infinite loops
     
-    for (let i = 0; i < numPairsToSwap * 2; i++) {
+    while (shapesToSwap.length < numPairsToSwap * 2 && swapAttempts < maxSwapAttempts) {
+      swapAttempts++;
+      
+      // If we've tried too many times to find unique shapes, just use what we have
+      if (swapAttempts >= maxSwapAttempts && shapesToSwap.length >= 2) {
+        console.warn(`Couldn't find ${numPairsToSwap} pairs of distinct shapes after ${maxSwapAttempts} attempts. Using ${Math.floor(shapesToSwap.length / 2)} pairs instead.`);
+        break;
+      }
+      
+      // Pick a random shape
+      const availableIndices = Array.from({ length: shapesCopy.length }, (_, i) => i)
+        .filter(idx => !shapesToSwap.includes(idx));
+      
       if (availableIndices.length === 0) break;
+      
       const randomIndex = Math.floor(Math.random() * availableIndices.length);
-      shapesToSwap.push(availableIndices[randomIndex]);
-      availableIndices.splice(randomIndex, 1);
+      const firstShapeIndex = availableIndices[randomIndex];
+      const firstShape = shapesCopy[firstShapeIndex];
+      
+      // Find shapes that are different from this one (different type or color)
+      const differentShapeIndices = availableIndices
+        .filter(idx => idx !== firstShapeIndex)
+        .filter(idx => {
+          const shape = shapesCopy[idx];
+          return shape.type !== firstShape.type || shape.color !== firstShape.color;
+        });
+      
+      // If no different shapes available, try again
+      if (differentShapeIndices.length === 0) continue;
+      
+      // Randomly pick a different shape
+      const secondShapeIndex = differentShapeIndices[Math.floor(Math.random() * differentShapeIndices.length)];
+      
+      // Add this pair to our swap list
+      shapesToSwap.push(firstShapeIndex, secondShapeIndex);
+    }
+    
+    // Ensure we have an even number of shapes to swap
+    if (shapesToSwap.length % 2 !== 0) {
+      shapesToSwap.pop();
     }
     
     // Swap positions of selected shapes
@@ -211,8 +247,8 @@ const SpatialMemoryMainTask = () => {
       readyButtonTimerRef.current = null;
     }
     
-    // Only start the level if we're not in completed state
-    if (!completed) {
+    // Only start the level if we're not in completed state and phase is 'study'
+    if (!completed && phase === 'study') {
       startLevel();
     }
     
@@ -231,7 +267,7 @@ const SpatialMemoryMainTask = () => {
         readyButtonTimerRef.current = null;
       }
     };
-  }, [currentLevel, completed]);
+  }, [currentLevel, completed, phase]);
 
   const handleCellClick = (position) => {
     if (phase !== 'response') return;
@@ -252,82 +288,86 @@ const SpatialMemoryMainTask = () => {
   };
 
   const handleSubmit = () => {
-    if (phase !== 'response') return;
+    const dimensions = getGridDimensions();
+    const totalShapes = dimensions.columns * dimensions.rows;
     
-    // Find all shapes that have moved from their original positions
-    const movedShapeIds = [];
-    const shapesCurrentPositions = new Map(); // Map of shape ID to its current position
-    const changedShapePairs = [];
-    
-    // Compare original and moved shapes to find all shapes that moved
-    shapes.forEach(originalShape => {
+    // Changed shapes are those that swapped positions
+    const changedShapes = [];
+    shapes.forEach((originalShape) => {
       const movedShape = movedShapes.find(s => s.id === originalShape.id);
       if (originalShape.position !== movedShape.position) {
-        movedShapeIds.push(originalShape.id);
-        // Store only the current position of moved shapes
-        shapesCurrentPositions.set(originalShape.id, movedShape.position);
-        changedShapePairs.push({
+        changedShapes.push({
           id: originalShape.id,
-          from: originalShape.position,
-          to: movedShape.position
+          originalPosition: originalShape.position,
+          newPosition: movedShape.position
         });
       }
     });
     
-    // Get array of current positions of moved shapes
-    const movedPositions = Array.from(shapesCurrentPositions.values());
+    // Count correct and incorrect selections
+    let correctSelections = 0;
+    let incorrectSelections = 0;
     
-    // Count correct selections (current positions of moved shapes that were selected)
-    const correctSelections = selectedCells.filter(pos => movedPositions.includes(pos));
-    
-    // Count incorrect selections (positions that were selected but don't contain moved shapes)
-    const incorrectSelections = selectedCells.filter(pos => !movedPositions.includes(pos));
-    
-    // Calculate level score: +1 for each correct, -1 for each incorrect
-    const levelScore = Math.max(0, correctSelections.length - incorrectSelections.length);
-    
-    // Always record the level result
-    const totalMovedShapes = movedShapeIds.length;
-    const isLevelPassed = correctSelections.length > incorrectSelections.length; // Pass if more correct than incorrect
-    
-    console.log(`Level ${currentLevel}: Score = ${levelScore}/${totalMovedShapes} (${correctSelections.length} correct, ${incorrectSelections.length} incorrect)`);
-    
-    // Provide feedback - focus on the number of shapes that moved
-    if (correctSelections.length === totalMovedShapes && incorrectSelections.length === 0) {
-      setFeedbackMessage('Perfect! You identified all the moved shapes correctly.');
-    } else if (correctSelections.length > 0) {
-      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedShapes} moved shapes, with ${incorrectSelections.length} incorrect selections.`);
-    } else {
-      setFeedbackMessage(`You didn't identify any moved shapes correctly. There were ${totalMovedShapes} shapes that changed positions.`);
-    }
-    
-    // Store result for current attempt
-    const currentResult = {
-      level: currentLevel,
-      correctSelections: correctSelections.length,
-      incorrectSelections: incorrectSelections.length,
-      totalMovedShapes: totalMovedShapes,
-      score: levelScore,
-      changedPairs: changedShapePairs,
-      passed: isLevelPassed
-    };
-    
-    // Add the result to the results array
-    setResults(prev => [...prev, currentResult]);
-    
-    // Update total score and max score
-    setScore(prev => prev + levelScore);
-    setMaxScore(prev => prev + totalMovedShapes);
-    
-    // Always add the level to recordedLevels
-    setRecordedLevels(prev => {
-      if (!prev.includes(currentLevel)) {
-        return [...prev, currentLevel];
+    selectedCells.forEach(position => {
+      // Check if this position contains a shape that moved
+      const originalShapeAtPosition = shapes.find(s => s.position === position);
+      const currentShapeAtPosition = movedShapes.find(s => s.position === position);
+      
+      if (!originalShapeAtPosition || !currentShapeAtPosition) return;
+      
+      // If different shapes are at this position in original vs moved state, it's a correct selection
+      if (originalShapeAtPosition.id !== currentShapeAtPosition.id) {
+        correctSelections++;
+      } else {
+        incorrectSelections++;
       }
-      return prev;
     });
     
+    const totalMovedShapes = changedShapes.length;
+    
+    // Calculate score: correctSelections minus incorrectSelections
+    const levelScore = correctSelections - incorrectSelections;
+    
+    // Update score and max score
+    setScore(prevScore => prevScore + levelScore);
+    
+    // Update max score by adding the number of moved objects for this level
+    setMaxScore(prevMax => prevMax + totalMovedShapes);
+    
+    // Record results for this level
+    const result = {
+      level: currentLevel,
+      trial: trialCount,
+      totalShapes,
+      totalMovedShapes,
+      correctSelections,
+      incorrectSelections,
+      score: levelScore,
+      timestamp: new Date().toISOString()
+    };
+    
+    setResults(prevResults => [...prevResults, result]);
+    
+    // Has the user passed the level?
+    const passed = correctSelections > incorrectSelections;
+    
+    // Set feedback message
+    const feedbackText = passed
+      ? `Good job! You correctly identified ${correctSelections} out of ${totalMovedShapes} moved shapes.`
+      : `You identified ${correctSelections} correctly, but made ${incorrectSelections} incorrect selections.`;
+    
+    setFeedbackMessage(feedbackText);
+    setRecordedLevels(prev => [...prev, currentLevel]);
+    
+    // Transition to feedback phase temporarily
     setPhase('feedback');
+    
+    // If all levels are completed, show completion screen
+    if (currentLevel >= maxLevel) {
+      setTimeout(() => {
+        setCompleted(true);
+      }, 2000);
+    }
   };
 
   const handleNextLevel = () => {
@@ -335,12 +375,22 @@ const SpatialMemoryMainTask = () => {
     
     // If we're at the last level (5), end the task
     if (currentLevel === 5) {
+      // First export the results
+      exportResults();
+      // Then set completed state
       setCompleted(true);
       return;
     }
     
     // Always move to the next level regardless of performance
     setCurrentLevel(prev => prev + 1);
+    // Set phase back to study to allow proper transition
+    setPhase('study');
+  };
+
+  // Navigate to the next task (Ecological Spatial Memory)
+  const handleNextTask = () => {
+    navigate('/ecological-spatial');
   };
 
   const exportResults = () => {
@@ -664,19 +714,29 @@ const SpatialMemoryMainTask = () => {
             </>
           ) : (
             <div className="completion-screen">
-              <h1>Task Complete!</h1>
-              <p>You've completed the Spatial Memory Task.</p>
-              <p className="score-item">Final score: <span className="score-value">{score} / {maxScore}</span></p>
-              <p className="score-item">Highest level reached: <span className="score-value">{currentLevel}</span></p>
+              <h2>Task Complete!</h2>
+              <p>Your results have been exported to a CSV file.</p>
               
-              <div className="action-buttons">
-                <button className="spatial-button export-button" onClick={exportResults}>
-                  Export Results (CSV)
-                </button>
-                <button className="spatial-button home-button" onClick={handleReturnHome}>
-                  Return to Home
-                </button>
-              </div>
+              <button 
+                onClick={handleNextTask} 
+                style={{
+                  fontSize: '1.5rem',
+                  padding: '16px 32px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                  margin: '30px auto',
+                  display: 'block',
+                  minWidth: '300px',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Next Task: Ecological Spatial Memory
+              </button>
             </div>
           )}
         </div>
@@ -753,7 +813,7 @@ const SpatialMemoryMainTask = () => {
               margin: '0 auto'
             }}
           >
-            {currentLevel === 5 ? 'Show Final Results' : 'Next Level'}
+            {currentLevel === 5 ? 'Finish' : 'Next Level'}
           </button>
         </div>
       )}

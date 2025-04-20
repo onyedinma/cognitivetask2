@@ -102,6 +102,11 @@ const DigitSpanMainTask = () => {
         startNextSequence(newSpan);
       }, 1500);
       timersRef.current.push(nextTimer);
+    } else {
+      // If task is complete, automatically export to CSV
+      setTimeout(() => {
+        exportAsCSV();
+      }, 500);
     }
   };
   
@@ -287,6 +292,28 @@ const DigitSpanMainTask = () => {
     }
   };
   
+  // Navigate to the next task
+  const handleNextTask = () => {
+    // Store results in localStorage first
+    const storedResults = JSON.parse(localStorage.getItem('digitSpanResults') || '[]');
+    const updatedResults = [...storedResults, {
+      timestamp: new Date().toISOString(),
+      direction: isBackward ? 'backward' : 'forward',
+      maxSpan: maxSpanReached,
+      results
+    }];
+    
+    localStorage.setItem('digitSpanResults', JSON.stringify(updatedResults));
+    
+    // If in forward mode, navigate to backward mode
+    if (!isBackward) {
+      navigate('/digit-span/backward');
+    } else {
+      // If in backward mode, navigate to the next task in sequence
+      navigate('/object-span/forward');
+    }
+  };
+  
   return (
     <div className="task-screen">
       {!taskComplete ? (
@@ -333,57 +360,26 @@ const DigitSpanMainTask = () => {
         <div className="completion-screen">
           <h1>Task Complete</h1>
           
-          <div className="results-summary">
-            <p>Maximum span reached: <span className="max-span">{maxSpanReached}</span> (Final Score)</p>
-            <p>Total correct sequences: <span className="correct-sequences">
-              {results.filter(r => r.isCorrect).length}
-            </span> of {results.length}</p>
-          </div>
-          
-          <div className="results-detail">
-            <h2>Performance by Span Length</h2>
-            <table className="results-table">
-              <thead>
-                <tr>
-                  <th>Span</th>
-                  <th>Attempt 1</th>
-                  <th>Attempt 2</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: maxSpanReached - TASK_CONFIG.digitSpan.minSpan + 1 }, (_, i) => 
-                  TASK_CONFIG.digitSpan.minSpan + i
-                ).map(span => {
-                  const attempt1 = results.find(r => r.span === span && r.attempt === 1);
-                  const attempt2 = results.find(r => r.span === span && r.attempt === 2);
-                  
-                  return (
-                    <tr key={span}>
-                      <td>{span}</td>
-                      <td className={attempt1?.isCorrect ? 'correct' : 'incorrect'}>
-                        {attempt1 ? (attempt1.isCorrect ? '✓' : '✗') : '-'}
-                      </td>
-                      <td className={attempt2?.isCorrect ? 'correct' : 'incorrect'}>
-                        {attempt2 ? (attempt2.isCorrect ? '✓' : '✗') : '-'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="result-actions">
+          <div className="nav-buttons">
             <button 
-              onClick={exportAsCSV} 
-              className="export-button"
-              disabled={exportingCSV}
+              onClick={handleNextTask} 
+              style={{
+                fontSize: '1.5rem',
+                padding: '16px 32px',
+                fontWeight: 'bold',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                margin: '30px auto',
+                display: 'block',
+                minWidth: '300px',
+                transition: 'all 0.3s ease'
+              }}
             >
-              {exportingCSV ? 'Exporting...' : 'Export Results to CSV'}
-            </button>
-            
-            <button onClick={handleTaskComplete} className="finish-button">
-              Complete Task
+              {isBackward ? 'Next Task: Object Span Forward' : 'Next Task: Backward Recall'}
             </button>
           </div>
         </div>

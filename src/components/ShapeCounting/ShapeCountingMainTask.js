@@ -179,6 +179,10 @@ const ShapeCountingMainTask = () => {
     } else {
       // Game completed
       setTaskComplete(true);
+      // Automatically export results when task completes
+      setTimeout(() => {
+        exportToCSV();
+      }, 500);
     }
   };
   
@@ -217,6 +221,11 @@ const ShapeCountingMainTask = () => {
   // Navigate back to tasks menu
   const returnToMenu = () => {
     navigate('/tasks');
+  };
+  
+  // Navigate to the next task (Counting Game)
+  const handleNextTask = () => {
+    navigate('/counting-game');
   };
   
   // Export results to CSV
@@ -380,85 +389,26 @@ const ShapeCountingMainTask = () => {
         <div className="results-section">
           <h2>Task Complete!</h2>
           
-          {results.length > 0 && (
-            <>
-              <div className="performance-summary">
-                <h3>Overall Performance</h3>
-                <p>
-                  Highest level reached: <strong>{getLevelName(calculatePerformance().highestLevel)}</strong>
-                </p>
-                <p>
-                  Levels passed: <strong>{calculatePerformance().correct}</strong> out of <strong>{calculatePerformance().total}</strong> 
-                  ({calculatePerformance().percentage}%)
-                </p>
-              </div>
-              
-              <div className="results-table-container">
-                <h3>Level Details</h3>
-                <table className="results-table">
-                  <thead>
-                    <tr>
-                      <th>Level</th>
-                      <th>Shapes</th>
-                      <th>Squares</th>
-                      <th>Triangles</th>
-                      <th>Circles</th>
-                      <th>Passed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {levels.map((levelConfig) => {
-                      // Find the successful attempt for this level if it exists
-                      const successfulAttempt = results.find(
-                        r => r.level === levelConfig.level && r.correct
-                      );
-                      
-                      // If no successful attempt, find the last attempt
-                      const lastAttempt = results.find(
-                        r => r.level === levelConfig.level && r.attempt === maxAttempts && !r.correct
-                      );
-                      
-                      const bestAttempt = successfulAttempt || lastAttempt;
-                      
-                      // Only show levels that were attempted
-                      if (!bestAttempt) return null;
-                      
-                      return (
-                        <tr key={levelConfig.level} className={bestAttempt.correct ? 'correct-row' : 'incorrect-row'}>
-                          <td>{levelConfig.level}</td>
-                          <td>{levelConfig.shapes}</td>
-                          <td>
-                            {bestAttempt.userCounts.squares}/{bestAttempt.correctCounts.squares}
-                          </td>
-                          <td>
-                            {bestAttempt.userCounts.triangles}/{bestAttempt.correctCounts.triangles}
-                          </td>
-                          <td>
-                            {bestAttempt.userCounts.circles}/{bestAttempt.correctCounts.circles}
-                          </td>
-                          <td>{bestAttempt.correct ? 'Yes' : 'No'}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              
-              <div className="export-controls">
-                <button 
-                  onClick={exportToCSV} 
-                  className="export-button"
-                  disabled={exportingCSV}
-                >
-                  {exportingCSV ? 'Exporting...' : 'Export Results to CSV'}
-                </button>
-                
-                <button onClick={returnToMenu} className="menu-button">
-                  Return to Tasks Menu
-                </button>
-              </div>
-            </>
-          )}
+          <button 
+            onClick={handleNextTask} 
+            style={{
+              fontSize: '1.5rem',
+              padding: '16px 32px',
+              fontWeight: 'bold',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+              margin: '30px auto',
+              display: 'block',
+              minWidth: '300px',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Next Task: Counting Game (Ecological)
+          </button>
         </div>
       )}
       

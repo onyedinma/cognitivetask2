@@ -100,8 +100,8 @@ div.spatial-screen {
 
 /* Fixed size shapes for consistency between practice and main task */
 .grid-shape {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -110,8 +110,6 @@ div.spatial-screen {
   font-size: 0; /* Hide any text */
   color: transparent; /* Make any text transparent */
   border-radius: 4px; /* Add subtle rounding to all shapes */
-  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-  will-change: transform, box-shadow;
 }
 
 /* Add this to explicitly hide numbers */
@@ -131,35 +129,22 @@ div.spatial-screen {
 /* Shape types - precisely defined using clip-path for consistent sizing */
 .shape-circle {
   border-radius: 50%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform; /* Optimize animation performance */
 }
 
 /* Square uses the default shape with no additional properties */
-.shape-square {
-  border-radius: 4px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
-}
 
 .shape-triangle {
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
 }
 
 .shape-pentagon {
   clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
 }
 
 /* Heart shape with consistent size */
 .shape-heart {
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
   background-color: #e53935 !important; /* Force red color for heart */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
 }
 
 /* Timer */
@@ -694,96 +679,84 @@ div.spatial-screen {
 }
 
 .instructions-note {
-  background-color: #f8f9fa;
-  border-left: 4px solid #4a90e2;
-  padding: 12px 15px;
-  margin-top: 10px;
+  background-color: #fff3e0;
+  padding: 10px 15px;
+  border-left: 4px solid #ff9800;
+  margin: 15px 0;
+  border-radius: 0 4px 4px 0;
 }
 
 .instructions-note p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
-/* Examples section */
+/* Example section in instructions */
 .instructions-examples {
-  background-color: #f5f7fa;
-  padding: 20px;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f0f8ff;
   border-radius: 8px;
-}
-
-.instructions-examples h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #333;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .examples-container {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 15px;
-  margin-bottom: 15px;
+  margin: 15px 0;
+  flex-wrap: wrap;
 }
 
 .example {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .example-label {
   font-weight: bold;
   margin-bottom: 10px;
-  color: #555;
 }
 
 .example-shapes {
   display: flex;
-  justify-content: center;
   gap: 10px;
-  margin-bottom: 10px;
+  background: white;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .example-arrow {
   font-size: 24px;
-  color: #777;
-  margin: 0 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
 }
 
 .example-caption {
-  text-align: center;
-  font-style: italic;
-  color: #666;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.example-caption p {
-  margin: 0;
-}
-
-/* Footer with button */
-.instructions-footer {
+.example .eco-image-container {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
   display: flex;
   justify-content: center;
-  margin-top: 15px;
+  align-items: center;
 }
 
-.primary-button {
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 25px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.primary-button:hover {
-  background-color: #357abD;
-}
-
-.primary-button:disabled {
-  background-color: #aaa;
-  cursor: not-allowed;
+.example .eco-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
 }
 
 /* Grid and shape styles */
@@ -820,8 +793,7 @@ div.spatial-screen {
 .grid-shape {
   width: 70px;
   height: 70px;
-  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-  will-change: transform, box-shadow;
+  transition: transform 0.3s;
 }
 
 /* Shape types */
@@ -997,183 +969,74 @@ div.spatial-screen {
   }
 }
 
-/* Animated example in instructions */
-.animated-example {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.animated-example h3 {
-  margin-top: 0;
-  font-size: 1.4rem;
-  color: #2196F3;
-  margin-bottom: 15px;
-}
-
-.example-label {
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #333;
-  font-size: 1.1rem;
-}
-
-.example-grid-container {
+/* Ecological Image Styles */
+.eco-image-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 15px 0;
-  min-height: 120px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #fff;
+  transition: all 0.3s ease;
 }
 
-.example-grid {
-  display: flex;
-  gap: 15px;
-  background-color: white;
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+.eco-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease-in-out;
 }
 
-.example-cell {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: white;
-  border-radius: 6px;
-  transition: transform 0.5s ease, background-color 0.5s ease;
-}
-
-.example-cell.selected {
-  background-color: #e3f2fd;
-  border: 2px solid #2196F3;
+.eco-image-container:hover .eco-image {
   transform: scale(1.05);
-  box-shadow: 0 2px 10px rgba(33, 150, 243, 0.3);
 }
 
-.example-caption {
-  font-style: italic;
-  text-align: center;
-  color: #666;
-  margin-top: 10px;
+.clickable .eco-image-container {
+  cursor: pointer;
 }
 
-/* Responsive adjustments for animated example */
+.selected .eco-image-container {
+  box-shadow: 0 0 0 3px #2196F3, 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Responsive adjustments for ecological images */
 @media (max-width: 768px) {
-  .animated-example {
-    padding: 15px;
-  }
-  
-  .example-grid {
-    gap: 10px;
-  }
-  
-  .example-cell {
-    width: 70px;
-    height: 70px;
+  .eco-image-container {
+    width: 50px;
+    height: 50px;
   }
 }
 
 @media (max-width: 480px) {
-  .example-grid {
-    gap: 8px;
-  }
-  
-  .example-cell {
-    width: 60px;
-    height: 60px;
+  .eco-image-container {
+    width: 40px;
+    height: 40px;
   }
 }
 
-/* Enhanced hover effect for shapes */
-.grid-cell.clickable:hover .grid-shape {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+/* Add loading indicator styles */
+.eco-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  min-height: 60vh;
 }
 
-/* Selected shape enhancements */
-.grid-cell.selected .grid-shape {
-  transform: scale(1.08);
-  box-shadow: 0 5px 10px rgba(33, 150, 243, 0.4);
+.eco-loading-bar {
+  width: 80%;
+  height: 20px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  margin: 1rem 0;
+  overflow: hidden;
 }
 
-/* Add animation for when shapes move/change */
-.grid-cell.changed .grid-shape {
-  animation: highlight 1s ease-in-out;
-}
-
-@keyframes highlight {
-  0% { 
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1), 0 2px 5px rgba(0,0,0,0.2);
-  }
-  50% { 
-    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.8), 0 4px 10px rgba(0,0,0,0.25);
-  }
-  100% { 
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3), 0 2px 5px rgba(0,0,0,0.2);
-  }
-}
-
-/* Add visual marker for moved shapes in feedback phase */
-.grid-cell.changed::after {
-  content: "";
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+.eco-loading-progress {
+  height: 100%;
   background-color: #4CAF50;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  opacity: 0;
-  transform: scale(0);
-  animation: fadeInScale 0.5s 0.3s forwards;
-}
-
-@keyframes fadeInScale {
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Add specific entry animations for shapes when they first appear */
-.phase-container.study-phase .grid-shape {
-  animation: fadeInRotate 0.6s ease-out forwards;
-}
-
-@keyframes fadeInRotate {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) rotate(-5deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-/* Add animations for shape position swaps in feedback phase */
-.phase-container.feedback-phase .grid-cell.changed .grid-shape {
-  animation: emphasize 1s ease-in-out;
-}
-
-@keyframes emphasize {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+  border-radius: 10px;
+  transition: width 0.3s ease;
 }

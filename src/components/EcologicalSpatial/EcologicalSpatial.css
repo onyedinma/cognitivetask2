@@ -100,8 +100,8 @@ div.spatial-screen {
 
 /* Fixed size shapes for consistency between practice and main task */
 .grid-shape {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -110,6 +110,8 @@ div.spatial-screen {
   font-size: 0; /* Hide any text */
   color: transparent; /* Make any text transparent */
   border-radius: 4px; /* Add subtle rounding to all shapes */
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  will-change: transform, box-shadow;
 }
 
 /* Add this to explicitly hide numbers */
@@ -129,22 +131,35 @@ div.spatial-screen {
 /* Shape types - precisely defined using clip-path for consistent sizing */
 .shape-circle {
   border-radius: 50%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform; /* Optimize animation performance */
 }
 
 /* Square uses the default shape with no additional properties */
+.shape-square {
+  border-radius: 4px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
 
 .shape-triangle {
-  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
 }
 
 .shape-pentagon {
   clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
 }
 
 /* Heart shape with consistent size */
 .shape-heart {
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
   background-color: #e53935 !important; /* Force red color for heart */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
 }
 
 /* Timer */
@@ -793,7 +808,8 @@ div.spatial-screen {
 .grid-shape {
   width: 70px;
   height: 70px;
-  transition: transform 0.3s;
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  will-change: transform, box-shadow;
 }
 
 /* Shape types */
@@ -1039,4 +1055,172 @@ div.spatial-screen {
   background-color: #4CAF50;
   border-radius: 10px;
   transition: width 0.3s ease;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInTop {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInBottom {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+}
+
+/* Image transition effects */
+.eco-image-container {
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.eco-image {
+  transition: all 0.3s ease;
+  will-change: transform; /* Optimize performance */
+}
+
+/* Add subtle hover effect for clickable images */
+.clickable .eco-image-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.selected .eco-image-container {
+  transform: scale(1.08);
+  box-shadow: 0 6px 12px rgba(33, 150, 243, 0.3);
+}
+
+/* Transition between phases */
+.phase-container {
+  transition: opacity 0.3s ease;
+}
+
+/* Enhanced loading animation */
+.eco-loading-progress {
+  background: linear-gradient(90deg, #2196F3, #4CAF50);
+  background-size: 200% 100%;
+  animation: gradientShift 2s linear infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Enhanced hover effect for shapes */
+.grid-cell.clickable:hover .grid-shape {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+
+/* Selected shape enhancements */
+.grid-cell.selected .grid-shape {
+  transform: scale(1.08);
+  box-shadow: 0 5px 10px rgba(33, 150, 243, 0.4);
+}
+
+/* Add animation for when shapes move/change */
+.grid-cell.changed .grid-shape {
+  animation: highlight 1s ease-in-out;
+}
+
+@keyframes highlight {
+  0% { 
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1), 0 2px 5px rgba(0,0,0,0.2);
+  }
+  50% { 
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.8), 0 4px 10px rgba(0,0,0,0.25);
+  }
+  100% { 
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3), 0 2px 5px rgba(0,0,0,0.2);
+  }
+}
+
+/* Add visual marker for moved shapes in feedback phase */
+.grid-cell.changed::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #4CAF50;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: scale(0);
+  animation: fadeInScale 0.5s 0.3s forwards;
+}
+
+@keyframes fadeInScale {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Add specific entry animations for shapes when they first appear */
+.phase-container.study-phase .grid-shape {
+  animation: fadeInRotate 0.6s ease-out forwards;
+}
+
+@keyframes fadeInRotate {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Add animations for shape position swaps in feedback phase */
+.phase-container.feedback-phase .grid-cell.changed .grid-shape {
+  animation: emphasize 1s ease-in-out;
+}
+
+@keyframes emphasize {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }

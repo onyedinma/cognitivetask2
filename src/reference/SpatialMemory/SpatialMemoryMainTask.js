@@ -1,69 +1,17 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './EcologicalSpatial.css';
+import './SpatialMemory.css';
 
-// Import all images from Ecoimages folder with correct paths
-const dog = '/ecoimages/dog.jpg';
-const cat = '/ecoimages/cat.jpg';
-const bird = '/ecoimages/bird.jpg';
-const car = '/ecoimages/car.jpg';
-const house = '/ecoimages/house.jpg';
-const bus = '/ecoimages/bus.jpg';
-const chair = '/ecoimages/chair.jpg';
-const computer = '/ecoimages/computer.jpg';
-const umbrella = '/ecoimages/umbrella.jpg';
-const clock = '/ecoimages/clock.jpg';
-const teacup = '/ecoimages/teacup.jpg';
-const guitar = '/ecoimages/guitar.jpg';
-const flower = '/ecoimages/flower.jpg';
-const bread = '/ecoimages/bread.jpg';
-const bag = '/ecoimages/bag.jpg';
-const shoe = '/ecoimages/shoe.jpg';
-const kettle = '/ecoimages/kettle.jpg';
-const fryingpan = '/ecoimages/fryingpan.jpg';
-const electriciron = '/ecoimages/electriciron.jpg';
-const elephant = '/ecoimages/elephant.jpg';
-
-// Array of all image paths for preloading
-const allImagePaths = [
-  dog, cat, bird, car, house, bus, chair, computer, umbrella, clock,
-  teacup, guitar, flower, bread, bag, shoe, kettle, fryingpan, electriciron, elephant
-];
-
-// Define image objects to use
-const ecoImages = [
-  { name: 'dog', src: dog },
-  { name: 'cat', src: cat },
-  { name: 'bird', src: bird },
-  { name: 'car', src: car },
-  { name: 'house', src: house },
-  { name: 'bus', src: bus },
-  { name: 'chair', src: chair },
-  { name: 'computer', src: computer },
-  { name: 'umbrella', src: umbrella },
-  { name: 'clock', src: clock },
-  { name: 'teacup', src: teacup },
-  { name: 'guitar', src: guitar },
-  { name: 'flower', src: flower },
-  { name: 'bread', src: bread },
-  { name: 'bag', src: bag },
-  { name: 'shoe', src: shoe },
-  { name: 'kettle', src: kettle },
-  { name: 'fryingpan', src: fryingpan },
-  { name: 'electriciron', src: electriciron },
-  { name: 'elephant', src: elephant }
-];
+// Define shape types and colors to match reference images
+const shapeTypes = ['circle', 'square', 'triangle', 'pentagon', 'heart', 'purple'];
+const shapeColors = ['black', 'green', 'blue', 'yellow', 'red', 'purple'];
 
 /**
- * EcologicalSpatialMainTask component
- * Main task component for the ecological spatial memory task with a larger grid
+ * SpatialMemoryMainTask component
+ * Main task component for the spatial memory task with a larger grid
  */
-const EcologicalSpatialMainTask = () => {
+const SpatialMemoryMainTask = () => {
   const navigate = useNavigate();
-  
-  // Add image loading states
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
   
   // States for managing the grids and timer
   const [currentLevel, setCurrentLevel] = useState(1);
@@ -79,119 +27,13 @@ const EcologicalSpatialMainTask = () => {
   const [results, setResults] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [showReadyButton, setShowReadyButton] = useState(false);
-  const [recordedLevels, setRecordedLevels] = useState([]); // Track which levels have been recorded
-
+  const [trialCount, setTrialCount] = useState(1); // Track trials for each level (always 1)
+  const [recordedLevels, setRecordedLevels] = useState([]); // Track level results
+  
   // Refs for timer management and configuration
   const timerRef = useRef(null);
   const studyTimerRef = useRef(null);
   const readyButtonTimerRef = useRef(null);
-
-  // More efficient preloading with status tracking
-  useEffect(() => {
-    let isMounted = true; // Track component mount state
-    let loadedCount = 0;
-    const totalImages = allImagePaths.length;
-    const imageElements = []; // Keep references to avoid memory leaks
-    
-    const preloadImage = (src) => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        imageElements.push(img); // Store reference
-        
-        img.onload = () => {
-          if (isMounted) {
-            loadedCount++;
-            setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
-          }
-          resolve(true);
-        };
-        
-        img.onerror = () => {
-          console.warn(`Failed to load image: ${src}`);
-          if (isMounted) {
-            loadedCount++;
-            setLoadingProgress(Math.round((loadedCount / totalImages) * 100));
-          }
-          resolve(false);
-        };
-        
-        img.src = src;
-      });
-    };
-
-    const loadAllImages = async () => {
-      try {
-        const results = await Promise.all(allImagePaths.map(src => preloadImage(src)));
-        if (isMounted) {
-          console.log(`Successfully loaded ${results.filter(Boolean).length}/${totalImages} images`);
-          setImagesLoaded(true);
-        }
-      } catch (error) {
-        console.error('Error preloading images:', error);
-        if (isMounted) {
-          setImagesLoaded(true); // Continue anyway
-        }
-      }
-    };
-
-    loadAllImages();
-    
-    // Cleanup function to prevent memory leaks and state updates after unmount
-    return () => {
-      isMounted = false;
-      imageElements.forEach(img => {
-        img.onload = null;
-        img.onerror = null;
-      });
-    };
-  }, []);
-
-  // Update the useEffect to ensure it doesn't get stuck
-  useEffect(() => {
-    console.log(`useEffect triggered. Level: ${currentLevel}, Phase: ${phase}, Completed: ${completed}, ImagesLoaded: ${imagesLoaded}`);
-    
-    // Clean up all timers first
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (studyTimerRef.current) {
-      clearInterval(studyTimerRef.current);
-      studyTimerRef.current = null;
-    }
-    if (readyButtonTimerRef.current) {
-      clearTimeout(readyButtonTimerRef.current);
-      readyButtonTimerRef.current = null;
-    }
-    
-    // Only start the level if we're not in completed state, images are loaded, and phase is 'study'
-    if (!completed && imagesLoaded && phase === 'study') {
-      console.log(`Starting level ${currentLevel}`);
-      startLevel();
-    }
-    
-    // Export results when completed state becomes true
-    if (completed && results.length > 0) {
-      console.log('Task completed, exporting results...');
-      exportResults();
-    }
-    
-    return () => {
-      // Clean up all timers when component unmounts or dependencies change
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      if (studyTimerRef.current) {
-        clearInterval(studyTimerRef.current);
-        studyTimerRef.current = null;
-      }
-      if (readyButtonTimerRef.current) {
-        clearTimeout(readyButtonTimerRef.current);
-        readyButtonTimerRef.current = null;
-      }
-    };
-  }, [currentLevel, completed, imagesLoaded, phase]);
 
   // Calculate grid dimensions based on current level
   const getGridDimensions = () => {
@@ -214,17 +56,11 @@ const EcologicalSpatialMainTask = () => {
     // Generate positions for all cells in the grid
     const positions = Array.from({ length: numShapes }, (_, i) => i);
     
-    // Shuffle the eco images array and take only the number we need
-    const shuffledImages = [...ecoImages]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, numShapes);
-    
-    // Generate shapes with image info
+    // Generate shapes with types and colors
     const newShapes = positions.map((position, index) => ({
       id: index,
-      imageIndex: index,
-      imageName: shuffledImages[index].name,
-      imageSrc: shuffledImages[index].src,
+      type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
+      color: shapeColors[Math.floor(Math.random() * shapeColors.length)],
       position: position
     }));
     
@@ -242,9 +78,6 @@ const EcologicalSpatialMainTask = () => {
     // Create a deep copy of the shapes array
     const shapesCopy = JSON.parse(JSON.stringify(originalShapes));
     
-    // Keep track of shapes that will move
-    const movedShapeIds = [];
-    
     // Get indices of shapes to swap
     const shapesToSwap = [];
     const availableIndices = Array.from({ length: shapesCopy.length }, (_, i) => i);
@@ -253,8 +86,6 @@ const EcologicalSpatialMainTask = () => {
       if (availableIndices.length === 0) break;
       const randomIndex = Math.floor(Math.random() * availableIndices.length);
       shapesToSwap.push(availableIndices[randomIndex]);
-      // Store the ID of shapes that will move
-      movedShapeIds.push(shapesCopy[availableIndices[randomIndex]].id);
       availableIndices.splice(randomIndex, 1);
     }
     
@@ -267,16 +98,12 @@ const EcologicalSpatialMainTask = () => {
       shapesCopy[shapesToSwap[i + 1]].position = temp;
     }
     
-    // Get the new positions of moved shapes
-    const swappedPositions = movedShapeIds.map(id => 
-      shapesCopy.find(shape => shape.id === id).position
-    );
-    
     // Log the shapes that were swapped for debugging
-    console.log("Moved objects:", shapesCopy.filter(shape => 
-      movedShapeIds.includes(shape.id)).map(s => ({
+    console.log("Moved shapes:", shapesCopy.filter((shape, index) => 
+      shapesToSwap.includes(index)).map(s => ({
         id: s.id,
-        imageName: s.imageName,
+        type: s.type,
+        color: s.color,
         position: s.position
       }))
     );
@@ -284,7 +111,7 @@ const EcologicalSpatialMainTask = () => {
     setMovedShapes(shapesCopy);
     return {
       movedShapes: shapesCopy,
-      swappedPositions: swappedPositions
+      swappedPositions: shapesToSwap.map(index => shapesCopy[index].position)
     };
   };
 
@@ -305,16 +132,10 @@ const EcologicalSpatialMainTask = () => {
     
     // Move shapes instead of reshuffling all positions
     moveShapes(originalShapes);
-    
-    // Add a slight delay before changing phase for better transition
-    setTimeout(() => {
-      setPhase('response');
-    }, 150);
+    setPhase('response');
   };
 
   const startLevel = () => {
-    console.log(`startLevel called for level ${currentLevel}`);
-    
     // Clear any existing timers first
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -330,8 +151,6 @@ const EcologicalSpatialMainTask = () => {
     }
     
     const newShapes = generateShapes();
-    console.log(`Generated ${newShapes.length} shapes for level ${currentLevel}`);
-    
     setPhase('study');
     setSelectedCells([]);
     setTimeRemaining(30);
@@ -377,6 +196,43 @@ const EcologicalSpatialMainTask = () => {
     }
   };
 
+  useEffect(() => {
+    // Clear any previous timers when starting a new level or trial
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (studyTimerRef.current) {
+      clearInterval(studyTimerRef.current);
+      studyTimerRef.current = null;
+    }
+    if (readyButtonTimerRef.current) {
+      clearTimeout(readyButtonTimerRef.current);
+      readyButtonTimerRef.current = null;
+    }
+    
+    // Only start the level if we're not in completed state
+    if (!completed) {
+      startLevel();
+    }
+    
+    return () => {
+      // Clean up all timers when component unmounts or dependencies change
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      if (studyTimerRef.current) {
+        clearInterval(studyTimerRef.current);
+        studyTimerRef.current = null;
+      }
+      if (readyButtonTimerRef.current) {
+        clearTimeout(readyButtonTimerRef.current);
+        readyButtonTimerRef.current = null;
+      }
+    };
+  }, [currentLevel, completed]);
+
   const handleCellClick = (position) => {
     if (phase !== 'response') return;
     
@@ -389,55 +245,60 @@ const EcologicalSpatialMainTask = () => {
     });
   };
 
-  // This function checks if the current level has been passed in any trial
+  // This function is simplified since we no longer need to check if a level is complete
+  // We keep it to avoid breaking references, but it always returns true
   const isLevelComplete = (levelNum) => {
-    return recordedLevels.includes(levelNum);
+    return true;
   };
 
   const handleSubmit = () => {
     if (phase !== 'response') return;
     
-    // Find all positions that have moved objects
-    const movedPositions = [];
-    const movedObjectPairs = [];
+    // Find all shapes that have moved from their original positions
+    const movedShapeIds = [];
+    const shapesCurrentPositions = new Map(); // Map of shape ID to its current position
+    const changedShapePairs = [];
     
-    // Compare original and moved shapes to find all objects that moved
+    // Compare original and moved shapes to find all shapes that moved
     shapes.forEach(originalShape => {
       const movedShape = movedShapes.find(s => s.id === originalShape.id);
       if (originalShape.position !== movedShape.position) {
-        // Record the current position (in the response grid) of moved objects
-        movedPositions.push(movedShape.position);
-        movedObjectPairs.push({
+        movedShapeIds.push(originalShape.id);
+        // Store only the current position of moved shapes
+        shapesCurrentPositions.set(originalShape.id, movedShape.position);
+        changedShapePairs.push({
           id: originalShape.id,
-          imageName: originalShape.imageName,
-          fromPosition: originalShape.position,
-          toPosition: movedShape.position
+          from: originalShape.position,
+          to: movedShape.position
         });
       }
     });
     
-    // Count correct selections (objects that moved and were selected)
+    // Get array of current positions of moved shapes
+    const movedPositions = Array.from(shapesCurrentPositions.values());
+    
+    // Count correct selections (current positions of moved shapes that were selected)
     const correctSelections = selectedCells.filter(pos => movedPositions.includes(pos));
     
-    // Count incorrect selections (objects that didn't move but were selected)
+    // Count incorrect selections (positions that were selected but don't contain moved shapes)
     const incorrectSelections = selectedCells.filter(pos => !movedPositions.includes(pos));
     
-    // Calculate level score (correct - incorrect)
+    // Calculate level score: +1 for each correct, -1 for each incorrect
     const levelScore = Math.max(0, correctSelections.length - incorrectSelections.length);
     
-    // Check if level was passed (score >= 50% of possible moved objects)
-    const totalMovedObjects = movedPositions.length;
-    const isLevelPassed = levelScore >= totalMovedObjects * 0.5;
+    // Always record the level result
+    const totalMovedShapes = movedShapeIds.length;
+    const isLevelPassed = correctSelections.length > incorrectSelections.length; // Pass if more correct than incorrect
     
-    console.log(`Level ${currentLevel}: Score = ${levelScore}/${totalMovedObjects} (${correctSelections.length} correct, ${incorrectSelections.length} incorrect)`);
+    console.log(`Level ${currentLevel}: Score = ${levelScore}/${totalMovedShapes} (${correctSelections.length} correct, ${incorrectSelections.length} incorrect)`);
     
-    // Provide feedback
-    if (correctSelections.length === totalMovedObjects && incorrectSelections.length === 0) {
-      setFeedbackMessage('Perfect! You correctly identified all the objects that moved.');
+    // Provide feedback - focus on the number of shapes that moved
+    if (correctSelections.length === totalMovedShapes && incorrectSelections.length === 0) {
+      setFeedbackMessage('Perfect! You identified all the moved shapes correctly.');
     } else if (correctSelections.length > 0) {
-      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedObjects} moved objects, with ${incorrectSelections.length} incorrect selections.`);
+      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedShapes} moved shapes, with ${incorrectSelections.length} incorrect selections.`);
     } else {
-      setFeedbackMessage(`You didn't identify any moved objects correctly. ${totalMovedObjects} objects moved in this level.`);
+      setFeedbackMessage(`You didn't identify any moved shapes correctly. There were ${totalMovedShapes} shapes that changed positions.`);
     }
     
     // Store result for current attempt
@@ -445,9 +306,9 @@ const EcologicalSpatialMainTask = () => {
       level: currentLevel,
       correctSelections: correctSelections.length,
       incorrectSelections: incorrectSelections.length,
-      totalMovedObjects: totalMovedObjects,
+      totalMovedShapes: totalMovedShapes,
       score: levelScore,
-      movedObjectPairs: movedObjectPairs,
+      changedPairs: changedShapePairs,
       passed: isLevelPassed
     };
     
@@ -456,17 +317,15 @@ const EcologicalSpatialMainTask = () => {
     
     // Update total score and max score
     setScore(prev => prev + levelScore);
-    setMaxScore(prev => prev + totalMovedObjects);
+    setMaxScore(prev => prev + totalMovedShapes);
     
-    // If the level was passed, mark it as recorded so we don't repeat it
-    if (isLevelPassed) {
-      setRecordedLevels(prev => {
-        if (!prev.includes(currentLevel)) {
-          return [...prev, currentLevel];
-        }
-        return prev;
-      });
-    }
+    // Always add the level to recordedLevels
+    setRecordedLevels(prev => {
+      if (!prev.includes(currentLevel)) {
+        return [...prev, currentLevel];
+      }
+      return prev;
+    });
     
     setPhase('feedback');
   };
@@ -474,54 +333,68 @@ const EcologicalSpatialMainTask = () => {
   const handleNextLevel = () => {
     if (phase !== 'feedback') return;
     
-    // Get the most recent result
-    const latestResult = results[results.length - 1];
-    
-    // After each level, always progress to the next level regardless of performance
-    // End the task when we complete level 5
+    // If we're at the last level (5), end the task
     if (currentLevel === 5) {
       setCompleted(true);
-    } else {
-      // Move to the next level
-      setCurrentLevel(prev => prev + 1);
-      // Set phase back to study to allow proper transition
-      // Don't call startLevel() directly here - let the useEffect handle it based on the state changes
-      setPhase('study');
+      return;
     }
+    
+    // Always move to the next level regardless of performance
+    setCurrentLevel(prev => prev + 1);
   };
 
   const exportResults = () => {
     // Prepare CSV content
-    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Moved Objects', 'Score'];
+    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Moved Shapes', 'Score', 'Pass/Fail'];
     const csvRows = [headers];
     
-    // Add results to CSV
+    // Get the best result for each level
+    const bestResults = [];
+    const seenLevels = new Set();
+    
+    // Process results to get best outcome per level
     results.forEach(result => {
+      if (!seenLevels.has(result.level)) {
+        bestResults.push(result);
+        seenLevels.add(result.level);
+      } else {
+        // Compare with existing result for this level
+        const existingIndex = bestResults.findIndex(r => r.level === result.level);
+        if (existingIndex >= 0) {
+          const existingResult = bestResults[existingIndex];
+          // Replace if this result is better (higher score)
+          if (result.score > existingResult.score) {
+            bestResults[existingIndex] = result;
+          }
+        }
+      }
+    });
+    
+    // Add results to CSV
+    bestResults.forEach(result => {
+      const passed = result.correctSelections > result.incorrectSelections ? 'Pass' : 'Fail';
       csvRows.push([
         result.level,
         result.correctSelections,
         result.incorrectSelections,
-        result.totalMovedObjects,
-        result.score
+        result.totalMovedShapes,
+        result.score,
+        passed
       ]);
     });
     
-    // Add a summary row
-    const totalScore = results.reduce((sum, r) => sum + r.score, 0);
-    const totalPossible = results.reduce((sum, r) => sum + r.totalMovedObjects, 0);
+    // Add summary row
+    csvRows.push(['Total', '', '', maxScore, score, '']);
     
-    csvRows.push(['Summary', '', '', totalPossible, totalScore]);
-    
-    // Convert to CSV format
+    // Convert to CSV
     const csvContent = csvRows.map(row => row.join(',')).join('\n');
     
-    // Create download link
+    // Create file and download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'ecological_spatial_results.csv');
-    link.style.visibility = 'hidden';
+    link.setAttribute('download', 'spatial_memory_results.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -531,13 +404,7 @@ const EcologicalSpatialMainTask = () => {
     navigate('/');
   };
 
-  const handleNextTask = () => {
-    // Navigate to the Deductive Reasoning task
-    navigate('/deductive-reasoning-task');
-  };
-
-  // Memoize the grid rendering to prevent unnecessary re-renders
-  const renderGrid = useCallback(() => {
+  const renderGrid = () => {
     const dimensions = getGridDimensions();
     const displayShapes = phase === 'study' ? shapes : movedShapes;
     const totalCells = dimensions.columns * dimensions.rows;
@@ -624,7 +491,7 @@ const EcologicalSpatialMainTask = () => {
               boxSizing: 'border-box'
             };
             
-            const imageSize = Math.floor(cellSize * 0.75); // Adjusted for images
+            const shapeSize = Math.floor(cellSize * 0.6); // Slightly reduced from 0.62
             
             return (
               <div 
@@ -635,30 +502,21 @@ const EcologicalSpatialMainTask = () => {
               >
                 {shape && (
                   <div 
-                    className="eco-image-container"
+                    className={`grid-shape shape-${shape.type} shape-${shape.color}`}
                     style={{ 
-                      width: `${imageSize}px`,
-                      height: `${imageSize}px`,
+                      width: `${shapeSize}px`,
+                      height: `${shapeSize}px`,
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
+                      fontSize: '0',
+                      color: 'transparent',
+                      boxShadow: '0 3px 6px rgba(0,0,0,0.2)',
                       transition: 'all 0.2s ease',
                       position: 'relative',
                       ...(isChangedPosition ? getChangedStyle(i) : {})
                     }}
                   >
-                    <img 
-                      src={shape.imageSrc} 
-                      alt={shape.imageName}
-                      className="eco-image"
-                      style={{
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                        objectFit: 'contain'
-                      }}
-                      loading="eager" // Prioritize image loading
-                      decoding="async" // Allow asynchronous image decoding
-                    />
                     {phase === 'feedback' && isChangedPosition && (
                       <div style={{
                         position: 'absolute',
@@ -687,36 +545,12 @@ const EcologicalSpatialMainTask = () => {
         </div>
       </div>
     );
-  }, [
-    phase, 
-    shapes, 
-    movedShapes, 
-    selectedCells, 
-    currentLevel, 
-    getGridDimensions, 
-    handleCellClick
-  ]);
+  };
 
-  // Render method - no early returns for loading state
   return (
     <>
-      {!imagesLoaded ? (
-        <div className="eco-spatial-screen">
-          <div className="eco-loading-container">
-            <h2>Loading Images...</h2>
-            <div className="eco-loading-bar">
-              <div 
-                className="eco-loading-progress" 
-                style={{ width: `${loadingProgress}%` }}
-              ></div>
-            </div>
-            <p>{loadingProgress}%</p>
-          </div>
-        </div>
-      ) : (
-    <>
       <div className="spatial-screen" style={{ 
-            height: 'calc(100vh - 40px)', 
+        height: 'calc(100vh - 40px)', // Reduced height to leave space for button
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column'
@@ -751,7 +585,7 @@ const EcologicalSpatialMainTask = () => {
                 }}>
                   <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
                     {phase === 'study' && 'Study Phase: Memorize positions'}
-                    {phase === 'response' && 'Response Phase: Click moved objects'}
+                    {phase === 'response' && 'Response Phase: Click moved shapes'}
                     {phase === 'feedback' && `Feedback: Level ${currentLevel}`}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -759,15 +593,7 @@ const EcologicalSpatialMainTask = () => {
                     
                     {/* Smaller progress bar */}
                     <div style={{ width: '60px', height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div 
-                        style={{ 
-                          width: `${(currentLevel / 5) * 100}%`, 
-                          height: '100%', 
-                          backgroundColor: '#2196F3', 
-                          borderRadius: '4px',
-                          transition: 'width 0.5s ease-out'  // Smooth transition for progress bar
-                        }} 
-                      />
+                      <div style={{ width: `${(currentLevel / 5) * 100}%`, height: '100%', backgroundColor: '#2196F3', borderRadius: '4px' }} />
                     </div>
                     
                     {/* Always reserve space for timer, show 0s when not in study phase */}
@@ -787,72 +613,49 @@ const EcologicalSpatialMainTask = () => {
               </div>
               
               {phase === 'study' && (
-                <div className="phase-container" 
-                  style={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    animation: 'fadeIn 0.3s ease-in-out' // Add fade-in animation
-                  }}
-                >
+                <div className="phase-container" style={{ 
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
                   {renderGrid()}
                 </div>
               )}
               
               {phase === 'response' && (
-                <div className="phase-container" 
-                  style={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    animation: 'fadeIn 0.3s ease-in-out' // Add fade-in animation
-                  }}
-                >
+                <div className="phase-container" style={{ 
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
                   {renderGrid()}
                 </div>
               )}
               
               {phase === 'feedback' && (
-                <div className="phase-container" 
-                  style={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    animation: 'fadeIn 0.3s ease-in-out' // Add fade-in animation
-                  }}
-                >
-                  <p className="feedback-message" 
-                    style={{ 
-                      fontSize: '1.1rem', 
-                      margin: '0 0 10px',
-                      animation: 'slideInTop 0.4s ease-out' // Add slide-in animation
-                    }}
-                  >
-                    {feedbackMessage}
-                  </p>
-                  <p 
-                    style={{ 
-                      fontSize: '0.9rem', 
-                      color: '#666', 
-                      margin: '0 0 10px',
-                      animation: 'slideInTop 0.5s ease-out' // Add slide-in animation with delay
-                    }}
-                  >
+                <div className="phase-container" style={{ 
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  <p className="feedback-message" style={{ fontSize: '1.1rem', margin: '0 0 10px' }}>{feedbackMessage}</p>
+                  <p style={{ fontSize: '0.9rem', color: '#666', margin: '0 0 10px' }}>
                     {currentLevel < 5 ? 
-                      `Moving to level ${currentLevel + 1} next.` : 
-                      "This is the final level. The task will end now."}
+                      `Level ${currentLevel} completed. Moving to level ${currentLevel + 1} next.` : 
+                      "Level 5 completed. This is the final level."
+                    }
                   </p>
                   
                   {renderGrid()}
@@ -860,23 +663,15 @@ const EcologicalSpatialMainTask = () => {
               )}
             </>
           ) : (
-            <div className="completion-screen" style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
+            <div className="completion-screen">
               <h1>Task Complete!</h1>
               <p>You've completed the Spatial Memory Task.</p>
               <p className="score-item">Final score: <span className="score-value">{score} / {maxScore}</span></p>
               <p className="score-item">Highest level reached: <span className="score-value">{currentLevel}</span></p>
               
               <div className="action-buttons">
-                <button 
-                  className="spatial-button next-button" 
-                  onClick={handleNextTask} 
-                  style={{ 
-                    fontSize: '1.2rem', 
-                    padding: '12px 24px',
-                    animation: 'pulse 2s infinite' // Add pulsing animation to draw attention
-                  }}
-                >
-                  Next Task →
+                <button className="spatial-button export-button" onClick={exportResults}>
+                  Export Results (CSV)
                 </button>
                 <button className="spatial-button home-button" onClick={handleReturnHome}>
                   Return to Home
@@ -887,7 +682,7 @@ const EcologicalSpatialMainTask = () => {
         </div>
       </div>
 
-      {/* Fixed buttons positioned outside the main content container - don't show during transitions */}
+      {/* Fixed buttons positioned outside the main content container */}
       {phase === 'study' && showReadyButton && (
         <div style={{
           position: 'fixed',
@@ -898,8 +693,7 @@ const EcologicalSpatialMainTask = () => {
           background: 'rgba(255, 255, 255, 0.95)',
           padding: '10px 0',
           zIndex: 100,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-          animation: 'slideInBottom 0.3s ease-out' // Add slide-in animation
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
         }}>
           <button 
             className="spatial-button ready-button"
@@ -924,8 +718,7 @@ const EcologicalSpatialMainTask = () => {
           background: 'rgba(255, 255, 255, 0.95)',
           padding: '10px 0',
           zIndex: 100,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-          animation: 'slideInBottom 0.3s ease-out' // Add slide-in animation
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
         }}>
           <button 
             className="spatial-button submit-button"
@@ -950,12 +743,11 @@ const EcologicalSpatialMainTask = () => {
           background: 'rgba(255, 255, 255, 0.95)',
           padding: '10px 0',
           zIndex: 100,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-          animation: 'slideInBottom 0.3s ease-out' // Add slide-in animation
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
         }}>
           <button 
-            onClick={handleNextLevel}
             className="spatial-button next-button"
+            onClick={handleNextLevel}
             style={{
               width: '200px',
               margin: '0 auto'
@@ -965,10 +757,8 @@ const EcologicalSpatialMainTask = () => {
           </button>
         </div>
       )}
-        </>
-      )}
     </>
   );
 };
 
-export default EcologicalSpatialMainTask;
+export default SpatialMemoryMainTask;
