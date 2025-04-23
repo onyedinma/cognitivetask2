@@ -23,24 +23,11 @@ const CombinedQuestionnaire = () => {
   const handleAceiqComplete = (results) => {
     setAceiqResults(results);
     
-    // Export ACEIQ results to CSV
-    const csvData = results.questions.map(q => [q.id, q.question, q.answer]);
-    csvData.unshift(['ID', 'Question', 'Response']);
-    csvData.push(['Total Score', '', results.totalScore]);
-    
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    
-    // Export to CSV file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const studentId = localStorage.getItem('studentId') || 'unknown';
-    link.setAttribute('href', url);
-    link.setAttribute('download', `aceiq_results_${studentId}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Check if results is null (user clicked "Continue" without submitting)
+    if (!results) {
+      setCurrentQuestionnaire('SES');
+      return;
+    }
     
     // Move to next questionnaire
     setCurrentQuestionnaire('SES');
@@ -50,24 +37,11 @@ const CombinedQuestionnaire = () => {
   const handleSesComplete = (results) => {
     setSesResults(results);
     
-    // Export SES results to CSV
-    const csvData = results.questions.map(q => [q.id, q.question, q.answer]);
-    csvData.unshift(['ID', 'Question', 'Response']);
-    csvData.push(['Total Score', '', results.totalScore]);
-    
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    
-    // Export to CSV file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const studentId = localStorage.getItem('studentId') || 'unknown';
-    link.setAttribute('href', url);
-    link.setAttribute('download', `ses_results_${studentId}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Check if results is null (user clicked "Continue" without submitting)
+    if (!results) {
+      setCurrentQuestionnaire('MFQ');
+      return;
+    }
     
     // Move to next questionnaire
     setCurrentQuestionnaire('MFQ');
@@ -77,25 +51,11 @@ const CombinedQuestionnaire = () => {
   const handleMfqComplete = (results) => {
     setMfqResults(results);
     
-    // Export MFQ results to CSV
-    const csvData = results.questions.map(q => [q.id, q.question, q.answer]);
-    csvData.unshift(['ID', 'Question', 'Response']);
-    csvData.push(['Total Score', '', results.totalScore]);
-    csvData.push(['Interpretation', '', results.interpretation]);
-    
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    
-    // Export to CSV file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const studentId = localStorage.getItem('studentId') || 'unknown';
-    link.setAttribute('href', url);
-    link.setAttribute('download', `mfq_results_${studentId}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Check if results is null (user clicked "Continue" without submitting)
+    if (!results) {
+      setCurrentQuestionnaire('SDQ');
+      return;
+    }
     
     // Move to next questionnaire
     setCurrentQuestionnaire('SDQ');
@@ -105,35 +65,16 @@ const CombinedQuestionnaire = () => {
   const handleSdqComplete = (results) => {
     setSdqResults(results);
     
-    // Export SDQ results to CSV
-    const csvData = [];
-    csvData.push(['Category', 'Score']);
-    csvData.push(['Emotional Problems', results.scores.emotional]);
-    csvData.push(['Conduct Problems', results.scores.conduct]);
-    csvData.push(['Hyperactivity', results.scores.hyperactivity]);
-    csvData.push(['Peer Problems', results.scores.peer]);
-    csvData.push(['Prosocial Behavior', results.scores.prosocial]);
-    csvData.push(['Total Difficulties', results.scores.totalDifficulties]);
-    
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    
-    // Export to CSV file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const studentId = localStorage.getItem('studentId') || 'unknown';
-    link.setAttribute('href', url);
-    link.setAttribute('download', `sdq_results_${studentId}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Check if results is null (user clicked "Continue" without submitting)
+    if (!results) {
+      setQuestionnairesCompleted(true);
+      return;
+    }
     
     // Show completion screen
     setQuestionnairesCompleted(true);
     
-    // Export combined results
-    exportCombinedResults();
+    // No longer automatically export here
   };
 
   // Export all questionnaire results as a single CSV
@@ -141,25 +82,42 @@ const CombinedQuestionnaire = () => {
     if (!aceiqResults || !sesResults || !mfqResults || !sdqResults) return;
     
     const csvData = [];
-    csvData.push(['Questionnaire', 'Category', 'Score']);
+    csvData.push(['Questionnaire', 'Question ID', 'Question', 'Response']);
     
     // ACEIQ
-    csvData.push(['ACEIQ', 'Total Score', aceiqResults.totalScore]);
+    if (aceiqResults.questions && Array.isArray(aceiqResults.questions)) {
+      aceiqResults.questions.forEach(q => {
+        csvData.push(['ACEIQ', q.id, q.question, q.answer]);
+      });
+      csvData.push(['ACEIQ', 'TOTAL', 'Total Score', aceiqResults.totalScore]);
+    }
     
     // SES
-    csvData.push(['SES', 'Total Score', sesResults.totalScore]);
+    if (sesResults.questions && Array.isArray(sesResults.questions)) {
+      sesResults.questions.forEach(q => {
+        csvData.push(['SES', q.id, q.question, q.answer]);
+      });
+      csvData.push(['SES', 'TOTAL', 'Total Score', sesResults.totalScore]);
+    }
     
     // MFQ
-    csvData.push(['MFQ', 'Total Score', mfqResults.totalScore]);
-    csvData.push(['MFQ', 'Interpretation', mfqResults.interpretation]);
+    if (mfqResults.questions && Array.isArray(mfqResults.questions)) {
+      mfqResults.questions.forEach(q => {
+        csvData.push(['MFQ', q.id, q.question, q.answer]);
+      });
+      csvData.push(['MFQ', 'TOTAL', 'Total Score', mfqResults.totalScore]);
+      csvData.push(['MFQ', 'INTERP', 'Interpretation', mfqResults.interpretation]);
+    }
     
     // SDQ
-    csvData.push(['SDQ', 'Emotional Problems', sdqResults.scores.emotional]);
-    csvData.push(['SDQ', 'Conduct Problems', sdqResults.scores.conduct]);
-    csvData.push(['SDQ', 'Hyperactivity', sdqResults.scores.hyperactivity]);
-    csvData.push(['SDQ', 'Peer Problems', sdqResults.scores.peer]);
-    csvData.push(['SDQ', 'Prosocial Behavior', sdqResults.scores.prosocial]);
-    csvData.push(['SDQ', 'Total Difficulties', sdqResults.scores.totalDifficulties]);
+    if (sdqResults.scores) {
+      csvData.push(['SDQ', 'EMOTIONAL', 'Emotional Problems', sdqResults.scores.emotional]);
+      csvData.push(['SDQ', 'CONDUCT', 'Conduct Problems', sdqResults.scores.conduct]);
+      csvData.push(['SDQ', 'HYPERACTIVITY', 'Hyperactivity', sdqResults.scores.hyperactivity]);
+      csvData.push(['SDQ', 'PEER', 'Peer Problems', sdqResults.scores.peer]);
+      csvData.push(['SDQ', 'PROSOCIAL', 'Prosocial Behavior', sdqResults.scores.prosocial]);
+      csvData.push(['SDQ', 'TOTAL', 'Total Difficulties', sdqResults.scores.totalDifficulties]);
+    }
     
     const csvContent = csvData.map(row => row.join(',')).join('\n');
     
@@ -169,7 +127,7 @@ const CombinedQuestionnaire = () => {
     const link = document.createElement('a');
     const studentId = localStorage.getItem('studentId') || 'unknown';
     link.setAttribute('href', url);
-    link.setAttribute('download', `combined_questionnaire_results_${studentId}.csv`);
+    link.setAttribute('download', `questionnaire_results_${studentId}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -187,6 +145,28 @@ const CombinedQuestionnaire = () => {
             
             <button 
               className="form-button" 
+              onClick={exportCombinedResults}
+              style={{
+                fontSize: '1.2rem',
+                padding: '14px 28px',
+                fontWeight: 'bold',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                margin: '20px auto',
+                display: 'block',
+                minWidth: '300px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Download Combined Results (CSV)
+            </button>
+            
+            <button 
+              className="form-button" 
               onClick={() => navigate('/')}
               style={{
                 fontSize: '1.5rem',
@@ -198,7 +178,7 @@ const CombinedQuestionnaire = () => {
                 borderRadius: '8px',
                 cursor: 'pointer',
                 boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                margin: '30px auto',
+                margin: '20px auto',
                 display: 'block',
                 minWidth: '300px',
                 transition: 'all 0.3s ease'
