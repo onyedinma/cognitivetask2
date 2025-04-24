@@ -74,7 +74,14 @@ const CombinedQuestionnaire = () => {
     // Show completion screen
     setQuestionnairesCompleted(true);
     
-    // No longer automatically export here
+    // Export all task results automatically when questionnaires are completed
+    try {
+      const { exportAllTaskResults } = require('../../utils/taskResults');
+      exportAllTaskResults();
+      console.log('All cognitive task results exported automatically');
+    } catch (error) {
+      console.error('Error exporting all task results:', error);
+    }
   };
 
   // Export all questionnaire results as a single CSV
