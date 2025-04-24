@@ -228,12 +228,28 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     // Save form data (for example, to localStorage)
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const timestamp = new Date().toISOString();
+    
+    // Prepare questions array for combined export
+    const questions = [];
+    
+    // Add all questionnaire items with their responses
+    [...frequencyType5Questions, ...frequencyType4Questions, ...yesNoQuestions].forEach(questionId => {
+      if (formData[questionId] && formData[questionId] !== '') {
+        questions.push({
+          id: questionId,
+          question: getQuestionText(questionId),
+          answer: formData[questionId]
+        });
+      }
+    });
+    
     const results = {
       studentId,
       timestamp,
       data: formData,
       scores,
-      totalScore
+      totalScore,
+      questions // Add structured questions array for combined export
     };
     
     // Log results for now (in a real app, would save to database)
@@ -243,8 +259,8 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     const storedResults = JSON.parse(localStorage.getItem('aceiqResults') || '[]');
     localStorage.setItem('aceiqResults', JSON.stringify([...storedResults, results]));
     
-    // Automatically export to CSV
-    exportToCSV();
+    // No longer automatically export CSV here
+    // exportToCSV();
     
     setFormSubmitted(true);
     
@@ -252,6 +268,41 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     if (onComplete) {
       onComplete(results);
     }
+  };
+  
+  // Helper function to get question text
+  const getQuestionText = (questionId) => {
+    // Map question IDs to their text
+    const questionTextMap = {
+      'parentsUnderstandProblems': 'Did your parents/guardians understand your problems and worries?',
+      'parentsKnowFreeTime': 'Did your parents/guardians really know what you were doing with your free time?',
+      'notEnoughFood': 'Did you or your family not have enough food?',
+      'parentsDrunkOrDrugs': 'Were your parents/guardians too drunk or intoxicated by drugs to take care of you?',
+      'notSentToSchool': 'Were you not sent to school, or did you stop going to school?',
+      'alcoholicHouseholdMember': 'Did you live with a household member who was a problem drinker, alcoholic, or misused street or prescription drugs?',
+      'mentallyIllHouseholdMember': 'Did you live with a household member who was depressed, mentally ill, or suicidal?',
+      'imprisonedHouseholdMember': 'Did you live with a household member who was ever sent to jail or prison?',
+      'parentsSeparated': 'Were your parents ever separated or divorced?',
+      'parentDied': 'Did your parent/guardian die?',
+      'witnessedVerbalAbuse': 'Did you see or hear a parent or household member in your home being yelled at, screamed at, sworn at, insulted, or humiliated?',
+      'witnessedPhysicalAbuse': 'Did you see or hear a parent or household member in your home being slapped, kicked, punched, or beaten up?',
+      'witnessedWeaponAbuse': 'Did you see or hear a parent or household member in your home being hit or cut with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?',
+      'verbalAbuse': 'Did a parent, guardian, or other household member yell, scream, or swear at you, insult or humiliate you?',
+      'threatenedAbandonment': 'Did a parent, guardian, or other household member threaten to, or actually, abandon you or throw you out of the house?',
+      'physicalAbuse': 'Did a parent, guardian, or other household member spank, slap, kick, punch, or beat you up?',
+      'weaponAbuse': 'Did a parent, guardian, or other household member hit or cut you with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?',
+      'sexualTouching': 'Did someone touch or fondle you in a sexual way when you did not want them to?',
+      'sexualFondling': 'Did someone make you touch their body in a sexual way when you did not want them to?',
+      'attemptedSexualIntercourse': 'Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?',
+      'completedSexualIntercourse': 'Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?',
+      'bullied': 'Were you bullied?',
+      'physicalFight': 'Were you in a physical fight?',
+      'witnessedBeating': 'Did you see or hear someone being beaten up in real life?',
+      'witnessedStabbingOrShooting': 'Did you see or hear someone being stabbed or shot in real life?',
+      'witnessedThreatenedWithWeapon': 'Did you see or hear someone being threatened with a knife or gun in real life?'
+    };
+    
+    return questionTextMap[questionId] || `Question: ${questionId}`;
   };
   
   // Return to main menu
@@ -731,6 +782,10 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
             <p className="score-explanation">
               Higher scores indicate more adverse childhood experiences.
             </p>
+            <p className="note" style={{ color: '#3498db', marginTop: '10px', fontStyle: 'italic' }}>
+              A combined CSV file with all questionnaire results will be available for download 
+              after completing all questionnaires.
+            </p>
           </div>
           
           <div className="form-actions">
@@ -741,13 +796,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
               Export Results as JSON
             </button>
             
-            <button
-              className="form-button export"
-              onClick={exportToCSV}
-              disabled={exportingCSV}
-            >
-              {exportingCSV ? 'Exporting...' : 'Export Results as CSV'}
-            </button>
+            {/* CSV export removed - will be handled at the end of all questionnaires */}
             
             <button 
               className="form-button" 

@@ -110,7 +110,22 @@ const CombinedQuestionnaire = () => {
     }
     
     // SDQ
-    if (sdqResults.scores) {
+    if (sdqResults.questions && Array.isArray(sdqResults.questions)) {
+      sdqResults.questions.forEach(q => {
+        csvData.push(['SDQ', q.id, q.question, q.answer]);
+      });
+      
+      // Also include the summary scores
+      if (sdqResults.scores) {
+        csvData.push(['SDQ', 'EMOTIONAL', 'Emotional Problems', sdqResults.scores.emotional]);
+        csvData.push(['SDQ', 'CONDUCT', 'Conduct Problems', sdqResults.scores.conduct]);
+        csvData.push(['SDQ', 'HYPERACTIVITY', 'Hyperactivity', sdqResults.scores.hyperactivity]);
+        csvData.push(['SDQ', 'PEER', 'Peer Problems', sdqResults.scores.peer]);
+        csvData.push(['SDQ', 'PROSOCIAL', 'Prosocial Behavior', sdqResults.scores.prosocial]);
+        csvData.push(['SDQ', 'TOTAL', 'Total Difficulties', sdqResults.scores.totalDifficulties]);
+      }
+    } else if (sdqResults.scores) {
+      // Fallback to just including summary scores if questions array isn't available
       csvData.push(['SDQ', 'EMOTIONAL', 'Emotional Problems', sdqResults.scores.emotional]);
       csvData.push(['SDQ', 'CONDUCT', 'Conduct Problems', sdqResults.scores.conduct]);
       csvData.push(['SDQ', 'HYPERACTIVITY', 'Hyperactivity', sdqResults.scores.hyperactivity]);

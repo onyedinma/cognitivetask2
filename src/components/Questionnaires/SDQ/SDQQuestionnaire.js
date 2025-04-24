@@ -97,20 +97,21 @@ const SDQQuestionnaire = ({ onComplete }) => {
     }));
   };
   
+  // SDQ has 5 scales with 5 items each
+  const scales = {
+    emotional: ['q3', 'q8', 'q13', 'q16', 'q24'],
+    conduct: ['q5', 'q7', 'q12', 'q18', 'q22'],
+    hyperactivity: ['q2', 'q10', 'q15', 'q21', 'q25'],
+    peer: ['q6', 'q11', 'q14', 'q19', 'q23'],
+    prosocial: ['q1', 'q4', 'q9', 'q17', 'q20']
+  };
+  
+  // Some items are reverse-scored
+  const reverseScored = ['q7', 'q11', 'q14', 'q21', 'q25'];
+  
   // Calculate scores
   const calculateScores = () => {
     // SDQ has 5 scales with 5 items each
-    const scales = {
-      emotional: ['q3', 'q8', 'q13', 'q16', 'q24'],
-      conduct: ['q5', 'q7', 'q12', 'q18', 'q22'],
-      hyperactivity: ['q2', 'q10', 'q15', 'q21', 'q25'],
-      peer: ['q6', 'q11', 'q14', 'q19', 'q23'],
-      prosocial: ['q1', 'q4', 'q9', 'q17', 'q20']
-    };
-    
-    // Some items are reverse-scored
-    const reverseScored = ['q7', 'q11', 'q14', 'q21', 'q25'];
-    
     const scores = {};
     
     // Calculate score for each scale
@@ -176,6 +177,33 @@ const SDQQuestionnaire = ({ onComplete }) => {
     // Calculate scores
     const scores = calculateScores();
     
+    // Prepare structured questions array for combined export
+    const questionsArray = questions.map(question => {
+      const response = formData[question.id];
+      const responseLabel = responseOptions.find(option => option.value === response)?.label || '';
+      
+      // Get the scale this question belongs to
+      let scale = '';
+      if (scales.emotional.includes(question.id)) scale = 'emotional';
+      else if (scales.conduct.includes(question.id)) scale = 'conduct';
+      else if (scales.hyperactivity.includes(question.id)) scale = 'hyperactivity';
+      else if (scales.peer.includes(question.id)) scale = 'peer';
+      else if (scales.prosocial.includes(question.id)) scale = 'prosocial';
+      
+      // Check if question is reverse scored
+      const isReversed = reverseScored.includes(question.id);
+      
+      return {
+        id: question.id,
+        question: question.text,
+        answer: responseLabel,
+        scale: scale,
+        isReversed: isReversed,
+        rawScore: parseInt(response),
+        finalScore: isReversed ? (2 - parseInt(response)) : parseInt(response)
+      };
+    });
+    
     // Save form data
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const timestamp = new Date().toISOString();
@@ -183,7 +211,16 @@ const SDQQuestionnaire = ({ onComplete }) => {
       studentId,
       timestamp,
       data: formData,
-      scores
+      scores,
+      questions: questionsArray, // Include the detailed questions array
+      scaleScores: {
+        emotional: scores.emotional,
+        conduct: scores.conduct,
+        hyperactivity: scores.hyperactivity,
+        peer: scores.peer,
+        prosocial: scores.prosocial,
+        totalDifficulties: scores.totalDifficulties
+      }
     };
     
     // Log results
@@ -192,9 +229,6 @@ const SDQQuestionnaire = ({ onComplete }) => {
     // Save to localStorage
     const storedResults = JSON.parse(localStorage.getItem('sdqResults') || '[]');
     localStorage.setItem('sdqResults', JSON.stringify([...storedResults, results]));
-    
-    // Automatically export to CSV
-    exportToCSV(scores);
     
     setFormSubmitted(true);
     
@@ -365,6 +399,10 @@ const SDQQuestionnaire = ({ onComplete }) => {
             <h2>SDQ Score Summary</h2>
             <p>Your questionnaire has been successfully submitted.</p>
             <p>The results will be analyzed by a qualified professional.</p>
+            <p className="note" style={{ color: '#3498db', marginTop: '15px', fontStyle: 'italic' }}>
+              A combined CSV file with all questionnaire results will be available for download 
+              after completing all questionnaires.
+            </p>
           </div>
           
           <div className="form-actions">
@@ -375,13 +413,7 @@ const SDQQuestionnaire = ({ onComplete }) => {
               Export Results as JSON
             </button>
             
-            <button
-              className="form-button export"
-              onClick={() => exportToCSV(calculateScores())}
-              disabled={exportingCSV}
-            >
-              {exportingCSV ? 'Exporting...' : 'Export Results as CSV'}
-            </button>
+            {/* CSV export removed - will be handled at the end of all questionnaires */}
             
             <button 
               className="form-button" 

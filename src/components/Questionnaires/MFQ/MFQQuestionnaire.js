@@ -139,6 +139,18 @@ const MFQQuestionnaire = ({ onComplete }) => {
       return;
     }
     
+    // Prepare structured questions array for combined export
+    const questionsArray = questions.map(question => {
+      const response = formData[question.id];
+      const responseLabel = responseOptions.find(option => option.value === response)?.label || '';
+      
+      return {
+        id: question.id,
+        question: question.text,
+        answer: responseLabel
+      };
+    });
+    
     // Save form data
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const timestamp = new Date().toISOString();
@@ -147,7 +159,8 @@ const MFQQuestionnaire = ({ onComplete }) => {
       timestamp,
       data: formData,
       totalScore,
-      interpretation: interpretationText
+      interpretation: interpretationText,
+      questions: questionsArray
     };
     
     // Log results
@@ -157,8 +170,8 @@ const MFQQuestionnaire = ({ onComplete }) => {
     const storedResults = JSON.parse(localStorage.getItem('mfqResults') || '[]');
     localStorage.setItem('mfqResults', JSON.stringify([...storedResults, results]));
     
-    // Automatically export to CSV
-    exportToCSV();
+    // No longer automatically export CSV here
+    // exportToCSV();
     
     setFormSubmitted(true);
     
@@ -332,6 +345,11 @@ const MFQQuestionnaire = ({ onComplete }) => {
                   <span className="range-description">Possible clinical depression</span>
                 </div>
               </div>
+              
+              <p className="note" style={{ color: '#3498db', marginTop: '15px', fontStyle: 'italic' }}>
+                A combined CSV file with all questionnaire results will be available for download 
+                after completing all questionnaires.
+              </p>
             </div>
           </div>
           
@@ -343,13 +361,7 @@ const MFQQuestionnaire = ({ onComplete }) => {
               Export Results as JSON
             </button>
             
-            <button
-              className="form-button export"
-              onClick={exportToCSV}
-              disabled={exportingCSV}
-            >
-              {exportingCSV ? 'Exporting...' : 'Export Results as CSV'}
-            </button>
+            {/* CSV export removed - will be handled at the end of all questionnaires */}
             
             <button 
               className="form-button" 

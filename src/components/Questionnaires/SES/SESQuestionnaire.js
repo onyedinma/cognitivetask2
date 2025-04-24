@@ -107,6 +107,25 @@ const SESQuestionnaire = ({ onComplete }) => {
     }
   }, [formData]);
   
+  // Calculate score function for use during submission
+  const calculateScore = () => {
+    let score = 0;
+    
+    // Process all items (positive and negative)
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== 'struggledFinancially') {
+        // Regular scoring for positive items (higher = better SES)
+        score += parseInt(value);
+      } else {
+        // Reverse scoring for negative items (lower values should contribute higher scores)
+        // For a 5-point scale: 5->1, 4->2, 3->3, 2->4, 1->5
+        score += (6 - parseInt(value));
+      }
+    });
+    
+    return score;
+  };
+  
   // Calculate the score for a specific question (with reverse scoring applied if needed)
   const getQuestionScore = (questionId, value) => {
     const isReversed = questionId === 'struggledFinancially';
@@ -158,21 +177,34 @@ const SESQuestionnaire = ({ onComplete }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Check if all questions are answered
     if (!allQuestionsAnswered) {
       setValidationError(true);
-      window.scrollTo(0, 0); // Scroll to top to show error
       return;
     }
     
-    // Save form data (for example, to localStorage)
+    calculateScore();
+    
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const timestamp = new Date().toISOString();
+    
+    // Prepare structured questions array for the combined export
+    const questionsArray = questions.map(question => {
+      const response = formData[question.id];
+      const responseLabel = likertOptions.find(option => option.value === response)?.label || '';
+      
+      return {
+        id: question.id,
+        question: question.text,
+        answer: responseLabel
+      };
+    });
+    
     const results = {
       studentId,
       timestamp,
       data: formData,
-      totalScore
+      totalScore,
+      questions: questionsArray
     };
     
     // Log results for now (in a real app, would save to database)
@@ -182,8 +214,8 @@ const SESQuestionnaire = ({ onComplete }) => {
     const storedResults = JSON.parse(localStorage.getItem('sesResults') || '[]');
     localStorage.setItem('sesResults', JSON.stringify([...storedResults, results]));
     
-    // Automatically export to CSV
-    exportToCSV();
+    // No longer automatically export CSV here
+    // exportToCSV();
     
     setFormSubmitted(true);
     
@@ -335,6 +367,10 @@ const SESQuestionnaire = ({ onComplete }) => {
               <p className="interpretation-text">
                 Higher scores indicate a higher socioeconomic status during childhood.
               </p>
+              <p className="note" style={{ color: '#3498db', marginTop: '10px', fontStyle: 'italic' }}>
+                A combined CSV file with all questionnaire results will be available for download 
+                after completing all questionnaires.
+              </p>
             </div>
           </div>
           
@@ -346,13 +382,7 @@ const SESQuestionnaire = ({ onComplete }) => {
               Export Results as JSON
             </button>
             
-            <button
-              className="form-button export"
-              onClick={exportToCSV}
-              disabled={exportingCSV}
-            >
-              {exportingCSV ? 'Exporting...' : 'Export Results as CSV'}
-            </button>
+            {/* CSV export removed - will be handled at the end of all questionnaires */}
             
             <button 
               className="form-button" 
