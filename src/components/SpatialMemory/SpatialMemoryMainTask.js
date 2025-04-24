@@ -83,6 +83,16 @@ const SpatialMemoryMainTask = () => {
     let swapAttempts = 0;
     const maxSwapAttempts = 100; // Safety to prevent infinite loops
     
+    // Group shapes by type+color to ensure we don't swap visually identical shapes
+    const shapeGroups = {};
+    shapesCopy.forEach((shape, index) => {
+      const key = `${shape.type}-${shape.color}`;
+      if (!shapeGroups[key]) {
+        shapeGroups[key] = [];
+      }
+      shapeGroups[key].push(index);
+    });
+    
     while (shapesToSwap.length < numPairsToSwap * 2 && swapAttempts < maxSwapAttempts) {
       swapAttempts++;
       
@@ -102,12 +112,16 @@ const SpatialMemoryMainTask = () => {
       const firstShapeIndex = availableIndices[randomIndex];
       const firstShape = shapesCopy[firstShapeIndex];
       
-      // Find shapes that are different from this one (different type or color)
+      // Find shapes that have different type+color from the first shape
+      const firstShapeKey = `${firstShape.type}-${firstShape.color}`;
+      
+      // Get all indices that are different types/colors from the first shape
       const differentShapeIndices = availableIndices
         .filter(idx => idx !== firstShapeIndex)
         .filter(idx => {
           const shape = shapesCopy[idx];
-          return shape.type !== firstShape.type || shape.color !== firstShape.color;
+          const shapeKey = `${shape.type}-${shape.color}`;
+          return shapeKey !== firstShapeKey; // Ensure we never swap identical shapes
         });
       
       // If no different shapes available, try again

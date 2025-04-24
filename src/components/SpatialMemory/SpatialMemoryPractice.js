@@ -56,12 +56,30 @@ const SpatialMemoryPractice = () => {
     // Create a deep copy of shapes
     const shapesCopy = JSON.parse(JSON.stringify(originalShapes));
     
-    // Randomly select two different positions to swap
+    // Try to find two shapes of different type or color to swap
     let pos1, pos2;
+    let attempts = 0;
+    const maxAttempts = 100; // Safety to prevent infinite loops
+    
     do {
       pos1 = Math.floor(Math.random() * shapesCopy.length);
       pos2 = Math.floor(Math.random() * shapesCopy.length);
-    } while (pos1 === pos2);
+      
+      // Get the shapes at these positions
+      const shape1 = shapesCopy[pos1];
+      const shape2 = shapesCopy[pos2];
+      
+      // Continue if positions are the same or shapes have the same type AND color
+      const sameTypeAndColor = shape1.type === shape2.type && shape1.color === shape2.color;
+      
+      attempts++;
+      // Break the loop after max attempts even if we couldn't find ideal shapes to swap
+      if (attempts >= maxAttempts && pos1 !== pos2) {
+        console.warn('Could not find ideal shapes to swap after max attempts. Using different positions only.');
+        break;
+      }
+    } while (pos1 === pos2 || (shapesCopy[pos1].type === shapesCopy[pos2].type && 
+                               shapesCopy[pos1].color === shapesCopy[pos2].color));
     
     // Store which positions were swapped for later evaluation
     const changedPositions = [pos1, pos2];
@@ -71,6 +89,12 @@ const SpatialMemoryPractice = () => {
     const temp = shapesCopy[pos1].position;
     shapesCopy[pos1].position = shapesCopy[pos2].position;
     shapesCopy[pos2].position = temp;
+    
+    // Log the swapped shapes for debugging
+    console.log("Moved shapes in practice mode:", [
+      { position: pos1, type: shapesCopy[pos1].type, color: shapesCopy[pos1].color },
+      { position: pos2, type: shapesCopy[pos2].type, color: shapesCopy[pos2].color }
+    ]);
     
     setMovedShapes(shapesCopy);
     return shapesCopy;
