@@ -162,88 +162,31 @@ const DigitSpanMainTask = () => {
     timersRef.current.push(endTimer);
   };
   
-  // Convert results to CSV format
-  const convertToCSV = (data) => {
-    // Define CSV header
-    const headers = [
-      'Timestamp',
-      'Direction',
-      'Span Length',
-      'Attempt',
-      'Sequence',
-      'Expected Response',
-      'User Response',
-      'Correct'
-    ];
-    
-    // Create CSV header row
-    let csv = headers.join(',') + '\n';
-    
-    // Add data rows
-    data.forEach(item => {
-      const row = [
-        item.timestamp,
-        isBackward ? 'Backward' : 'Forward',
-        item.span,
-        item.attempt,
-        item.sequence.join(''),
-        item.expectedResponse,
-        item.userResponse,
-        item.isCorrect ? 'Yes' : 'No'
-      ];
-      
-      // Escape any commas in the data
-      const escapedRow = row.map(field => {
-        // If the field contains a comma, quote, or newline, wrap it in quotes
-        if (typeof field === 'string' && (field.includes(',') || field.includes('"') || field.includes('\n'))) {
-          // Double up any quotes to escape them
-          return `"${field.replace(/"/g, '""')}"`;
-        }
-        return field;
-      });
-      
-      csv += escapedRow.join(',') + '\n';
-    });
-    
-    return csv;
-  };
-  
   // Handle CSV export
   const exportAsCSV = () => {
-    setExportingCSV(true);
-    
     try {
+      // Import the task results utility function
+      const { saveTaskResults } = require('../../utils/taskResults');
+      
       const studentId = localStorage.getItem('studentId') || 'unknown';
-      const timestamp = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
-      const fileName = `digit-span-${isBackward ? 'backward' : 'forward'}-${studentId}-${timestamp}.csv`;
+      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
       
-      // Convert results to CSV
-      const csv = convertToCSV(results);
+      // Format results for combined storage
+      const formattedResults = results.map(item => ({
+        spanLength: item.spanLength,
+        spanMode: isBackward ? 'backward' : 'forward',
+        sequence: item.sequence,
+        correctSequence: item.correctSequence,
+        isCorrect: item.isCorrect,
+        timestamp: item.timestamp || new Date().toISOString()
+      }));
       
-      // Create a blob with the CSV data
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      // Save results using the utility
+      saveTaskResults('digitSpan', formattedResults);
       
-      // Create a download link and trigger the download
-      const link = document.createElement('a');
-      
-      // Create a URL for the blob
-      const url = URL.createObjectURL(blob);
-      
-      // Set link properties
-      link.setAttribute('href', url);
-      link.setAttribute('download', fileName);
-      link.style.visibility = 'hidden';
-      
-      // Add link to document, click it, then remove it
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      setExportingCSV(false);
+      console.log('Digit Span results saved:', formattedResults);
     } catch (error) {
-      console.error('Error exporting CSV:', error);
-      alert('There was an error exporting the results. Please try again.');
-      setExportingCSV(false);
+      console.error('Error saving results:', error);
     }
   };
   

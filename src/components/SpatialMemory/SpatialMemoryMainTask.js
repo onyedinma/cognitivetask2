@@ -353,8 +353,8 @@ const SpatialMemoryMainTask = () => {
     
     // Set feedback message
     const feedbackText = passed
-      ? `Good job! You correctly identified ${correctSelections} out of ${totalMovedShapes} moved shapes.`
-      : `You identified ${correctSelections} correctly, but made ${incorrectSelections} incorrect selections.`;
+      ? `Level ${currentLevel} complete! Ready for the next level?`
+      : `Level ${currentLevel} complete. Ready for the next challenge?`;
     
     setFeedbackMessage(feedbackText);
     setRecordedLevels(prev => [...prev, currentLevel]);
@@ -394,60 +394,21 @@ const SpatialMemoryMainTask = () => {
   };
 
   const exportResults = () => {
-    // Prepare CSV content
-    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Moved Shapes', 'Score', 'Pass/Fail'];
-    const csvRows = [headers];
-    
-    // Get the best result for each level
-    const bestResults = [];
-    const seenLevels = new Set();
-    
-    // Process results to get best outcome per level
-    results.forEach(result => {
-      if (!seenLevels.has(result.level)) {
-        bestResults.push(result);
-        seenLevels.add(result.level);
-      } else {
-        // Compare with existing result for this level
-        const existingIndex = bestResults.findIndex(r => r.level === result.level);
-        if (existingIndex >= 0) {
-          const existingResult = bestResults[existingIndex];
-          // Replace if this result is better (higher score)
-          if (result.score > existingResult.score) {
-            bestResults[existingIndex] = result;
-          }
-        }
-      }
-    });
-    
-    // Add results to CSV
-    bestResults.forEach(result => {
-      const passed = result.correctSelections > result.incorrectSelections ? 'Pass' : 'Fail';
-      csvRows.push([
-        result.level,
-        result.correctSelections,
-        result.incorrectSelections,
-        result.totalMovedShapes,
-        result.score,
-        passed
-      ]);
-    });
-    
-    // Add summary row
-    csvRows.push(['Total', '', '', maxScore, score, '']);
-    
-    // Convert to CSV
-    const csvContent = csvRows.map(row => row.join(',')).join('\n');
-    
-    // Create file and download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'spatial_memory_results.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      // Import the task results utility function
+      const { saveTaskResults } = require('../../utils/taskResults');
+      
+      // Get student ID and counter balance
+      const studentId = localStorage.getItem('studentId') || 'unknown';
+      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
+      
+      // Save results to the centralized storage system instead of exporting CSV
+      saveTaskResults('spatialMemory', results);
+      
+      console.log('Spatial Memory results saved:', results);
+    } catch (error) {
+      console.error('Error saving results:', error);
+    }
   };
 
   const handleReturnHome = () => {
@@ -715,7 +676,6 @@ const SpatialMemoryMainTask = () => {
           ) : (
             <div className="completion-screen">
               <h2>Task Complete!</h2>
-              <p>Your results have been exported to a CSV file.</p>
               
               <button 
                 onClick={handleNextTask} 
@@ -813,7 +773,7 @@ const SpatialMemoryMainTask = () => {
               margin: '0 auto'
             }}
           >
-            {currentLevel === 5 ? 'Finish' : 'Next Level'}
+            Next Level
           </button>
         </div>
       )}

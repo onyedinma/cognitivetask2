@@ -73,6 +73,8 @@ const Home = () => {
         >
           Start Assessment
         </button>
+        
+        {/* Info box about CSV exports removed */}
       </div>
     </div>
   );

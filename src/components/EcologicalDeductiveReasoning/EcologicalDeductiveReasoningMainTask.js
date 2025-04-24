@@ -197,90 +197,37 @@ const EcologicalDeductiveReasoningMainTask = () => {
 
   // Complete task and return to home
   const handleComplete = () => {
-    // Save results to localStorage for later retrieval
     try {
+      // Import the task results utility functions
+      const { saveTaskResults, exportAllTaskResults } = require('../../utils/taskResults');
+      
+      // Get student ID for identification
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
       
+      // Format the export data
       const exportData = {
-        task: 'ecological_deductive_reasoning',
-        studentId: studentId,
-        counterBalance: counterBalance,
-        results: results,
-        timestamp: new Date().toISOString(),
-        score: {
-          correct: results.filter(result => result.isCorrect).length,
-          total: results.length,
-          accuracy: results.length > 0 
-            ? Math.round((results.filter(result => result.isCorrect).length / results.length) * 100) 
-            : 0
-        }
-      };
-      
-      // Get existing results or initialize new array
-      const existingResults = JSON.parse(localStorage.getItem('taskResults') || '[]');
-      existingResults.push(exportData);
-      localStorage.setItem('taskResults', JSON.stringify(existingResults));
-      
-      console.log('Ecological Deductive Reasoning results saved:', exportData);
-      
-      // Export results to CSV
-      const csvData = [];
-      // Add header row
-      csvData.push(['Task', 'Student ID', 'Counter Balance', 'Trial', 'Question', 'Is Correct', 'Selected Cards', 'Correct Cards', 'Timestamp']);
-      
-      // Add data rows
-      results.forEach((result, index) => {
-        csvData.push([
-          'ecological_deductive_reasoning',
-          studentId,
-          counterBalance,
-          index + 1,
-          result.question || '',
-          result.isCorrect ? '1' : '0',
-          JSON.stringify(result.selectedCards || []),
-          JSON.stringify(result.correctCards || []),
-          result.timestamp || ''
-        ]);
-      });
-      
-      // Add summary row
-      const totalCorrect = results.filter(result => result.isCorrect).length;
-      const accuracy = results.length > 0 
-        ? Math.round((totalCorrect / results.length) * 100) 
-        : 0;
-        
-      csvData.push([
-        'ecological_deductive_reasoning_summary',
         studentId,
         counterBalance,
-        '',
-        '',
-        `${totalCorrect}/${results.length}`,
-        `${accuracy}%`,
-        '',
-        exportData.timestamp
-      ]);
+        timestamp: new Date().toISOString(),
+        results: results.map(result => ({
+          ...result,
+          selectedCards: result.selectedCards || [],
+          correctCards: result.correctCards || []
+        }))
+      };
       
-      // Create CSV content
-      let csvContent = csvData.map(row => row.join(',')).join('\n');
+      // Save this task's results
+      saveTaskResults('ecologicalDeductive', exportData.results);
       
-      // Create and download CSV file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `ecological_deductive_reasoning_${studentId}_${new Date().toISOString()}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Export ALL tasks' results as a single CSV file
+      exportAllTaskResults();
+      
+      // Navigate to the questionnaires task
+      navigate('/combined-questionnaire');
     } catch (error) {
       console.error('Error saving or exporting results:', error);
     }
-    
-    // Navigate to the questionnaires task
-    navigate('/combined-questionnaire');
   };
 
   // Render card component

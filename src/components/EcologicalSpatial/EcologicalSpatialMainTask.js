@@ -433,11 +433,11 @@ const EcologicalSpatialMainTask = () => {
     
     // Provide feedback
     if (correctSelections.length === totalMovedObjects && incorrectSelections.length === 0) {
-      setFeedbackMessage('Perfect! You correctly identified all the objects that moved.');
+      setFeedbackMessage('Level complete! Ready for the next challenge?');
     } else if (correctSelections.length > 0) {
-      setFeedbackMessage(`You identified ${correctSelections.length} out of ${totalMovedObjects} moved objects, with ${incorrectSelections.length} incorrect selections.`);
+      setFeedbackMessage(`Level ${currentLevel} complete. Ready to continue?`);
     } else {
-      setFeedbackMessage(`You didn't identify any moved objects correctly. ${totalMovedObjects} objects moved in this level.`);
+      setFeedbackMessage(`Level ${currentLevel} finished. Let's move on to the next level.`);
     }
     
     // Store result for current attempt
@@ -491,40 +491,21 @@ const EcologicalSpatialMainTask = () => {
   };
 
   const exportResults = () => {
-    // Prepare CSV content
-    const headers = ['Level', 'Correct Selections', 'Incorrect Selections', 'Total Moved Objects', 'Score'];
-    const csvRows = [headers];
-    
-    // Add results to CSV
-    results.forEach(result => {
-      csvRows.push([
-        result.level,
-        result.correctSelections,
-        result.incorrectSelections,
-        result.totalMovedObjects,
-        result.score
-      ]);
-    });
-    
-    // Add a summary row
-    const totalScore = results.reduce((sum, r) => sum + r.score, 0);
-    const totalPossible = results.reduce((sum, r) => sum + r.totalMovedObjects, 0);
-    
-    csvRows.push(['Summary', '', '', totalPossible, totalScore]);
-    
-    // Convert to CSV format
-    const csvContent = csvRows.map(row => row.join(',')).join('\n');
-    
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'ecological_spatial_results.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      // Import the task results utility function
+      const { saveTaskResults } = require('../../utils/taskResults');
+      
+      // Get student ID and counter balance
+      const studentId = localStorage.getItem('studentId') || 'unknown';
+      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
+      
+      // Save results to the centralized storage system instead of exporting CSV
+      saveTaskResults('ecologicalSpatial', results);
+      
+      console.log('Ecological Spatial results saved:', results);
+    } catch (error) {
+      console.error('Error saving results:', error);
+    }
   };
 
   const handleReturnHome = () => {

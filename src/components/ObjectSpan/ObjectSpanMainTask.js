@@ -272,29 +272,25 @@ const ObjectSpanMainTask = () => {
   
   // Export results as CSV
   const exportResultsAsCSV = () => {
-    // Add total_correct_sequences to the last result
-    const correctSequences = results.filter(r => r.is_correct).length;
-    const finalResults = results.map(result => ({
-      ...result,
-      total_correct_sequences: correctSequences
-    }));
-    
-    // Generate CSV content
-    const csvContent = UTILS.objectToCSV(
-      EXPORT_FORMATS.objectSpan.csv.headers,
-      finalResults
-    );
-    
-    // Generate filename
-    const timestamp = UTILS.formatTimestamp();
-    const filename = EXPORT_FORMATS.objectSpan.csv.filename(
-      `object_span_${isBackward ? 'backward' : 'forward'}`,
-      studentId,
-      timestamp
-    );
-    
-    // Download CSV
-    UTILS.downloadCSV(csvContent, filename);
+    try {
+      // Import the task results utility function
+      const { saveTaskResults } = require('../../utils/taskResults');
+      
+      // Add total_correct_sequences to the results
+      const correctSequences = results.filter(r => r.is_correct).length;
+      const finalResults = results.map(result => ({
+        ...result,
+        total_correct_sequences: correctSequences,
+        spanMode: isBackward ? 'backward' : 'forward'
+      }));
+      
+      // Save results using the utility
+      saveTaskResults('objectSpan', finalResults);
+      
+      console.log('Object Span results saved:', finalResults);
+    } catch (error) {
+      console.error('Error saving results:', error);
+    }
   };
   
   // Navigation handlers
