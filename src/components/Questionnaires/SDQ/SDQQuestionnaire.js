@@ -14,6 +14,7 @@ const SDQQuestionnaire = ({ onComplete }) => {
   const [validationError, setValidationError] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [scores, setScores] = useState({});
   
   // Simulate loading to ensure consistent rendering
   useEffect(() => {
@@ -109,29 +110,99 @@ const SDQQuestionnaire = ({ onComplete }) => {
   // Some items are reverse-scored
   const reverseScored = ['q7', 'q11', 'q14', 'q21', 'q25'];
   
-  // Calculate scores
+  // Calculate SDQ scores and subscales
   const calculateScores = () => {
-    // SDQ has 5 scales with 5 items each
-    const scores = {};
+    // Check if all questions are answered
+    const emotional = calculateSubscaleScore('emotional');
+    const conduct = calculateSubscaleScore('conduct');
+    const hyperactivity = calculateSubscaleScore('hyperactivity');
+    const peer = calculateSubscaleScore('peer');
+    const prosocial = calculateSubscaleScore('prosocial');
     
-    // Calculate score for each scale
-    Object.entries(scales).forEach(([scale, items]) => {
-      scores[scale] = items.reduce((sum, item) => {
-        let value = parseInt(formData[item]);
-        
-        // If the item is reverse-scored, reverse it (0->2, 1->1, 2->0)
-        if (reverseScored.includes(item)) {
-          value = 2 - value;
-        }
-        
-        return sum + value;
-      }, 0);
-    });
+    // Calculate total difficulties score
+    const totalDifficulties = emotional + conduct + hyperactivity + peer;
     
-    // Calculate total difficulties score (all but prosocial)
-    scores.totalDifficulties = scores.emotional + scores.conduct + scores.hyperactivity + scores.peer;
+    // Calculate externalizing and internalizing
+    const externalizing = conduct + hyperactivity;
+    const internalizing = emotional + peer;
     
-    return scores;
+    // Get clinical categories for each subscale
+    const emotionalCategory = getCategoryScore(emotional, 'emotional');
+    const conductCategory = getCategoryScore(conduct, 'conduct');
+    const hyperactivityCategory = getCategoryScore(hyperactivity, 'hyperactivity');
+    const peerCategory = getCategoryScore(peer, 'peer');
+    const prosocialCategory = getCategoryScore(prosocial, 'prosocial');
+    const totalDifficultiesCategory = getCategoryScore(totalDifficulties, 'totalDifficulties');
+    
+    return {
+      emotional,
+      conduct,
+      hyperactivity,
+      peer,
+      prosocial,
+      totalDifficulties,
+      externalizing,
+      internalizing,
+      emotionalCategory,
+      conductCategory,
+      hyperactivityCategory,
+      peerCategory,
+      prosocialCategory,
+      totalDifficultiesCategory
+    };
+  };
+  
+  // Calculate score for a specific subscale
+  const calculateSubscaleScore = (subscale) => {
+    const subscaleQuestions = {
+      emotional: ['often_complains_of_headaches', 'many_worries', 'often_unhappy', 'nervous_or_clingy', 'many_fears'],
+      conduct: ['often_has_temper_tantrums', 'generally_obedient', 'often_fights_with_other_children', 'often_lies_or_cheats', 'steals_from_home'],
+      hyperactivity: ['restless_overactive', 'constantly_fidgeting', 'easily_distracted', 'thinks_things_out', 'sees_tasks_through'],
+      peer: ['rather_solitary', 'has_at_least_one_good_friend', 'generally_liked_by_others', 'picked_on_or_bullied', 'gets_on_better_with_adults'],
+      prosocial: ['considerate_of_others', 'shares_readily', 'helpful_if_someone_hurt', 'kind_to_younger_children', 'often_volunteers']
+    };
+
+    const reverseScored = {
+      conduct: ['generally_obedient'],
+      hyperactivity: ['thinks_things_out', 'sees_tasks_through'],
+      peer: ['has_at_least_one_good_friend', 'generally_liked_by_others']
+    };
+    
+    // Calculate score for the subscale
+    return subscaleQuestions[subscale].reduce((sum, qId) => {
+      const score = formData[qId] ? parseInt(formData[qId]) : 0;
+      // Check if this question is reverse scored
+      if (reverseScored[subscale] && reverseScored[subscale].includes(qId)) {
+        return sum + (2 - score); // Reverse scoring: 0->2, 1->1, 2->0
+      }
+      return sum + score;
+    }, 0);
+  };
+  
+  // Get clinical category based on score and subscale
+  const getCategoryScore = (score, subscale) => {
+    // Clinical cutoff values based on parent-report SDQ (ages 4-17)
+    const cutoffs = {
+      emotional: { normal: [0, 3], borderline: [4, 4], abnormal: [5, 10] },
+      conduct: { normal: [0, 2], borderline: [3, 3], abnormal: [4, 10] },
+      hyperactivity: { normal: [0, 5], borderline: [6, 6], abnormal: [7, 10] },
+      peer: { normal: [0, 2], borderline: [3, 3], abnormal: [4, 10] },
+      prosocial: { normal: [6, 10], borderline: [5, 5], abnormal: [0, 4] }, // Note: Reversed thresholds
+      totalDifficulties: { normal: [0, 13], borderline: [14, 16], abnormal: [17, 40] }
+    };
+    
+    // Determine category
+    if (cutoffs[subscale]) {
+      if (score >= cutoffs[subscale].normal[0] && score <= cutoffs[subscale].normal[1]) {
+        return 'Normal';
+      } else if (score >= cutoffs[subscale].borderline[0] && score <= cutoffs[subscale].borderline[1]) {
+        return 'Borderline';
+      } else if (score >= cutoffs[subscale].abnormal[0] && score <= cutoffs[subscale].abnormal[1]) {
+        return 'Abnormal';
+      }
+    }
+    
+    return 'Unknown'; // Default if no match
   };
   
   // Reusable question component for each item
@@ -163,6 +234,21 @@ const SDQQuestionnaire = ({ onComplete }) => {
     );
   };
   
+  // Generate overall interpretation text based on scores
+  const generateInterpretation = (scores) => {
+    let interpretation = '';
+    
+    if (scores.totalDifficultiesCategory === 'Abnormal') {
+      interpretation = 'The total difficulties score suggests significant difficulties that likely warrant further assessment and intervention.';
+    } else if (scores.totalDifficultiesCategory === 'Borderline') {
+      interpretation = 'The total difficulties score suggests some difficulties that may warrant monitoring or follow-up.';
+    } else {
+      interpretation = 'The total difficulties score is within the normal range.';
+    }
+    
+    return interpretation;
+  };
+  
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -170,57 +256,50 @@ const SDQQuestionnaire = ({ onComplete }) => {
     // Check if all questions are answered
     if (!allQuestionsAnswered) {
       setValidationError(true);
-      window.scrollTo(0, 0); // Scroll to top to show error
       return;
     }
     
-    // Calculate scores
-    const scores = calculateScores();
+    // Calculate all SDQ scores
+    const calculatedScores = calculateScores();
+    setScores(calculatedScores);
     
-    // Prepare structured questions array for combined export
+    // Create a structured array of questions with their scores and types
     const questionsArray = questions.map(question => {
       const response = formData[question.id];
-      const responseLabel = responseOptions.find(option => option.value === response)?.label || '';
+      const numericScore = parseInt(response) || 0;
       
-      // Get the scale this question belongs to
-      let scale = '';
-      if (scales.emotional.includes(question.id)) scale = 'emotional';
-      else if (scales.conduct.includes(question.id)) scale = 'conduct';
-      else if (scales.hyperactivity.includes(question.id)) scale = 'hyperactivity';
-      else if (scales.peer.includes(question.id)) scale = 'peer';
-      else if (scales.prosocial.includes(question.id)) scale = 'prosocial';
+      // Determine if question is reverse scored based on subscale and item
+      let scoreType = 'Standard scored';
       
-      // Check if question is reverse scored
-      const isReversed = reverseScored.includes(question.id);
+      // Prosocial items are reverse scored relative to problems (higher is better)
+      if (question.id.startsWith('prosocial')) {
+        scoreType = 'Prosocial item (higher is better)';
+      }
+      // Specific reverse scored items in the difficulties subscales
+      else if (['emotional7', 'conduct5', 'conduct7', 'hyperactivity2', 'hyperactivity10', 'peer6'].includes(question.id)) {
+        scoreType = 'Reverse scored';
+      }
       
       return {
         id: question.id,
-        question: question.text,
-        answer: responseLabel,
-        scale: scale,
-        isReversed: isReversed,
-        rawScore: parseInt(response),
-        finalScore: isReversed ? (2 - parseInt(response)) : parseInt(response)
+        response: response, // Include the raw response
+        score: numericScore, // Include the calculated score
+        type: scoreType    // Include the score type
       };
     });
     
-    // Save form data
+    // Generate overall interpretation
+    const overallInterpretation = generateInterpretation(calculatedScores);
+    
+    // Create results object
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const timestamp = new Date().toISOString();
     const results = {
       studentId,
       timestamp,
-      data: formData,
-      scores,
-      questions: questionsArray, // Include the detailed questions array
-      scaleScores: {
-        emotional: scores.emotional,
-        conduct: scores.conduct,
-        hyperactivity: scores.hyperactivity,
-        peer: scores.peer,
-        prosocial: scores.prosocial,
-        totalDifficulties: scores.totalDifficulties
-      }
+      scores: calculatedScores,
+      interpretation: overallInterpretation,
+      questions: questionsArray
     };
     
     // Log results
@@ -258,7 +337,7 @@ const SDQQuestionnaire = ({ onComplete }) => {
   };
 
   // Export results as CSV
-  const exportToCSV = (scores) => {
+  const exportToCSV = () => {
     setExportingCSV(true);
     
     try {
@@ -266,36 +345,75 @@ const SDQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row
-      let csvContent = 'StudentID,Timestamp,QuestionID,QuestionText,Response,ResponseValue\n';
+      // Create CSV header row - include response data
+      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score,Score Type\n';
       
-      // Add row for each question with response
+      // Add row for each question
       questions.forEach(question => {
         const response = formData[question.id];
-        const responseLabel = responseOptions.find(option => option.value === response)?.label || '';
+        
+        // Determine if question is reverse scored or a special type
+        let scoreType = 'Standard scored';
+        
+        // Prosocial items are reverse scored relative to problems
+        if (question.id.startsWith('prosocial')) {
+          scoreType = 'Prosocial item (higher is better)';
+        }
+        // Specific reverse scored items in the difficulties subscales
+        else if (['emotional7', 'conduct5', 'conduct7', 'hyperactivity2', 'hyperactivity10', 'peer6'].includes(question.id)) {
+          scoreType = 'Reverse scored';
+        }
         
         csvContent += [
           studentId,
           timestamp,
           question.id,
-          `"${question.text.replace(/"/g, '""')}"`, // Escape any quotes in question text
-          `"${responseLabel}"`,
-          response
+          `"${response || ''}"`,
+          response,
+          `"${scoreType}"`
         ].join(',') + '\n';
       });
       
-      // Add scores
-      if (scores) {
-        Object.entries(scores).forEach(([scale, score]) => {
-          csvContent += [
-            studentId,
-            timestamp,
-            `SCORE_${scale.toUpperCase()}`,
-            `"SDQ ${scale} score"`,
-            '',
-            score
-          ].join(',') + '\n';
-        });
+      // Add subscale scores
+      const scoreEntries = [
+        ['EMOTIONAL', scores.emotional, 'Subscale total'],
+        ['EMOTIONAL_CATEGORY', `"${scores.emotionalCategory}"`, 'Clinical category'],
+        ['CONDUCT', scores.conduct, 'Subscale total'],
+        ['CONDUCT_CATEGORY', `"${scores.conductCategory}"`, 'Clinical category'],
+        ['HYPERACTIVITY', scores.hyperactivity, 'Subscale total'],
+        ['HYPERACTIVITY_CATEGORY', `"${scores.hyperactivityCategory}"`, 'Clinical category'],
+        ['PEER', scores.peer, 'Subscale total'],
+        ['PEER_CATEGORY', `"${scores.peerCategory}"`, 'Clinical category'],
+        ['PROSOCIAL', scores.prosocial, 'Subscale total (higher is better)'],
+        ['PROSOCIAL_CATEGORY', `"${scores.prosocialCategory}"`, 'Clinical category'],
+        ['TOTAL_DIFFICULTIES', scores.totalDifficulties, 'Sum of problem subscales'],
+        ['TOTAL_CATEGORY', `"${scores.totalDifficultiesCategory}"`, 'Clinical category'],
+        ['EXTERNALIZING', scores.externalizing, 'Conduct + Hyperactivity'],
+        ['INTERNALIZING', scores.internalizing, 'Emotional + Peer']
+      ];
+      
+      scoreEntries.forEach(([label, value, type]) => {
+        csvContent += [
+          studentId,
+          timestamp,
+          label,
+          '""',
+          value,
+          `"${type}"`
+        ].join(',') + '\n';
+      });
+      
+      // Add interpretation if available
+      const interpretation = generateInterpretation(scores);
+      if (interpretation) {
+        csvContent += [
+          studentId,
+          timestamp,
+          'INTERPRETATION',
+          '""',
+          `"${interpretation}"`,
+          '"Clinical interpretation"'
+        ].join(',') + '\n';
       }
       
       // Create downloadable link
@@ -413,7 +531,12 @@ const SDQQuestionnaire = ({ onComplete }) => {
               Export Results as JSON
             </button>
             
-            {/* CSV export removed - will be handled at the end of all questionnaires */}
+            <button 
+              className="form-button" 
+              onClick={exportToCSV}
+            >
+              Export Results as CSV
+            </button>
             
             <button 
               className="form-button" 

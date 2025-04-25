@@ -107,19 +107,21 @@ const SESQuestionnaire = ({ onComplete }) => {
     }
   }, [formData]);
   
-  // Calculate score function for use during submission
+  // Calculate the total score
   const calculateScore = () => {
     let score = 0;
     
-    // Process all items (positive and negative)
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key !== 'struggledFinancially') {
-        // Regular scoring for positive items (higher = better SES)
-        score += parseInt(value);
-      } else {
-        // Reverse scoring for negative items (lower values should contribute higher scores)
-        // For a 5-point scale: 5->1, 4->2, 3->3, 2->4, 1->5
-        score += (6 - parseInt(value));
+    questions.forEach(question => {
+      const response = formData[question.id];
+      if (response) {
+        let pointValue = parseInt(response);
+        
+        // Reverse scoring for struggledFinancially (higher = lower SES)
+        if (question.id === 'struggledFinancially') {
+          pointValue = 6 - pointValue; // Reverse the score (5->1, 4->2, 3->3, 2->4, 1->5)
+        }
+        
+        score += pointValue;
       }
     });
     
@@ -177,49 +179,55 @@ const SESQuestionnaire = ({ onComplete }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Check if all questions are answered
     if (!allQuestionsAnswered) {
       setValidationError(true);
       return;
     }
     
-    calculateScore();
+    // Calculate final score
+    const score = calculateScore();
     
-    const studentId = localStorage.getItem('studentId') || 'unknown';
-    const timestamp = new Date().toISOString();
-    
-    // Prepare structured questions array for the combined export
+    // Create a structured array of questions with their scores
     const questionsArray = questions.map(question => {
       const response = formData[question.id];
-      const responseLabel = likertOptions.find(option => option.value === response)?.label || '';
+      let finalScore = parseInt(response) || 0;
+      let type = 'Standard scored';
+      
+      // Add special handling for the reverse-scored item
+      if (question.id === 'struggledFinancially') {
+        finalScore = 6 - finalScore; // Reverse scoring
+        type = 'Reverse scored';
+      }
       
       return {
         id: question.id,
-        question: question.text,
-        answer: responseLabel
+        response: response, // Include the raw response
+        score: finalScore,  // Include the calculated score
+        type: type          // Include the score type
       };
     });
     
+    // Create results object
+    const studentId = localStorage.getItem('studentId') || 'unknown';
+    const timestamp = new Date().toISOString();
     const results = {
       studentId,
       timestamp,
-      data: formData,
-      totalScore,
+      totalScore: score,
       questions: questionsArray
     };
     
-    // Log results for now (in a real app, would save to database)
+    // Log results
     console.log('SES Questionnaire Results:', results);
     
     // Save to localStorage
     const storedResults = JSON.parse(localStorage.getItem('sesResults') || '[]');
     localStorage.setItem('sesResults', JSON.stringify([...storedResults, results]));
     
-    // No longer automatically export CSV here
-    // exportToCSV();
-    
     setFormSubmitted(true);
     
-    // If onComplete callback is provided, use it, otherwise use default behavior
+    // If onComplete callback is provided, use it
     if (onComplete) {
       onComplete(results);
     }
@@ -251,25 +259,30 @@ const SESQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row
-      let csvContent = 'StudentID,Timestamp,QuestionID,QuestionText,Response,ResponseValue,IsReversed,Score\n';
+      // Create CSV header row - include response data
+      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score,Score Type\n';
       
-      // Add row for each question with score
+      // Add rows for each question
       questions.forEach(question => {
         const response = formData[question.id];
-        const responseLabel = likertOptions.find(option => option.value === response)?.label || '';
-        const isReversed = question.isReversed || question.id === 'struggledFinancially';
-        const score = getQuestionScore(question.id, response);
+        const score = response ? parseInt(response) : 0;
+        
+        // Add special handling for the reverse-scored item
+        let finalScore = score;
+        let scoreType = 'Standard scored';
+        
+        if (question.id === 'struggledFinancially') {
+          finalScore = 6 - score; // Reverse scoring
+          scoreType = 'Reverse scored';
+        }
         
         csvContent += [
           studentId,
           timestamp,
           question.id,
-          `"${question.text.replace(/"/g, '""')}"`, // Escape any quotes in question text
-          `"${responseLabel}"`,
-          response,
-          isReversed ? 'Yes' : 'No',
-          score
+          `"${response || ''}"`,
+          finalScore,
+          `"${scoreType}"`
         ].join(',') + '\n';
       });
       
@@ -278,11 +291,9 @@ const SESQuestionnaire = ({ onComplete }) => {
         studentId,
         timestamp,
         'TOTAL',
-        '"SES Total Score"',
-        '',
-        '',
-        '',
-        totalScore
+        '""',
+        calculateScore(),
+        '"Sum of all items"'
       ].join(',') + '\n';
       
       // Create downloadable link
@@ -381,8 +392,6 @@ const SESQuestionnaire = ({ onComplete }) => {
             >
               Export Results as JSON
             </button>
-            
-            {/* CSV export removed - will be handled at the end of all questionnaires */}
             
             <button 
               className="form-button" 

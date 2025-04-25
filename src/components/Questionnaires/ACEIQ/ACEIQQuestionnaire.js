@@ -21,27 +21,29 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   const [scores, setScores] = useState({});
   const [totalScore, setTotalScore] = useState(0);
   const [exportingCSV, setExportingCSV] = useState(false);
+  const [validationError, setValidationError] = useState(false);
+  const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(true); // Default to true for simplified validation
   
   // Scoring definitions
   const scoringValues = {
     frequency5: {
-      "Always": 5,
-      "Most of the time": 4,
-      "Sometimes": 3,
-      "Rarely": 2,
+      "Always": 0,
+      "Most of the time": 0,
+      "Sometimes": 1,
+      "Rarely": 1,
       "Never": 1,
       "Refused": -9
     },
     frequency4: {
-      "Many times": 4,
-      "A few times": 3,
-      "Once": 2,
-      "Never": 1,
+      "Many times": 3,
+      "A few times": 2,
+      "Once": 1,
+      "Never": 0,
       "Refused": -9
     },
     yesNo: {
-      "Yes": 2,
-      "No": 1,
+      "Yes": 1,
+      "No": 0,
       "Refused": -9
     }
   };
@@ -222,49 +224,70 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Calculate final scores before submission
-    calculateScores();
+    // Check if all questions are answered
+    if (!allQuestionsAnswered) {
+      setValidationError(true);
+      window.scrollTo(0, 0); // Scroll to top to show error
+      return;
+    }
     
-    // Save form data (for example, to localStorage)
-    const studentId = localStorage.getItem('studentId') || 'unknown';
-    const timestamp = new Date().toISOString();
+    // Calculate total score based on all responses
+    const totalScore = calculateTotalScore(formData);
     
-    // Prepare questions array for combined export
-    const questions = [];
-    
-    // Add all questionnaire items with their responses
-    [...frequencyType5Questions, ...frequencyType4Questions, ...yesNoQuestions].forEach(questionId => {
-      if (formData[questionId] && formData[questionId] !== '') {
-        questions.push({
-          id: questionId,
-          question: getQuestionText(questionId),
-          answer: formData[questionId]
-        });
+    // Prepare structured questions array for combined export - include both raw responses and calculated scores
+    const questionsArray = questions.map(question => {
+      const response = formData[question.id];
+      let score = 0;
+      
+      // Check if this is a yes/no question
+      if (yesNoQuestions.includes(question.id)) {
+        score = response ? scoringValues.yesNo[response] || 0 : 0;
+      } 
+      // Check if this is a frequency4 question
+      else if (frequencyType4Questions.includes(question.id)) {
+        score = response ? scoringValues.frequency4[response] || 0 : 0;
       }
+      // Handle frequency5 questions (with reverse scoring)
+      else if (frequencyType5Questions.includes(question.id)) {
+        // These questions are about positive experiences, so they need to be reverse scored
+        // "Always" should be the lowest score (1) and "Never" should be the highest (5)
+        if (response) {
+          // Reverse the score: 6 minus the normal score
+          // (converts 5→1, 4→2, 3→3, 2→4, 1→5, with "Refused" handled separately)
+          score = response === "Refused" ? 0 : (6 - (scoringValues.frequency5[response] || 0));
+        }
+      }
+      
+      return {
+        id: question.id,
+        response: response, // Include the raw response
+        score: score,       // Include the calculated score
+        type: yesNoQuestions.includes(question.id) ? 'Binary' : 
+              frequencyType4Questions.includes(question.id) ? '0-3 scale' : 
+              frequencyType5Questions.includes(question.id) ? 'Reverse scored (Protective factor)' : ''
+      };
     });
     
+    // Save form data
+    const studentId = localStorage.getItem('studentId') || 'unknown';
+    const timestamp = new Date().toISOString();
     const results = {
       studentId,
       timestamp,
-      data: formData,
-      scores,
       totalScore,
-      questions // Add structured questions array for combined export
+      questions: questionsArray
     };
     
-    // Log results for now (in a real app, would save to database)
+    // Log results
     console.log('ACE-IQ Questionnaire Results:', results);
     
     // Save to localStorage
     const storedResults = JSON.parse(localStorage.getItem('aceiqResults') || '[]');
     localStorage.setItem('aceiqResults', JSON.stringify([...storedResults, results]));
     
-    // No longer automatically export CSV here
-    // exportToCSV();
-    
     setFormSubmitted(true);
     
-    // If onComplete callback is provided, use it, otherwise use default behavior
+    // If onComplete callback is provided, use it
     if (onComplete) {
       onComplete(results);
     }
@@ -323,103 +346,41 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row
-      let csvContent = 'StudentID,Timestamp,QuestionID,QuestionText,Response,ScoringType,IsReversed,OriginalScore,FinalScore\n';
+      // Create CSV header row - include both Question ID, Response and Score
+      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score,Score Type\n';
       
-      // Helper function to get question text
-      const getQuestionText = (questionId) => {
-        // Map question IDs to their text
-        const questionTextMap = {
-          'parentsUnderstandProblems': 'Did your parents/guardians understand your problems and worries?',
-          'parentsKnowFreeTime': 'Did your parents/guardians really know what you were doing with your free time?',
-          'notEnoughFood': 'Did you or your family not have enough food?',
-          'parentsDrunkOrDrugs': 'Were your parents/guardians too drunk or intoxicated by drugs to take care of you?',
-          'notSentToSchool': 'Were you not sent to school, or did you stop going to school?',
-          'alcoholicHouseholdMember': 'Did you live with a household member who was a problem drinker, alcoholic, or misused street or prescription drugs?',
-          'mentallyIllHouseholdMember': 'Did you live with a household member who was depressed, mentally ill, or suicidal?',
-          'imprisonedHouseholdMember': 'Did you live with a household member who was ever sent to jail or prison?',
-          'parentsSeparated': 'Were your parents ever separated or divorced?',
-          'parentDied': 'Did your parent/guardian die?',
-          'witnessedVerbalAbuse': 'Did you see or hear a parent or household member in your home being yelled at, screamed at, sworn at, insulted, or humiliated?',
-          'witnessedPhysicalAbuse': 'Did you see or hear a parent or household member in your home being slapped, kicked, punched, or beaten up?',
-          'witnessedWeaponAbuse': 'Did you see or hear a parent or household member in your home being hit or cut with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?',
-          'verbalAbuse': 'Did a parent, guardian, or other household member yell, scream, or swear at you, insult or humiliate you?',
-          'threatenedAbandonment': 'Did a parent, guardian, or other household member threaten to, or actually, abandon you or throw you out of the house?',
-          'physicalAbuse': 'Did a parent, guardian, or other household member spank, slap, kick, punch, or beat you up?',
-          'weaponAbuse': 'Did a parent, guardian, or other household member hit or cut you with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?',
-          'sexualTouching': 'Did someone touch or fondle you in a sexual way when you did not want them to?',
-          'sexualFondling': 'Did someone make you touch their body in a sexual way when you did not want them to?',
-          'attemptedSexualIntercourse': 'Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?',
-          'completedSexualIntercourse': 'Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?',
-          'bullied': 'Were you bullied?',
-          'physicalFight': 'Were you in a physical fight?',
-          'witnessedBeating': 'Did you see or hear someone being beaten up in real life?',
-          'witnessedStabbingOrShooting': 'Did you see or hear someone being stabbed or shot in real life?',
-          'witnessedThreatenedWithWeapon': 'Did you see or hear someone being threatened with a knife or gun in real life?'
-        };
+      // Map question IDs to their types for the CSV
+      const questionTypes = {};
+      frequencyType5Questions.forEach(id => questionTypes[id] = 'Reverse scored (Protective factor)');
+      frequencyType4Questions.forEach(id => questionTypes[id] = '0-3 scale');
+      yesNoQuestions.forEach(id => questionTypes[id] = 'Binary');
+      
+      // Add row for each question with score only
+      questions.forEach(question => {
+        const response = formData[question.id];
+        let score = 0;
         
-        return questionTextMap[questionId] || `Question: ${questionId}`;
-      };
-      
-      // Add frequency type 5 questions (reversed items)
-      frequencyType5Questions.forEach(questionId => {
-        if (formData[questionId] && formData[questionId] !== '') {
-          const response = formData[questionId];
-          const originalScore = scoringValues.frequency5[response];
-          const reversedScore = (originalScore > 0) ? (6 - originalScore) : originalScore;
-          
-          csvContent += [
-            studentId,
-            timestamp,
-            questionId,
-            `"${getQuestionText(questionId).replace(/"/g, '""')}"`,
-            `"${response}"`,
-            'frequency5',
-            'Yes', // Is reversed
-            originalScore,
-            reversedScore
-          ].join(',') + '\n';
+        // Check if this is a yes/no question
+        if (yesNoQuestions.includes(question.id)) {
+          score = response ? scoringValues.yesNo[response] || 0 : 0;
+        } 
+        // Check if this is a frequency4 question
+        else if (frequencyType4Questions.includes(question.id)) {
+          score = response ? scoringValues.frequency4[response] || 0 : 0;
         }
-      });
-      
-      // Add frequency type 4 questions
-      frequencyType4Questions.forEach(questionId => {
-        if (formData[questionId] && formData[questionId] !== '') {
-          const response = formData[questionId];
-          const score = scoringValues.frequency4[response];
-          
-          csvContent += [
-            studentId,
-            timestamp,
-            questionId,
-            `"${getQuestionText(questionId).replace(/"/g, '""')}"`,
-            `"${response}"`,
-            'frequency4',
-            'No', // Not reversed
-            score,
-            score
-          ].join(',') + '\n';
+        // Handle frequency5 questions (protective factors)
+        else if (frequencyType5Questions.includes(question.id)) {
+          score = response ? scoringValues.frequency5[response] || 0 : 0;
         }
-      });
-      
-      // Add yes/no questions
-      yesNoQuestions.forEach(questionId => {
-        if (formData[questionId] && formData[questionId] !== '') {
-          const response = formData[questionId];
-          const score = scoringValues.yesNo[response];
-          
-          csvContent += [
-            studentId,
-            timestamp,
-            questionId,
-            `"${getQuestionText(questionId).replace(/"/g, '""')}"`,
-            `"${response}"`,
-            'yesNo',
-            'No', // Not reversed
-            score,
-            score
-          ].join(',') + '\n';
-        }
+        
+        csvContent += [
+          studentId,
+          timestamp,
+          question.id,
+          `"${response || ''}"`,
+          score,
+          `"${questionTypes[question.id] || ''}"`
+        ].join(',') + '\n';
       });
       
       // Add total score row
@@ -427,12 +388,9 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         studentId,
         timestamp,
         'TOTAL',
-        '"ACE-IQ Total Score"',
-        '',
-        '',
-        '',
-        '',
-        totalScore
+        '""',
+        calculateTotalScore(formData),
+        '"Sum of all items"'
       ].join(',') + '\n';
       
       // Create downloadable link
@@ -731,6 +689,69 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     <CommunityViolenceSection key="community-violence" formData={formData} handleChange={handleChange} />
   ];
   
+  // Questions array - contains all questions we want to track scores for
+  const questions = [
+    { id: 'parentsUnderstandProblems', text: 'Did your parents/guardians understand your problems and worries?' },
+    { id: 'parentsKnowFreeTime', text: 'Did your parents/guardians really know what you were doing with your free time?' },
+    { id: 'notEnoughFood', text: 'Did you or your family not have enough food?' },
+    { id: 'parentsDrunkOrDrugs', text: 'Were your parents/guardians too drunk or intoxicated by drugs to take care of you?' },
+    { id: 'notSentToSchool', text: 'Were you not sent to school, or did you stop going to school?' },
+    { id: 'alcoholicHouseholdMember', text: 'Did you live with a household member who was a problem drinker, alcoholic, or misused street or prescription drugs?' },
+    { id: 'mentallyIllHouseholdMember', text: 'Did you live with a household member who was depressed, mentally ill, or suicidal?' },
+    { id: 'imprisonedHouseholdMember', text: 'Did you live with a household member who was ever sent to jail or prison?' },
+    { id: 'parentsSeparated', text: 'Were your parents ever separated or divorced?' },
+    { id: 'parentDied', text: 'Did your parent/guardian die?' },
+    { id: 'witnessedVerbalAbuse', text: 'Did you see or hear a parent or household member in your home being yelled at, screamed at, sworn at, insulted, or humiliated?' },
+    { id: 'witnessedPhysicalAbuse', text: 'Did you see or hear a parent or household member in your home being slapped, kicked, punched, or beaten up?' },
+    { id: 'witnessedWeaponAbuse', text: 'Did you see or hear a parent or household member in your home being hit or cut with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?' },
+    { id: 'verbalAbuse', text: 'Did a parent, guardian, or other household member yell, scream, or swear at you, insult or humiliate you?' },
+    { id: 'threatenedAbandonment', text: 'Did a parent, guardian, or other household member threaten to, or actually, abandon you or throw you out of the house?' },
+    { id: 'physicalAbuse', text: 'Did a parent, guardian, or other household member spank, slap, kick, punch, or beat you up?' },
+    { id: 'weaponAbuse', text: 'Did a parent, guardian, or other household member hit or cut you with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?' },
+    { id: 'sexualTouching', text: 'Did someone touch or fondle you in a sexual way when you did not want them to?' },
+    { id: 'sexualFondling', text: 'Did someone make you touch their body in a sexual way when you did not want them to?' },
+    { id: 'attemptedSexualIntercourse', text: 'Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?' },
+    { id: 'completedSexualIntercourse', text: 'Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?' },
+    { id: 'bullied', text: 'Were you bullied?' },
+    { id: 'physicalFight', text: 'Were you in a physical fight?' },
+    { id: 'witnessedBeating', text: 'Did you see or hear someone being beaten up in real life?' },
+    { id: 'witnessedStabbingOrShooting', text: 'Did you see or hear someone being stabbed or shot in real life?' },
+    { id: 'witnessedThreatenedWithWeapon', text: 'Did you see or hear someone being threatened with a knife or gun in real life?' }
+  ];
+
+  // Calculate total score based on all responses
+  const calculateTotalScore = (data) => {
+    let totalScore = 0;
+    
+    // Calculate scores for yes/no questions
+    yesNoQuestions.forEach(questionId => {
+      if (data[questionId] && data[questionId] !== "Refused") {
+        totalScore += scoringValues.yesNo[data[questionId]] || 0;
+      }
+    });
+    
+    // Calculate scores for frequency4 questions
+    frequencyType4Questions.forEach(questionId => {
+      if (data[questionId] && data[questionId] !== "Refused") {
+        totalScore += scoringValues.frequency4[data[questionId]] || 0;
+      }
+    });
+    
+    // Calculate scores for frequency5 questions (protective factors)
+    frequencyType5Questions.forEach(questionId => {
+      if (data[questionId] && data[questionId] !== "Refused") {
+        totalScore += scoringValues.frequency5[data[questionId]] || 0;
+      }
+    });
+    
+    return totalScore;
+  };
+
+  // Function to count the number of "Yes" responses (for backward compatibility)
+  const countYesResponses = (data) => {
+    return calculateTotalScore(data);
+  };
+  
   // Render the form
   return (
     <div className="task-screen">
@@ -795,8 +816,6 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
             >
               Export Results as JSON
             </button>
-            
-            {/* CSV export removed - will be handled at the end of all questionnaires */}
             
             <button 
               className="form-button" 

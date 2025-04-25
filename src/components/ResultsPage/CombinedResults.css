@@ -1,0 +1,188 @@
+.combined-results {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.combined-results h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #343a40;
+}
+
+.combined-results h1 span {
+  font-size: 0.7em;
+  font-weight: normal;
+  color: #6c757d;
+}
+
+/* Tab styling */
+.react-tabs {
+  width: 100%;
+}
+
+.react-tabs__tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #dee2e6;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.react-tabs__tab {
+  list-style: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  color: #495057;
+  border-radius: 8px 8px 0 0;
+  margin-right: 5px;
+  background-color: #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.react-tabs__tab--selected {
+  background-color: #fff;
+  border-bottom: 3px solid #007bff;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.react-tabs__tab:hover {
+  background-color: #fff;
+}
+
+.react-tabs__tab-panel {
+  display: none;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+
+.react-tabs__tab-panel--selected {
+  display: block;
+}
+
+/* Count styling */
+.count {
+  display: inline-block;
+  font-size: 0.8em;
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  margin-left: 5px;
+}
+
+/* Summary panel styling */
+.summary-panel h2 {
+  margin-bottom: 20px;
+  color: #343a40;
+  text-align: center;
+}
+
+.summary-counts {
+  display: flex;
+  justify-content: space-around;
+  margin: 30px 0;
+}
+
+.count-box {
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 150px;
+}
+
+.count-box h3 {
+  margin: 0 0 10px 0;
+  color: #343a40;
+}
+
+.count-box .count {
+  font-size: 2em;
+  font-weight: bold;
+  color: #007bff;
+  background: none;
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+.count-box .assessment-type {
+  font-size: 0.8em;
+  color: #6c757d;
+  margin-top: 10px;
+}
+
+/* Latest results section */
+.latest-result {
+  margin: 30px 0;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.latest-result h3 {
+  color: #343a40;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+/* No results message */
+.no-results {
+  text-align: center;
+  padding: 50px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 50px auto;
+  max-width: 600px;
+}
+
+.no-results h2 {
+  color: #6c757d;
+  margin-bottom: 15px;
+}
+
+.no-results p {
+  color: #868e96;
+  font-size: 1.1em;
+}
+
+/* Questionnaire panel styling */
+.questionnaire-panel h2 {
+  margin-bottom: 20px;
+  color: #343a40;
+  text-align: center;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 10px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .summary-counts {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .count-box {
+    margin-bottom: 15px;
+    width: 80%;
+  }
+  
+  .react-tabs__tab {
+    padding: 8px 12px;
+    font-size: 0.9em;
+  }
+} 

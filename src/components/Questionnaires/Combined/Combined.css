@@ -47,4 +47,66 @@
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
   margin: 0;
+}
+
+/* SDQ Category Table Styling */
+.sdq-category-table {
+  margin: 15px 0 25px;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sdq-category-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+.sdq-category-table th {
+  background-color: #f0f7ff;
+  color: #2c3e50;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sdq-category-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sdq-category-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sdq-category-table tr:nth-child(even) {
+  background-color: #f7f9fc;
+}
+
+.sdq-note {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+  margin-top: 5px;
+}
+
+/* SDQ category colors */
+.sdq-category-close {
+  color: #2ecc71;
+}
+
+.sdq-category-raised {
+  color: #f39c12;
+}
+
+.sdq-category-high {
+  color: #e74c3c;
+}
+
+.sdq-category-veryhigh {
+  color: #c0392b;
+  font-weight: bold;
 } 

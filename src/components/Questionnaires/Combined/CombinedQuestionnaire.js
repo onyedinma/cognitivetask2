@@ -89,56 +89,143 @@ const CombinedQuestionnaire = () => {
     if (!aceiqResults || !sesResults || !mfqResults || !sdqResults) return;
     
     const csvData = [];
-    csvData.push(['Questionnaire', 'Question ID', 'Question', 'Response']);
     
-    // ACEIQ
+    // Add file header
+    csvData.push(['COGNITIVE TASKS QUESTIONNAIRE RESULTS']);
+    csvData.push(['Student ID:', localStorage.getItem('studentId') || 'unknown']);
+    csvData.push(['Export Date:', new Date().toISOString()]);
+    csvData.push([]);  // Blank row
+    
+    // ACEIQ section
+    csvData.push(['===== ADVERSE CHILDHOOD EXPERIENCES QUESTIONNAIRE (ACE-IQ) =====']);
+    csvData.push(['Questionnaire', 'Question ID', 'Response', 'Score', 'Score Type']);
+    
     if (aceiqResults.questions && Array.isArray(aceiqResults.questions)) {
+      // Map question IDs to their types for the CSV
+      const aceiqQuestionTypes = {};
+      
+      // These arrays should match the ones in ACEIQQuestionnaire.js
+      const frequencyType5Questions = ['parentsUnderstandProblems', 'parentsKnowFreeTime'];
+      const yesNoQuestions = [
+        'alcoholicHouseholdMember', 'mentallyIllHouseholdMember', 
+        'imprisonedHouseholdMember', 'parentsSeparated', 'parentDied'
+      ];
+      // All other questions are frequency4 type
+      
+      frequencyType5Questions.forEach(id => aceiqQuestionTypes[id] = 'Reverse scored (Protective factor)');
+      yesNoQuestions.forEach(id => aceiqQuestionTypes[id] = 'Binary');
+      
       aceiqResults.questions.forEach(q => {
-        csvData.push(['ACEIQ', q.id, q.question, q.answer]);
-      });
-      csvData.push(['ACEIQ', 'TOTAL', 'Total Score', aceiqResults.totalScore]);
-    }
-    
-    // SES
-    if (sesResults.questions && Array.isArray(sesResults.questions)) {
-      sesResults.questions.forEach(q => {
-        csvData.push(['SES', q.id, q.question, q.answer]);
-      });
-      csvData.push(['SES', 'TOTAL', 'Total Score', sesResults.totalScore]);
-    }
-    
-    // MFQ
-    if (mfqResults.questions && Array.isArray(mfqResults.questions)) {
-      mfqResults.questions.forEach(q => {
-        csvData.push(['MFQ', q.id, q.question, q.answer]);
-      });
-      csvData.push(['MFQ', 'TOTAL', 'Total Score', mfqResults.totalScore]);
-      csvData.push(['MFQ', 'INTERP', 'Interpretation', mfqResults.interpretation]);
-    }
-    
-    // SDQ
-    if (sdqResults.questions && Array.isArray(sdqResults.questions)) {
-      sdqResults.questions.forEach(q => {
-        csvData.push(['SDQ', q.id, q.question, q.answer]);
+        // Determine score type if not already set
+        let scoreType = q.type || aceiqQuestionTypes[q.id] || '0-3 scale';
+        
+        csvData.push([
+          'ACEIQ', 
+          q.id, 
+          q.response || '', // Include the raw response if available
+          q.score,
+          scoreType
+        ]);
       });
       
-      // Also include the summary scores
-      if (sdqResults.scores) {
-        csvData.push(['SDQ', 'EMOTIONAL', 'Emotional Problems', sdqResults.scores.emotional]);
-        csvData.push(['SDQ', 'CONDUCT', 'Conduct Problems', sdqResults.scores.conduct]);
-        csvData.push(['SDQ', 'HYPERACTIVITY', 'Hyperactivity', sdqResults.scores.hyperactivity]);
-        csvData.push(['SDQ', 'PEER', 'Peer Problems', sdqResults.scores.peer]);
-        csvData.push(['SDQ', 'PROSOCIAL', 'Prosocial Behavior', sdqResults.scores.prosocial]);
-        csvData.push(['SDQ', 'TOTAL', 'Total Difficulties', sdqResults.scores.totalDifficulties]);
+      csvData.push(['ACEIQ', 'TOTAL', '', aceiqResults.totalScore, 'Sum of all items']);
+    }
+    
+    // Blank row between questionnaires
+    csvData.push([]);
+    csvData.push([]);
+    
+    // SES section
+    csvData.push(['===== SOCIOECONOMIC STATUS QUESTIONNAIRE (SES) =====']);
+    csvData.push(['Questionnaire', 'Question ID', 'Response', 'Score', 'Score Type']);
+    
+    if (sesResults.questions && Array.isArray(sesResults.questions)) {
+      sesResults.questions.forEach(q => {
+        // Determine score type - only struggledFinancially is reverse scored
+        const scoreType = q.type || (q.id === 'struggledFinancially' ? 'Reverse scored' : 'Standard scored');
+        csvData.push(['SES', q.id, q.response || '', q.score, scoreType]);
+      });
+      csvData.push(['SES', 'TOTAL', '', sesResults.totalScore, 'Sum of all items']);
+    }
+    
+    // Blank row between questionnaires
+    csvData.push([]);
+    csvData.push([]);
+    
+    // MFQ section
+    csvData.push(['===== MOOD AND FEELINGS QUESTIONNAIRE (MFQ) =====']);
+    csvData.push(['Questionnaire', 'Question ID', 'Response', 'Score', 'Score Type']);
+    
+    if (mfqResults.questions && Array.isArray(mfqResults.questions)) {
+      mfqResults.questions.forEach(q => {
+        csvData.push(['MFQ', q.id, q.response || '', q.score, q.type || 'Standard scored']);
+      });
+      csvData.push(['MFQ', 'TOTAL', '', mfqResults.totalScore, 'Sum of all items']);
+      
+      // Add interpretation row
+      if (mfqResults.interpretation) {
+        csvData.push(['MFQ', 'INTERPRETATION', '', mfqResults.interpretation, 'Clinical interpretation']);
       }
-    } else if (sdqResults.scores) {
-      // Fallback to just including summary scores if questions array isn't available
-      csvData.push(['SDQ', 'EMOTIONAL', 'Emotional Problems', sdqResults.scores.emotional]);
-      csvData.push(['SDQ', 'CONDUCT', 'Conduct Problems', sdqResults.scores.conduct]);
-      csvData.push(['SDQ', 'HYPERACTIVITY', 'Hyperactivity', sdqResults.scores.hyperactivity]);
-      csvData.push(['SDQ', 'PEER', 'Peer Problems', sdqResults.scores.peer]);
-      csvData.push(['SDQ', 'PROSOCIAL', 'Prosocial Behavior', sdqResults.scores.prosocial]);
-      csvData.push(['SDQ', 'TOTAL', 'Total Difficulties', sdqResults.scores.totalDifficulties]);
+    }
+    
+    // Blank row between questionnaires
+    csvData.push([]);
+    csvData.push([]);
+    
+    // SDQ section
+    csvData.push(['===== STRENGTHS AND DIFFICULTIES QUESTIONNAIRE (SDQ) =====']);
+    csvData.push(['Questionnaire', 'Question ID', 'Response', 'Score', 'Score Type']);
+    
+    if (sdqResults.questions && Array.isArray(sdqResults.questions)) {
+      sdqResults.questions.forEach(q => {
+        // Determine if question is reverse scored based on subscale and item
+        let scoreType = q.type || 'Standard scored';
+        
+        // Prosocial items are reverse scored relative to problems
+        if (!q.type && q.id.startsWith('prosocial')) {
+          scoreType = 'Prosocial item (higher is better)';
+        }
+        // Specific reverse scored items in the difficulties subscales
+        else if (!q.type && ['emotional7', 'conduct5', 'conduct7', 'hyperactivity2', 'hyperactivity10', 'peer6'].includes(q.id)) {
+          scoreType = 'Reverse scored';
+        }
+        
+        csvData.push(['SDQ', q.id, q.response || '', q.score, scoreType]);
+      });
+      
+      // Add a separator before summary scores
+      csvData.push([]);
+      csvData.push(['===== SDQ SUMMARY SCORES =====']);
+      csvData.push(['Scale', 'Score', 'Category']);
+      
+      // Include subscale scores with categories
+      if (sdqResults.scores) {
+        csvData.push(['SDQ', 'EMOTIONAL_PROBLEMS', '', sdqResults.scores.emotional, 'Subscale total']);
+        csvData.push(['SDQ', 'EMOTIONAL_CATEGORY', '', sdqResults.scores.emotionalCategory, 'Clinical category']);
+        
+        csvData.push(['SDQ', 'CONDUCT_PROBLEMS', '', sdqResults.scores.conduct, 'Subscale total']);
+        csvData.push(['SDQ', 'CONDUCT_CATEGORY', '', sdqResults.scores.conductCategory, 'Clinical category']);
+        
+        csvData.push(['SDQ', 'HYPERACTIVITY', '', sdqResults.scores.hyperactivity, 'Subscale total']);
+        csvData.push(['SDQ', 'HYPERACTIVITY_CATEGORY', '', sdqResults.scores.hyperactivityCategory, 'Clinical category']);
+        
+        csvData.push(['SDQ', 'PEER_PROBLEMS', '', sdqResults.scores.peer, 'Subscale total']);
+        csvData.push(['SDQ', 'PEER_CATEGORY', '', sdqResults.scores.peerCategory, 'Clinical category']);
+        
+        csvData.push(['SDQ', 'PROSOCIAL', '', sdqResults.scores.prosocial, 'Subscale total (higher is better)']);
+        csvData.push(['SDQ', 'PROSOCIAL_CATEGORY', '', sdqResults.scores.prosocialCategory, 'Clinical category']);
+        
+        csvData.push(['SDQ', 'TOTAL_DIFFICULTIES', '', sdqResults.scores.totalDifficulties, 'Sum of problem subscales']);
+        csvData.push(['SDQ', 'TOTAL_CATEGORY', '', sdqResults.scores.totalDifficultiesCategory, 'Clinical category']);
+        
+        csvData.push(['SDQ', 'EXTERNALIZING', '', sdqResults.scores.externalizing, 'Conduct + Hyperactivity']);
+        csvData.push(['SDQ', 'INTERNALIZING', '', sdqResults.scores.internalizing, 'Emotional + Peer']);
+      }
+      
+      // Interpretation
+      if (sdqResults.interpretation) {
+        csvData.push(['SDQ', 'INTERPRETATION', '', sdqResults.interpretation, '']);
+      }
     }
     
     const csvContent = csvData.map(row => row.join(',')).join('\n');
@@ -319,12 +406,79 @@ const CombinedQuestionnaire = () => {
             {sdqResults && (
               <div className="score-summary">
                 <h2>Questionnaire Score Summary</h2>
-                <p className="total-score">Emotional Problems: <span>{sdqResults.scores.emotional}</span></p>
-                <p className="total-score">Conduct Problems: <span>{sdqResults.scores.conduct}</span></p>
-                <p className="total-score">Hyperactivity: <span>{sdqResults.scores.hyperactivity}</span></p>
-                <p className="total-score">Peer Problems: <span>{sdqResults.scores.peer}</span></p>
-                <p className="total-score">Prosocial Behavior: <span>{sdqResults.scores.prosocial}</span></p>
-                <p className="total-score">Total Difficulties: <span>{sdqResults.scores.totalDifficulties}</span></p>
+                
+                <h3>Subscale Scores</h3>
+                <div className="sdq-category-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Scale</th>
+                        <th>Score</th>
+                        <th>Category</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Emotional Problems:</td>
+                        <td>{sdqResults.scores.emotional}</td>
+                        <td>{sdqResults.scores.emotionalCategory}</td>
+                      </tr>
+                      <tr>
+                        <td>Conduct Problems:</td>
+                        <td>{sdqResults.scores.conduct}</td>
+                        <td>{sdqResults.scores.conductCategory}</td>
+                      </tr>
+                      <tr>
+                        <td>Hyperactivity:</td>
+                        <td>{sdqResults.scores.hyperactivity}</td>
+                        <td>{sdqResults.scores.hyperactivityCategory}</td>
+                      </tr>
+                      <tr>
+                        <td>Peer Problems:</td>
+                        <td>{sdqResults.scores.peer}</td>
+                        <td>{sdqResults.scores.peerCategory}</td>
+                      </tr>
+                      <tr>
+                        <td>Prosocial Behavior:</td>
+                        <td>{sdqResults.scores.prosocial}</td>
+                        <td>{sdqResults.scores.prosocialCategory}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <h3>Composite Scores</h3>
+                <div className="sdq-category-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Scale</th>
+                        <th>Score</th>
+                        <th>Category</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Total Difficulties:</td>
+                        <td>{sdqResults.scores.totalDifficulties}</td>
+                        <td>{sdqResults.scores.totalDifficultiesCategory}</td>
+                      </tr>
+                      <tr>
+                        <td>Externalizing:</td>
+                        <td>{sdqResults.scores.externalizing}</td>
+                        <td>-</td>
+                      </tr>
+                      <tr>
+                        <td>Internalizing:</td>
+                        <td>{sdqResults.scores.internalizing}</td>
+                        <td>-</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p className="sdq-note">
+                  Categories based on official SDQ four-band classification for self-report
+                </p>
               </div>
             )}
             

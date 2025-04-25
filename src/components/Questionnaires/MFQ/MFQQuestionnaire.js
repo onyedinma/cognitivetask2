@@ -128,6 +128,24 @@ const MFQQuestionnaire = ({ onComplete }) => {
     );
   };
   
+  // Calculate current total score
+  const calculateScore = () => {
+    return Object.values(formData).reduce(
+      (sum, value) => sum + (value ? parseInt(value) : 0), 0
+    );
+  };
+
+  // Get interpretation based on score
+  const getInterpretation = (score) => {
+    if (score <= 5) {
+      return 'Likely no depression';
+    } else if (score <= 12) {
+      return 'Mild to moderate depression';
+    } else {
+      return 'Possible clinical depression (flag for review)';
+    }
+  };
+  
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -135,31 +153,44 @@ const MFQQuestionnaire = ({ onComplete }) => {
     // Check if all questions are answered
     if (!allQuestionsAnswered) {
       setValidationError(true);
-      window.scrollTo(0, 0); // Scroll to top to show error
       return;
     }
     
-    // Prepare structured questions array for combined export
+    // Calculate total score
+    const score = calculateScore();
+    setTotalScore(score);
+    
+    // Determine interpretation based on score
+    let interpretation = '';
+    if (score >= 12) {
+      interpretation = 'Possible depression (score ≥ 12)';
+      setInterpretationText(interpretation);
+    } else {
+      interpretation = 'Non-clinical range (score < 12)';
+      setInterpretationText(interpretation);
+    }
+    
+    // Create a structured array of questions with their scores
     const questionsArray = questions.map(question => {
       const response = formData[question.id];
-      const responseLabel = responseOptions.find(option => option.value === response)?.label || '';
+      const numericScore = parseInt(response) || 0;
       
       return {
         id: question.id,
-        question: question.text,
-        answer: responseLabel
+        response: response, // Include the raw response
+        score: numericScore, // Include the calculated score
+        type: 'Standard scored' // All MFQ items use standard scoring
       };
     });
     
-    // Save form data
+    // Create results object
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const timestamp = new Date().toISOString();
     const results = {
       studentId,
       timestamp,
-      data: formData,
-      totalScore,
-      interpretation: interpretationText,
+      totalScore: score,
+      interpretation,
       questions: questionsArray
     };
     
@@ -169,9 +200,6 @@ const MFQQuestionnaire = ({ onComplete }) => {
     // Save to localStorage
     const storedResults = JSON.parse(localStorage.getItem('mfqResults') || '[]');
     localStorage.setItem('mfqResults', JSON.stringify([...storedResults, results]));
-    
-    // No longer automatically export CSV here
-    // exportToCSV();
     
     setFormSubmitted(true);
     
@@ -184,7 +212,6 @@ const MFQQuestionnaire = ({ onComplete }) => {
   // Export results as JSON
   const exportResults = () => {
     const dataStr = JSON.stringify({
-      formData,
       totalScore,
       interpretation: interpretationText,
       timestamp: new Date().toISOString()
@@ -208,21 +235,18 @@ const MFQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row
-      let csvContent = 'StudentID,Timestamp,QuestionID,QuestionText,Response,ResponseValue,Score\n';
+      // Create CSV header row - include response data
+      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score\n';
       
-      // Add row for each question with score
+      // Add row for each question with score only
       questions.forEach(question => {
         const response = formData[question.id];
-        const responseLabel = responseOptions.find(option => option.value === response)?.label || '';
         
         csvContent += [
           studentId,
           timestamp,
           question.id,
-          `"${question.text.replace(/"/g, '""')}"`, // Escape any quotes in question text
-          `"${responseLabel}"`,
-          response,
+          `"${response || ''}"`,
           response
         ].join(',') + '\n';
       });
@@ -232,11 +256,20 @@ const MFQQuestionnaire = ({ onComplete }) => {
         studentId,
         timestamp,
         'TOTAL',
-        '"MFQ Total Score"',
-        `"${interpretationText}"`,
-        '',
+        '""',
         totalScore
       ].join(',') + '\n';
+      
+      // Add interpretation row
+      if (interpretationText) {
+        csvContent += [
+          studentId,
+          timestamp,
+          'INTERPRETATION',
+          '""',
+          `"${interpretationText}"`
+        ].join(',') + '\n';
+      }
       
       // Create downloadable link
       const encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
@@ -361,7 +394,12 @@ const MFQQuestionnaire = ({ onComplete }) => {
               Export Results as JSON
             </button>
             
-            {/* CSV export removed - will be handled at the end of all questionnaires */}
+            <button 
+              className="form-button" 
+              onClick={exportToCSV}
+            >
+              Export Results as CSV
+            </button>
             
             <button 
               className="form-button" 
