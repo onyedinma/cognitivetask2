@@ -57,20 +57,27 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   const frequencyType4Questions = [
     'notEnoughFood', 'parentsDrunkOrDrugs', 'notSentToSchool',
     'witnessedVerbalAbuse', 'witnessedPhysicalAbuse', 'witnessedWeaponAbuse',
-    'verbalAbuse', 'threatenedAbandonment', 'bullied'
+    'verbalAbuse', 'threatenedAbandonment', 'bullied',
+    'physicalAbuse', 'weaponAbuse', 
+    'sexualTouching', 'sexualFondling', 'attemptedSexualIntercourse', 'completedSexualIntercourse',
+    'physicalFight', 'witnessedBeating', 'witnessedStabbingOrShooting', 'witnessedThreatenedWithWeapon'
   ];
   
   const frequencyType5Questions = [
     'parentsUnderstandProblems', 'parentsKnowFreeTime'
   ];
   
-  // Excluded sexual abuse questions for this implementation based on the provided list
-  const excludedQuestions = [
-    'sexualTouching', 'sexualFondling', 'attemptedSexualIntercourse', 
-    'completedSexualIntercourse', 'physicalAbuse', 'weaponAbuse',
-    'physicalFight', 'witnessedBeating', 'witnessedStabbingOrShooting', 
-    'witnessedThreatenedWithWeapon'
-  ];
+  // Map question IDs to their types for the combined CSV export
+  const getQuestionScoreType = (questionId) => {
+    if (yesNoQuestions.includes(questionId)) {
+      return 'Binary (1-2)';
+    } else if (frequencyType4Questions.includes(questionId)) {
+      return 'Frequency (1-4)';
+    } else if (frequencyType5Questions.includes(questionId)) {
+      return 'Protection (1-5)';
+    }
+    return '';
+  };
   
   // State for form data
   const [formData, setFormData] = useState({
@@ -208,18 +215,6 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     window.scrollTo(0, 0);
   };
   
-  // Map question IDs to their types for the combined CSV export
-  const getQuestionScoreType = (questionId) => {
-    if (yesNoQuestions.includes(questionId)) {
-      return 'Binary (1-2)';
-    } else if (frequencyType4Questions.includes(questionId)) {
-      return 'Frequency (1-4)';
-    } else if (frequencyType5Questions.includes(questionId)) {
-      return 'Protection (1-5)';
-    }
-    return '';
-  };
-  
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -341,35 +336,58 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       const timestamp = new Date().toISOString();
       
       // Create CSV header row - include score only, not responses
-      let csvContent = 'StudentID,Timestamp,QuestionID,Score,Score Type\n';
+      let csvContent = 'StudentID,Timestamp,Section,QuestionID,QuestionText,Score,ScoreType,Response\n';
       
       // Add row for each question with score only, not response
       questions.forEach(question => {
         const response = formData[question.id];
+        const questionText = question.text.replace(/,/g, ''); // Remove commas to avoid CSV issues
         let score = 0;
+        let scoreType = '';
+        let section = '';
+        
+        // Determine section
+        if (['parentsUnderstandProblems', 'parentsKnowFreeTime'].includes(question.id)) {
+          section = 'Relationship with Parents';
+        } else if (['notEnoughFood', 'parentsDrunkOrDrugs', 'notSentToSchool'].includes(question.id)) {
+          section = 'Neglect';
+        } else if (['alcoholicHouseholdMember', 'mentallyIllHouseholdMember', 'imprisonedHouseholdMember', 'parentsSeparated', 'parentDied', 
+                    'witnessedVerbalAbuse', 'witnessedPhysicalAbuse', 'witnessedWeaponAbuse'].includes(question.id)) {
+          section = 'Family Environment';
+        } else if (['verbalAbuse', 'threatenedAbandonment', 'physicalAbuse', 'weaponAbuse', 
+                    'sexualTouching', 'sexualFondling', 'attemptedSexualIntercourse', 'completedSexualIntercourse'].includes(question.id)) {
+          section = 'Direct Abuse';
+        } else if (['bullied', 'physicalFight'].includes(question.id)) {
+          section = 'Peer Violence';
+        } else if (['witnessedBeating', 'witnessedStabbingOrShooting', 'witnessedThreatenedWithWeapon'].includes(question.id)) {
+          section = 'Community Violence';
+        }
         
         // Check if this is a yes/no question
         if (yesNoQuestions.includes(question.id)) {
           score = response ? scoringValues.yesNo[response] || 0 : 0;
+          scoreType = 'Binary (1-2)';
         } 
         // Check if this is a frequency4 question
         else if (frequencyType4Questions.includes(question.id)) {
           score = response ? scoringValues.frequency4[response] || 0 : 0;
+          scoreType = 'Frequency (1-4)';
         }
         // Handle frequency5 questions with different scoring
         else if (frequencyType5Questions.includes(question.id)) {
           score = response ? scoringValues.frequency5[response] || 0 : 0;
+          scoreType = 'Protection (1-5)';
         }
-        
-        // Get the score type
-        const scoreType = getQuestionScoreType(question.id);
         
         csvContent += [
           studentId,
           timestamp,
+          `"${section}"`,
           question.id,
+          `"${questionText}"`,
           score,
-          `"${scoreType}"`
+          `"${scoreType}"`,
+          `"${response || 'Not Answered'}"`
         ].join(',') + '\n';
       });
       
@@ -377,9 +395,46 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       csvContent += [
         studentId,
         timestamp,
-        'TOTAL',
+        '"Summary"',
+        'TOTAL_SCORE',
+        '"Total ACE-IQ Score"',
         calculateTotalScore(formData),
-        '"Sum of all items"'
+        '"Sum of all items"',
+        '""'
+      ].join(',') + '\n';
+      
+      // Add demographic info
+      csvContent += [
+        studentId,
+        timestamp,
+        '"Demographics"',
+        'sex',
+        '"Sex"',
+        '',
+        '',
+        `"${formData.sex || 'Not Answered'}"`
+      ].join(',') + '\n';
+      
+      csvContent += [
+        studentId,
+        timestamp,
+        '"Demographics"',
+        'age',
+        '"Age"',
+        '',
+        '',
+        `"${formData.age || 'Not Answered'}"`
+      ].join(',') + '\n';
+      
+      csvContent += [
+        studentId,
+        timestamp,
+        '"Demographics"',
+        'ethnicity',
+        '"Ethnicity"',
+        '',
+        '',
+        `"${formData.ethnicity || 'Not Answered'}"`
       ].join(',') + '\n';
       
       // Create downloadable link
@@ -805,6 +860,14 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
               onClick={exportJSON}
             >
               Export Results as JSON
+            </button>
+            
+            <button
+              className="form-button export"
+              onClick={exportToCSV}
+              disabled={exportingCSV}
+            >
+              {exportingCSV ? "Exporting..." : "Export Results as CSV"}
             </button>
             
             <button 

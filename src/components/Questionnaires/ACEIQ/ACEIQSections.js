@@ -625,13 +625,13 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
   <section className="questionnaire-section">
     <h2 className="questionnaire-section-title">DIRECT ABUSE</h2>
     <div className="question-description">
-      When you were growing up, during the first 18 years of your life...
+      These next questions are about certain things YOU may have experienced. When you were growing up, during the first 18 years of your life...
     </div>
     
     <div className="question-item">
       <div className="question-text">
         <span className="question-number">4.1</span>
-        Did a parent, guardian, or other household member yell, scream or swear at you, insult or humiliate you?
+        Did a parent, guardian or other household member yell, scream or swear at you, insult or humiliate you?
       </div>
       <div className="radio-options">
         <div className="radio-option">
@@ -695,7 +695,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
     <div className="question-item">
       <div className="question-text">
         <span className="question-number">4.2</span>
-        Did a parent, guardian, or other household member threaten to, or actually, abandon you or throw you out of the house?
+        Did a parent, guardian or other household member threaten to, or actually, abandon you or throw you out of the house?
       </div>
       <div className="radio-options">
         <div className="radio-option">
@@ -755,6 +755,390 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         </div>
       </div>
     </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">4.3</span>
+        Did a parent, guardian or other household member spank, slap, kick, punch or beat you up?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalAbuse-manyTimes" 
+            name="physicalAbuse" 
+            value="Many times" 
+            checked={formData.physicalAbuse === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalAbuse-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalAbuse-fewTimes" 
+            name="physicalAbuse" 
+            value="A few times" 
+            checked={formData.physicalAbuse === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalAbuse-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalAbuse-once" 
+            name="physicalAbuse" 
+            value="Once" 
+            checked={formData.physicalAbuse === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalAbuse-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalAbuse-never" 
+            name="physicalAbuse" 
+            value="Never" 
+            checked={formData.physicalAbuse === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalAbuse-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalAbuse-refused" 
+            name="physicalAbuse" 
+            value="Refused" 
+            checked={formData.physicalAbuse === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalAbuse-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">4.4</span>
+        Did a parent, guardian or other household member hit or cut you with an object, such as a stick (or cane), bottle, club, knife, whip etc?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="weaponAbuse-manyTimes" 
+            name="weaponAbuse" 
+            value="Many times" 
+            checked={formData.weaponAbuse === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="weaponAbuse-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="weaponAbuse-fewTimes" 
+            name="weaponAbuse" 
+            value="A few times" 
+            checked={formData.weaponAbuse === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="weaponAbuse-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="weaponAbuse-once" 
+            name="weaponAbuse" 
+            value="Once" 
+            checked={formData.weaponAbuse === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="weaponAbuse-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="weaponAbuse-never" 
+            name="weaponAbuse" 
+            value="Never" 
+            checked={formData.weaponAbuse === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="weaponAbuse-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="weaponAbuse-refused" 
+            name="weaponAbuse" 
+            value="Refused" 
+            checked={formData.weaponAbuse === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="weaponAbuse-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">4.5</span>
+        Did someone touch or fondle you in a sexual way when you did not want them to?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualTouching-manyTimes" 
+            name="sexualTouching" 
+            value="Many times" 
+            checked={formData.sexualTouching === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualTouching-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualTouching-fewTimes" 
+            name="sexualTouching" 
+            value="A few times" 
+            checked={formData.sexualTouching === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualTouching-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualTouching-once" 
+            name="sexualTouching" 
+            value="Once" 
+            checked={formData.sexualTouching === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualTouching-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualTouching-never" 
+            name="sexualTouching" 
+            value="Never" 
+            checked={formData.sexualTouching === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualTouching-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualTouching-refused" 
+            name="sexualTouching" 
+            value="Refused" 
+            checked={formData.sexualTouching === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualTouching-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">4.6</span>
+        Did someone make you touch their body in a sexual way when you did not want them to?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualFondling-manyTimes" 
+            name="sexualFondling" 
+            value="Many times" 
+            checked={formData.sexualFondling === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualFondling-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualFondling-fewTimes" 
+            name="sexualFondling" 
+            value="A few times" 
+            checked={formData.sexualFondling === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualFondling-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualFondling-once" 
+            name="sexualFondling" 
+            value="Once" 
+            checked={formData.sexualFondling === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualFondling-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualFondling-never" 
+            name="sexualFondling" 
+            value="Never" 
+            checked={formData.sexualFondling === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualFondling-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="sexualFondling-refused" 
+            name="sexualFondling" 
+            value="Refused" 
+            checked={formData.sexualFondling === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="sexualFondling-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">4.7</span>
+        Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="attemptedSexualIntercourse-manyTimes" 
+            name="attemptedSexualIntercourse" 
+            value="Many times" 
+            checked={formData.attemptedSexualIntercourse === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="attemptedSexualIntercourse-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="attemptedSexualIntercourse-fewTimes" 
+            name="attemptedSexualIntercourse" 
+            value="A few times" 
+            checked={formData.attemptedSexualIntercourse === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="attemptedSexualIntercourse-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="attemptedSexualIntercourse-once" 
+            name="attemptedSexualIntercourse" 
+            value="Once" 
+            checked={formData.attemptedSexualIntercourse === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="attemptedSexualIntercourse-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="attemptedSexualIntercourse-never" 
+            name="attemptedSexualIntercourse" 
+            value="Never" 
+            checked={formData.attemptedSexualIntercourse === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="attemptedSexualIntercourse-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="attemptedSexualIntercourse-refused" 
+            name="attemptedSexualIntercourse" 
+            value="Refused" 
+            checked={formData.attemptedSexualIntercourse === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="attemptedSexualIntercourse-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">4.8</span>
+        Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="completedSexualIntercourse-manyTimes" 
+            name="completedSexualIntercourse" 
+            value="Many times" 
+            checked={formData.completedSexualIntercourse === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="completedSexualIntercourse-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="completedSexualIntercourse-fewTimes" 
+            name="completedSexualIntercourse" 
+            value="A few times" 
+            checked={formData.completedSexualIntercourse === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="completedSexualIntercourse-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="completedSexualIntercourse-once" 
+            name="completedSexualIntercourse" 
+            value="Once" 
+            checked={formData.completedSexualIntercourse === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="completedSexualIntercourse-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="completedSexualIntercourse-never" 
+            name="completedSexualIntercourse" 
+            value="Never" 
+            checked={formData.completedSexualIntercourse === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="completedSexualIntercourse-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="completedSexualIntercourse-refused" 
+            name="completedSexualIntercourse" 
+            value="Refused" 
+            checked={formData.completedSexualIntercourse === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="completedSexualIntercourse-refused">Refused</label>
+        </div>
+      </div>
+    </div>
   </section>
 );
 
@@ -763,13 +1147,15 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
   <section className="questionnaire-section">
     <h2 className="questionnaire-section-title">PEER VIOLENCE</h2>
     <div className="question-description">
+      These next questions are about BEING BULLIED when you were growing up. Bullying is when a young person or group of young people say or do bad and unpleasant things to another young person. It is also bullying when a young person is teased a lot in an unpleasant way or when a young person is left out of things on purpose. It is not bullying when two young people of about the same strength or power argue or fight or when teasing is done in a friendly and fun way.
+      
       When you were growing up, during the first 18 years of your life...
     </div>
     
     <div className="question-item">
       <div className="question-text">
         <span className="question-number">5.1</span>
-        Were you bullied?
+        How often were you bullied?
       </div>
       <div className="radio-options">
         <div className="radio-option">
@@ -829,15 +1215,184 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
         </div>
       </div>
     </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">5.2</span>
+        How were you bullied most often?
+      </div>
+      <div className="radio-options vertical">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-physical" 
+            name="bullyingType" 
+            value="Physical" 
+            checked={formData.bullyingType === "Physical"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-physical">I was hit, kicked, pushed, shoved around, or locked indoors</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-race" 
+            name="bullyingType" 
+            value="Race" 
+            checked={formData.bullyingType === "Race"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-race">I was made fun of because of my race, nationality or colour</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-religion" 
+            name="bullyingType" 
+            value="Religion" 
+            checked={formData.bullyingType === "Religion"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-religion">I was made fun of because of my religion</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-sexual" 
+            name="bullyingType" 
+            value="Sexual" 
+            checked={formData.bullyingType === "Sexual"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-sexual">I was made fun of with sexual jokes, comments, or gestures</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-exclusion" 
+            name="bullyingType" 
+            value="Exclusion" 
+            checked={formData.bullyingType === "Exclusion"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-exclusion">I was left out of activities on purpose or completely ignored</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-appearance" 
+            name="bullyingType" 
+            value="Appearance" 
+            checked={formData.bullyingType === "Appearance"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-appearance">I was made fun of because of how my body or face looked</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-other" 
+            name="bullyingType" 
+            value="Other" 
+            checked={formData.bullyingType === "Other"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-other">I was bullied in some other way</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="bullyingType-refused" 
+            name="bullyingType" 
+            value="Refused" 
+            checked={formData.bullyingType === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="bullyingType-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-description">
+      This next question is about PHYSICAL FIGHTS. A physical fight occurs when two young people of about the same strength or power choose to fight each other.
+      
+      When you were growing up, during the first 18 years of your life...
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">5.3</span>
+        How often were you in a physical fight?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalFight-manyTimes" 
+            name="physicalFight" 
+            value="Many times" 
+            checked={formData.physicalFight === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalFight-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalFight-fewTimes" 
+            name="physicalFight" 
+            value="A few times" 
+            checked={formData.physicalFight === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalFight-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalFight-once" 
+            name="physicalFight" 
+            value="Once" 
+            checked={formData.physicalFight === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalFight-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalFight-never" 
+            name="physicalFight" 
+            value="Never" 
+            checked={formData.physicalFight === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalFight-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="physicalFight-refused" 
+            name="physicalFight" 
+            value="Refused" 
+            checked={formData.physicalFight === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="physicalFight-refused">Refused</label>
+        </div>
+      </div>
+    </div>
   </section>
 );
 
 // Section 6: Community Violence
 export const CommunityViolenceSection = ({ formData, handleChange }) => (
   <section className="questionnaire-section">
-    <h2 className="questionnaire-section-title">COMMUNITY VIOLENCE</h2>
+    <h2 className="questionnaire-section-title">WITNESSING COMMUNITY VIOLENCE</h2>
     <div className="question-description">
-      These questions are about violence you may have seen or heard in your neighborhood or community, but not in your home or at school.
+      These next questions are about how often, when you were a child, YOU may have seen or heard certain things in your NEIGHBOURHOOD OR COMMUNITY (not in your home or on TV, movies, or the radio).
+      
+      When you were growing up, during the first 18 years of your life...
     </div>
     
     <div className="question-item">
@@ -900,6 +1455,134 @@ export const CommunityViolenceSection = ({ formData, handleChange }) => (
             onChange={handleChange}
           />
           <label htmlFor="witnessedBeating-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">6.2</span>
+        Did you see or hear someone being stabbed or shot?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedStabbingOrShooting-manyTimes" 
+            name="witnessedStabbingOrShooting" 
+            value="Many times" 
+            checked={formData.witnessedStabbingOrShooting === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedStabbingOrShooting-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedStabbingOrShooting-fewTimes" 
+            name="witnessedStabbingOrShooting" 
+            value="A few times" 
+            checked={formData.witnessedStabbingOrShooting === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedStabbingOrShooting-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedStabbingOrShooting-once" 
+            name="witnessedStabbingOrShooting" 
+            value="Once" 
+            checked={formData.witnessedStabbingOrShooting === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedStabbingOrShooting-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedStabbingOrShooting-never" 
+            name="witnessedStabbingOrShooting" 
+            value="Never" 
+            checked={formData.witnessedStabbingOrShooting === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedStabbingOrShooting-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedStabbingOrShooting-refused" 
+            name="witnessedStabbingOrShooting" 
+            value="Refused" 
+            checked={formData.witnessedStabbingOrShooting === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedStabbingOrShooting-refused">Refused</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="question-item">
+      <div className="question-text">
+        <span className="question-number">6.3</span>
+        Did you see or hear someone being threatened with a knife or gun in real life?
+      </div>
+      <div className="radio-options">
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedThreatenedWithWeapon-manyTimes" 
+            name="witnessedThreatenedWithWeapon" 
+            value="Many times" 
+            checked={formData.witnessedThreatenedWithWeapon === "Many times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedThreatenedWithWeapon-manyTimes">Many times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedThreatenedWithWeapon-fewTimes" 
+            name="witnessedThreatenedWithWeapon" 
+            value="A few times" 
+            checked={formData.witnessedThreatenedWithWeapon === "A few times"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedThreatenedWithWeapon-fewTimes">A few times</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedThreatenedWithWeapon-once" 
+            name="witnessedThreatenedWithWeapon" 
+            value="Once" 
+            checked={formData.witnessedThreatenedWithWeapon === "Once"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedThreatenedWithWeapon-once">Once</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedThreatenedWithWeapon-never" 
+            name="witnessedThreatenedWithWeapon" 
+            value="Never" 
+            checked={formData.witnessedThreatenedWithWeapon === "Never"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedThreatenedWithWeapon-never">Never</label>
+        </div>
+        <div className="radio-option">
+          <input 
+            type="radio" 
+            id="witnessedThreatenedWithWeapon-refused" 
+            name="witnessedThreatenedWithWeapon" 
+            value="Refused" 
+            checked={formData.witnessedThreatenedWithWeapon === "Refused"}
+            onChange={handleChange}
+          />
+          <label htmlFor="witnessedThreatenedWithWeapon-refused">Refused</label>
         </div>
       </div>
     </div>
