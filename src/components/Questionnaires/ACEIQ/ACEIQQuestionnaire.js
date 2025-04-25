@@ -24,64 +24,52 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   const [validationError, setValidationError] = useState(false);
   const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(true); // Default to true for simplified validation
   
-  // Scoring definitions
+  // Define scoring values - updated to match the new scoring system
   const scoringValues = {
     frequency5: {
-      "Always": 0,
-      "Most of the time": 0,
-      "Sometimes": 1,
-      "Rarely": 1,
-      "Never": 1,
+      "Always": 1,
+      "Most of the time": 2,
+      "Sometimes": 3,
+      "Rarely": 4,
+      "Never": 5,
       "Refused": -9
     },
     frequency4: {
-      "Many times": 3,
-      "A few times": 2,
-      "Once": 1,
-      "Never": 0,
-      "Refused": -9
+      "Never": 1,
+      "Once": 2,
+      "A few times": 3,
+      "Many times": 4,
+      "Refused": 0
     },
     yesNo: {
-      "Yes": 1,
-      "No": 0,
+      "Yes": 2,
+      "No": 1,
       "Refused": -9
     }
   };
   
-  // Group questions by scoring type
-  const frequencyType5Questions = [
-    'parentsUnderstandProblems',
-    'parentsKnowFreeTime'
+  // Determine the appropriate questionnaire structure based on questions and scoring
+  const yesNoQuestions = [
+    'alcoholicHouseholdMember', 'mentallyIllHouseholdMember', 
+    'imprisonedHouseholdMember', 'parentsSeparated', 'parentDied'
   ];
   
   const frequencyType4Questions = [
-    'notEnoughFood',
-    'parentsDrunkOrDrugs',
-    'notSentToSchool',
-    'witnessedVerbalAbuse',
-    'witnessedPhysicalAbuse',
-    'witnessedWeaponAbuse',
-    'verbalAbuse',
-    'threatenedAbandonment',
-    'physicalAbuse',
-    'weaponAbuse',
-    'sexualTouching',
-    'sexualFondling',
-    'attemptedSexualIntercourse',
-    'completedSexualIntercourse',
-    'bullied',
-    'physicalFight',
-    'witnessedBeating',
-    'witnessedStabbingOrShooting',
-    'witnessedThreatenedWithWeapon'
+    'notEnoughFood', 'parentsDrunkOrDrugs', 'notSentToSchool',
+    'witnessedVerbalAbuse', 'witnessedPhysicalAbuse', 'witnessedWeaponAbuse',
+    'verbalAbuse', 'threatenedAbandonment', 'bullied'
   ];
   
-  const yesNoQuestions = [
-    'alcoholicHouseholdMember',
-    'mentallyIllHouseholdMember',
-    'imprisonedHouseholdMember',
-    'parentsSeparated',
-    'parentDied'
+  const frequencyType5Questions = [
+    'parentsUnderstandProblems', 'parentsKnowFreeTime'
+  ];
+  
+  // Excluded sexual abuse questions for this implementation based on the provided list
+  const excludedQuestions = [
+    'sexualTouching', 'sexualFondling', 'attemptedSexualIntercourse', 
+    'completedSexualIntercourse', 'physicalAbuse', 'weaponAbuse',
+    'physicalFight', 'witnessedBeating', 'witnessedStabbingOrShooting', 
+    'witnessedThreatenedWithWeapon'
   ];
   
   // State for form data
@@ -220,6 +208,18 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     window.scrollTo(0, 0);
   };
   
+  // Map question IDs to their types for the combined CSV export
+  const getQuestionScoreType = (questionId) => {
+    if (yesNoQuestions.includes(questionId)) {
+      return 'Binary (1-2)';
+    } else if (frequencyType4Questions.includes(questionId)) {
+      return 'Frequency (1-4)';
+    } else if (frequencyType5Questions.includes(questionId)) {
+      return 'Protection (1-5)';
+    }
+    return '';
+  };
+  
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -247,21 +247,13 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       else if (frequencyType4Questions.includes(question.id)) {
         score = response ? scoringValues.frequency4[response] || 0 : 0;
       }
-      // Handle frequency5 questions (with reverse scoring)
+      // Handle frequency5 questions with different scoring
       else if (frequencyType5Questions.includes(question.id)) {
-        // These questions are about positive experiences, so they need to be reverse scored
-        // "Always" should be the lowest score (1) and "Never" should be the highest (5)
-        if (response) {
-          // Reverse the score: 6 minus the normal score
-          // (converts 5→1, 4→2, 3→3, 2→4, 1→5, with "Refused" handled separately)
-          score = response === "Refused" ? 0 : (6 - (scoringValues.frequency5[response] || 0));
-        }
+        score = response ? scoringValues.frequency5[response] || 0 : 0;
       }
       
-      // Determine the score type
-      let scoreType = yesNoQuestions.includes(question.id) ? 'Binary' : 
-                      frequencyType4Questions.includes(question.id) ? '0-3 scale' : 
-                      frequencyType5Questions.includes(question.id) ? 'Reverse scored (Protective factor)' : '';
+      // Get the score type
+      const scoreType = getQuestionScoreType(question.id);
                       
       return {
         id: question.id,
@@ -351,12 +343,6 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       // Create CSV header row - include score only, not responses
       let csvContent = 'StudentID,Timestamp,QuestionID,Score,Score Type\n';
       
-      // Map question IDs to their types for the CSV
-      const questionTypes = {};
-      frequencyType5Questions.forEach(id => questionTypes[id] = 'Reverse scored (Protective factor)');
-      frequencyType4Questions.forEach(id => questionTypes[id] = '0-3 scale');
-      yesNoQuestions.forEach(id => questionTypes[id] = 'Binary');
-      
       // Add row for each question with score only, not response
       questions.forEach(question => {
         const response = formData[question.id];
@@ -370,17 +356,20 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         else if (frequencyType4Questions.includes(question.id)) {
           score = response ? scoringValues.frequency4[response] || 0 : 0;
         }
-        // Handle frequency5 questions (protective factors)
+        // Handle frequency5 questions with different scoring
         else if (frequencyType5Questions.includes(question.id)) {
           score = response ? scoringValues.frequency5[response] || 0 : 0;
         }
+        
+        // Get the score type
+        const scoreType = getQuestionScoreType(question.id);
         
         csvContent += [
           studentId,
           timestamp,
           question.id,
           score,
-          `"${questionTypes[question.id] || ''}"`
+          `"${scoreType}"`
         ].join(',') + '\n';
       });
       
@@ -737,9 +726,10 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       }
     });
     
-    // Calculate scores for frequency5 questions (protective factors)
+    // Calculate scores for frequency5 questions
     frequencyType5Questions.forEach(questionId => {
       if (data[questionId] && data[questionId] !== "Refused") {
+        // Use the scores directly from the scoring values
         totalScore += scoringValues.frequency5[data[questionId]] || 0;
       }
     });

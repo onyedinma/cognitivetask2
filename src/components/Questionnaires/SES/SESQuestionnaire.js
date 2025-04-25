@@ -132,7 +132,7 @@ const SESQuestionnaire = ({ onComplete }) => {
   const getQuestionScore = (questionId, value) => {
     const isReversed = questionId === 'struggledFinancially';
     if (isReversed) {
-      // Apply reverse scoring
+      // Apply reverse scoring for 5-point scale (5->1, 4->2, 3->3, 2->4, 1->5)
       return 6 - parseInt(value);
     } else {
       return parseInt(value);
@@ -196,7 +196,8 @@ const SESQuestionnaire = ({ onComplete }) => {
       
       // Add special handling for the reverse-scored item
       if (question.id === 'struggledFinancially') {
-        finalScore = 6 - finalScore; // Reverse scoring
+        // Apply reverse scoring for 5-point scale (5->1, 4->2, 3->3, 2->4, 1->5)
+        finalScore = 6 - finalScore; 
         type = 'Reverse scored';
       }
       
@@ -271,7 +272,8 @@ const SESQuestionnaire = ({ onComplete }) => {
         let scoreType = 'Standard scored';
         
         if (question.id === 'struggledFinancially') {
-          finalScore = 6 - score; // Reverse scoring
+          // Apply reverse scoring for 5-point scale (5->1, 4->2, 3->3, 2->4, 1->5)
+          finalScore = 6 - score;
           scoreType = 'Reverse scored';
         }
         
