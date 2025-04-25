@@ -202,9 +202,8 @@ const SESQuestionnaire = ({ onComplete }) => {
       
       return {
         id: question.id,
-        response: response, // Include the raw response
-        score: finalScore,  // Include the calculated score
-        type: type          // Include the score type
+        score: finalScore,
+        type: type
       };
     });
     
@@ -259,8 +258,8 @@ const SESQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row - include response data
-      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score,Score Type\n';
+      // Create CSV header row - exclude response data
+      let csvContent = 'StudentID,Timestamp,QuestionID,Score,Score Type\n';
       
       // Add rows for each question
       questions.forEach(question => {
@@ -280,7 +279,6 @@ const SESQuestionnaire = ({ onComplete }) => {
           studentId,
           timestamp,
           question.id,
-          `"${response || ''}"`,
           finalScore,
           `"${scoreType}"`
         ].join(',') + '\n';
@@ -291,7 +289,6 @@ const SESQuestionnaire = ({ onComplete }) => {
         studentId,
         timestamp,
         'TOTAL',
-        '""',
         calculateScore(),
         '"Sum of all items"'
       ].join(',') + '\n';

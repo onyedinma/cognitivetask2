@@ -177,8 +177,7 @@ const MFQQuestionnaire = ({ onComplete }) => {
       
       return {
         id: question.id,
-        response: response, // Include the raw response
-        score: numericScore, // Include the calculated score
+        score: numericScore,
         type: 'Standard scored' // All MFQ items use standard scoring
       };
     });
@@ -235,19 +234,19 @@ const MFQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row - include response data
-      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score\n';
+      // Create CSV header row - exclude response data
+      let csvContent = 'StudentID,Timestamp,QuestionID,Score\n';
       
       // Add row for each question with score only
       questions.forEach(question => {
         const response = formData[question.id];
+        const numericScore = parseInt(response) || 0;
         
         csvContent += [
           studentId,
           timestamp,
           question.id,
-          `"${response || ''}"`,
-          response
+          numericScore
         ].join(',') + '\n';
       });
       
@@ -256,7 +255,6 @@ const MFQQuestionnaire = ({ onComplete }) => {
         studentId,
         timestamp,
         'TOTAL',
-        '""',
         totalScore
       ].join(',') + '\n';
       
@@ -266,7 +264,6 @@ const MFQQuestionnaire = ({ onComplete }) => {
           studentId,
           timestamp,
           'INTERPRETATION',
-          '""',
           `"${interpretationText}"`
         ].join(',') + '\n';
       }

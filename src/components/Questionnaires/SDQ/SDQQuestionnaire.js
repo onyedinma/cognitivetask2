@@ -282,9 +282,8 @@ const SDQQuestionnaire = ({ onComplete }) => {
       
       return {
         id: question.id,
-        response: response, // Include the raw response
-        score: numericScore, // Include the calculated score
-        type: scoreType    // Include the score type
+        score: numericScore,
+        type: scoreType
       };
     });
     
@@ -345,12 +344,13 @@ const SDQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row - include response data
-      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score,Score Type\n';
+      // Create CSV header row - exclude response data
+      let csvContent = 'StudentID,Timestamp,QuestionID,Score,Score Type\n';
       
       // Add row for each question
       questions.forEach(question => {
         const response = formData[question.id];
+        const numericScore = parseInt(response) || 0;
         
         // Determine if question is reverse scored or a special type
         let scoreType = 'Standard scored';
@@ -368,8 +368,7 @@ const SDQQuestionnaire = ({ onComplete }) => {
           studentId,
           timestamp,
           question.id,
-          `"${response || ''}"`,
-          response,
+          numericScore,
           `"${scoreType}"`
         ].join(',') + '\n';
       });
@@ -397,7 +396,6 @@ const SDQQuestionnaire = ({ onComplete }) => {
           studentId,
           timestamp,
           label,
-          '""',
           value,
           `"${type}"`
         ].join(',') + '\n';
@@ -410,7 +408,6 @@ const SDQQuestionnaire = ({ onComplete }) => {
           studentId,
           timestamp,
           'INTERPRETATION',
-          '""',
           `"${interpretation}"`,
           '"Clinical interpretation"'
         ].join(',') + '\n';

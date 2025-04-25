@@ -234,7 +234,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     // Calculate total score based on all responses
     const totalScore = calculateTotalScore(formData);
     
-    // Prepare structured questions array for combined export - include both raw responses and calculated scores
+    // Prepare structured questions array for combined export - only scores, not responses
     const questionsArray = questions.map(question => {
       const response = formData[question.id];
       let score = 0;
@@ -258,13 +258,15 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         }
       }
       
+      // Determine the score type
+      let scoreType = yesNoQuestions.includes(question.id) ? 'Binary' : 
+                      frequencyType4Questions.includes(question.id) ? '0-3 scale' : 
+                      frequencyType5Questions.includes(question.id) ? 'Reverse scored (Protective factor)' : '';
+                      
       return {
         id: question.id,
-        response: response, // Include the raw response
-        score: score,       // Include the calculated score
-        type: yesNoQuestions.includes(question.id) ? 'Binary' : 
-              frequencyType4Questions.includes(question.id) ? '0-3 scale' : 
-              frequencyType5Questions.includes(question.id) ? 'Reverse scored (Protective factor)' : ''
+        score: score,
+        type: scoreType
       };
     });
     
@@ -346,8 +348,8 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row - include both Question ID, Response and Score
-      let csvContent = 'StudentID,Timestamp,QuestionID,Response,Score,Score Type\n';
+      // Create CSV header row - include score only, not responses
+      let csvContent = 'StudentID,Timestamp,QuestionID,Score,Score Type\n';
       
       // Map question IDs to their types for the CSV
       const questionTypes = {};
@@ -355,7 +357,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       frequencyType4Questions.forEach(id => questionTypes[id] = '0-3 scale');
       yesNoQuestions.forEach(id => questionTypes[id] = 'Binary');
       
-      // Add row for each question with score only
+      // Add row for each question with score only, not response
       questions.forEach(question => {
         const response = formData[question.id];
         let score = 0;
@@ -377,7 +379,6 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
           studentId,
           timestamp,
           question.id,
-          `"${response || ''}"`,
           score,
           `"${questionTypes[question.id] || ''}"`
         ].join(',') + '\n';
@@ -388,7 +389,6 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         studentId,
         timestamp,
         'TOTAL',
-        '""',
         calculateTotalScore(formData),
         '"Sum of all items"'
       ].join(',') + '\n';
