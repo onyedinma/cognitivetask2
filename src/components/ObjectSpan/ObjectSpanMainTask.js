@@ -153,8 +153,13 @@ const ObjectSpanMainTask = () => {
       expectedSequence = expectedSequence.reverse();
     }
     
-    // Join the sequence into a string
+    // Join the sequence into a string with spaces between object names
     const expectedString = expectedSequence.join(' ');
+    
+    // For the presented sequence - original order of objects regardless of direction
+    const presentedSequence = currentSequence.map(index => 
+      TASK_CONFIG.objectSpan.objectMapping[index].name
+    ).join(' ');
     
     // More flexible comparison:
     // 1. Normalize both strings by removing extra spaces
@@ -201,8 +206,8 @@ const ObjectSpanMainTask = () => {
       attempt_number: currentAttempt,
       is_correct: responseIsCorrect,
       max_span_reached: maxSpanReached,
-      presented_sequence: currentSequence.map(index => TASK_CONFIG.objectSpan.objectMapping[index].name).join(','),
-      expected_response: expectedString,
+      presented_sequence: presentedSequence, // Combined string with spaces
+      expected_response: expectedString, // Combined string with spaces
       user_response: normalizedUserResponse
     };
     
@@ -279,29 +284,52 @@ const ObjectSpanMainTask = () => {
       // Import the task results utility function
       const { saveTaskResults } = require('../../utils/taskResults');
       
-      // Add total_correct_sequences to the results
+      // Calculate total correct sequences
       const correctSequences = results.filter(r => r.is_correct).length;
-      const finalResults = results.map(result => ({
-        participantId: result.participant_id,
-        counterBalance: result.counter_balance,
-        taskType: 'objectSpan',
-        spanMode: isBackward ? 'backward' : 'forward',
-        trialNumber: result.trial_number,
-        timestamp: result.timestamp,
-        spanLength: result.span_length,
-        attemptNumber: result.attempt_number,
-        isCorrect: result.is_correct,
-        maxSpanReached: result.max_span_reached,
-        totalCorrectSequences: correctSequences,
-        presentedSequence: result.presented_sequence,
-        expectedResponse: result.expected_response,
-        userResponse: result.user_response
-      }));
       
-      // Save results using the utility
-      saveTaskResults('objectSpan', finalResults);
+      // Normalize and format the results data structure
+      const finalResults = results.map(result => {
+        // Make sure to use the current maxSpanReached state value for all results
+        return {
+          participantId: result.participant_id || studentId,
+          timestamp: result.timestamp || new Date().toISOString(),
+          taskType: isBackward ? 'objectSpanBackward' : 'objectSpanForward',
+          spanMode: isBackward ? 'backward' : 'forward',
+          trialNumber: result.trial_number,
+          spanLength: result.span_length,
+          attemptNumber: result.attempt_number,
+          isCorrect: result.is_correct,
+          maxSpanReached: maxSpanReached, // Use the current maxSpanReached state
+          totalCorrectSequences: correctSequences,
+          presentedSequence: result.presented_sequence, // Already a string with spaces
+          expectedResponse: result.expected_response, // Already a string with spaces
+          userResponse: result.user_response
+        };
+      });
       
-      console.log('Object Span results saved:', finalResults);
+      // Explicitly separate keys for forward and backward tasks
+      const taskKey = isBackward ? 'objectSpanBackward' : 'objectSpanForward';
+      
+      // Clear any existing results for this specific task type
+      // to ensure we don't have mixing of forward/backward results
+      const existingResults = localStorage.getItem('cognitiveTasksResults');
+      if (existingResults) {
+        try {
+          const resultsObj = JSON.parse(existingResults);
+          // Replace the results for the specific task key
+          resultsObj[taskKey] = finalResults;
+          localStorage.setItem('cognitiveTasksResults', JSON.stringify(resultsObj));
+        } catch (e) {
+          console.error('Error updating existing results:', e);
+          // Fall back to the utility function if there's an error
+          saveTaskResults(taskKey, finalResults);
+        }
+      } else {
+        saveTaskResults(taskKey, finalResults);
+      }
+      
+      console.log(`${isBackward ? 'Backward' : 'Forward'} Object Span results saved:`, finalResults);
+      console.log(`Task key used: ${taskKey}`);
     } catch (error) {
       console.error('Error saving results:', error);
     }

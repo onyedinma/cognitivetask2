@@ -178,9 +178,6 @@ const DeductiveReasoningMainTask = () => {
   if (showResults) {
     // Save results using the central utility function
     try {
-      // Get student ID and counter balance from localStorage
-      const studentId = localStorage.getItem('studentId') || 'unknown';
-      
       // Save results to the centralized storage
       saveTaskResults('deductiveReasoning', results);
       

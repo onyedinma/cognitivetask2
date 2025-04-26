@@ -398,9 +398,6 @@ const SpatialMemoryMainTask = () => {
       // Import the task results utility function
       const { saveTaskResults } = require('../../utils/taskResults');
       
-      // Get student ID
-      const studentId = localStorage.getItem('studentId') || 'unknown';
-      
       // Save results to the centralized storage system instead of exporting CSV
       saveTaskResults('spatialMemory', results);
       

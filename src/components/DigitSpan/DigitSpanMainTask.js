@@ -77,7 +77,7 @@ const DigitSpanMainTask = () => {
       isBackward,
       sequence: [...sequence],
       userResponse: userResponse,
-      expectedResponse: isBackward ? [...sequence].reverse().join('') : sequence.join(''),
+      expectedResponse: expectedResponse, // Already a combined string with join('')
       timestamp: new Date().toISOString()
     };
     
@@ -170,27 +170,44 @@ const DigitSpanMainTask = () => {
       const { saveTaskResults } = require('../../utils/taskResults');
       
       const studentId = localStorage.getItem('studentId') || 'unknown';
-      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
       
-      // Format results for combined storage
+      // Format results for storage - completely independent task structure
       const formattedResults = results.map(item => ({
         participantId: studentId,
         timestamp: item.timestamp || new Date().toISOString(),
-        taskType: 'digitSpan',
+        taskType: isBackward ? 'digitSpanBackward' : 'digitSpanForward',
         spanMode: isBackward ? 'backward' : 'forward',
         spanLength: item.span,
         attemptNumber: item.attempt,
-        sequence: item.sequence.join(','),
-        expectedResponse: item.expectedResponse,
+        sequence: item.sequence.join(''), // Join without separator for a combined string
+        expectedResponse: item.expectedResponse, // Already a combined string
         userResponse: item.userResponse,
         isCorrect: item.isCorrect,
         maxSpanReached: maxSpanReached
       }));
       
-      // Save results using the utility
-      saveTaskResults('digitSpan', formattedResults);
+      // Save results using completely separate keys based on direction
+      const taskKey = isBackward ? 'digitSpanBackward' : 'digitSpanForward';
       
-      console.log('Digit Span results saved:', formattedResults);
+      // Clear any existing results for this specific task 
+      // to ensure we don't have mixing of task types
+      const existingResults = localStorage.getItem('cognitiveTasksResults');
+      if (existingResults) {
+        try {
+          const resultsObj = JSON.parse(existingResults);
+          resultsObj[taskKey] = formattedResults;
+          localStorage.setItem('cognitiveTasksResults', JSON.stringify(resultsObj));
+        } catch (e) {
+          console.error('Error updating existing results:', e);
+          // Fall back to the utility function if there's an error
+          saveTaskResults(taskKey, formattedResults);
+        }
+      } else {
+        saveTaskResults(taskKey, formattedResults);
+      }
+      
+      console.log(`${isBackward ? 'Backward' : 'Forward'} Digit Span results saved:`, formattedResults);
+      console.log(`Task key used: ${taskKey}`);
     } catch (error) {
       console.error('Error saving results:', error);
     }
