@@ -127,4 +127,4 @@ See [TaskDataFields.md](./TaskDataFields.md) for a detailed explanation of all c
 
 ## License
 [This App was built for research purposes and is not intended for commercial use.]
-*DEVELOPED BY XINNOV TECH SOLUTIONS (NIGERIA) - +2348038198757, xinovtech@gmail.com*
+*DEVELOPED BY XINNOV TECH SOLUTIONS (NIGERIA) - +2348038198759, xinovtech@gmail.com*
