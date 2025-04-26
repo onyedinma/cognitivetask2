@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { TASK_CONFIG } from '../../config';
 import { getNextTask } from '../../utils/taskSequence';
 import './DigitSpan.css';
+import { saveTaskResults } from '../../utils/taskResults';
 
 /**
  * DigitSpanMainTask component - Main task for both forward and backward digit span
@@ -173,12 +174,17 @@ const DigitSpanMainTask = () => {
       
       // Format results for combined storage
       const formattedResults = results.map(item => ({
-        spanLength: item.spanLength,
+        participantId: studentId,
+        timestamp: item.timestamp || new Date().toISOString(),
+        taskType: 'digitSpan',
         spanMode: isBackward ? 'backward' : 'forward',
-        sequence: item.sequence,
-        correctSequence: item.correctSequence,
+        spanLength: item.span,
+        attemptNumber: item.attempt,
+        sequence: item.sequence.join(','),
+        expectedResponse: item.expectedResponse,
+        userResponse: item.userResponse,
         isCorrect: item.isCorrect,
-        timestamp: item.timestamp || new Date().toISOString()
+        maxSpanReached: maxSpanReached
       }));
       
       // Save results using the utility
@@ -212,16 +218,9 @@ const DigitSpanMainTask = () => {
   
   // Handle task completion
   const handleTaskComplete = () => {
-    // Store results in localStorage
-    const storedResults = JSON.parse(localStorage.getItem('digitSpanResults') || '[]');
-    const updatedResults = [...storedResults, {
-      timestamp: new Date().toISOString(),
-      direction: isBackward ? 'backward' : 'forward',
-      maxSpan: maxSpanReached,
-      results
-    }];
-    
-    localStorage.setItem('digitSpanResults', JSON.stringify(updatedResults));
+    // Just use the exportAsCSV function since it's already implementing
+    // the proper save logic using saveTaskResults
+    exportAsCSV();
     
     // Navigate to the next task in the sequence
     const currentTaskId = isBackward ? 'digit-span-backward' : 'digit-span-forward';
@@ -237,16 +236,8 @@ const DigitSpanMainTask = () => {
   
   // Navigate to the next task
   const handleNextTask = () => {
-    // Store results in localStorage first
-    const storedResults = JSON.parse(localStorage.getItem('digitSpanResults') || '[]');
-    const updatedResults = [...storedResults, {
-      timestamp: new Date().toISOString(),
-      direction: isBackward ? 'backward' : 'forward',
-      maxSpan: maxSpanReached,
-      results
-    }];
-    
-    localStorage.setItem('digitSpanResults', JSON.stringify(updatedResults));
+    // Use the exportAsCSV function to save results
+    exportAsCSV();
     
     // If in forward mode, navigate to backward mode
     if (!isBackward) {
@@ -303,28 +294,15 @@ const DigitSpanMainTask = () => {
         <div className="completion-screen">
           <h1>Task Complete</h1>
           
-          <div className="nav-buttons">
-            <button 
-              onClick={handleNextTask} 
-              style={{
-                fontSize: '1.5rem',
-                padding: '16px 32px',
-                fontWeight: 'bold',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                margin: '30px auto',
-                display: 'block',
-                minWidth: '300px',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {isBackward ? 'Next Task: Object Span Forward' : 'Next Task: Backward Recall'}
-            </button>
+          <div className="task-summary">
+            <h3>Task Summary</h3>
+            <p>Maximum span reached: {maxSpanReached}</p>
+            <p>Correct sequences: {results.filter(r => r.isCorrect).length} / {results.length}</p>
           </div>
+          
+          <button onClick={handleNextTask} className="next-button">
+            {isBackward ? 'Next Task: Object Span' : 'Next Task: Backward Recall'}
+          </button>
         </div>
       )}
     </div>

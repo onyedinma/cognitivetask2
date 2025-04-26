@@ -1,0 +1,406 @@
+.home-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem;
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  line-height: 1.5;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header styles */
+.home-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.home-header h1 {
+  font-size: 2.2rem;
+  color: #2c3e50;
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  max-width: 800px;
+  margin: 0 auto;
+  margin-bottom: 0.5rem;
+}
+
+.participant-info {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: 600;
+  margin-top: 0.7rem;
+  padding: 0.4rem 0.8rem;
+  background-color: #3498db;
+  border-radius: 4px;
+  display: inline-block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Main content styles */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  flex: 1;
+}
+
+/* Start assessment section */
+.start-assessment-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.8rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.start-assessment-section:hover {
+  transform: translateY(-3px);
+}
+
+.welcome-heading {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.assessment-description {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 1.5rem;
+}
+
+.assessment-description p {
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Task flow diagram */
+.task-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0 2rem;
+  padding: 1.2rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.task-flow-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  max-width: 150px;
+}
+
+.task-flow-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.6rem;
+}
+
+.memory-icon {
+  background-color: #3498db;
+  box-shadow: 0 3px 6px rgba(52, 152, 219, 0.3);
+}
+
+.visual-icon {
+  background-color: #e74c3c;
+  box-shadow: 0 3px 6px rgba(231, 76, 60, 0.3);
+}
+
+.spatial-icon {
+  background-color: #2ecc71;
+  box-shadow: 0 3px 6px rgba(46, 204, 113, 0.3);
+}
+
+.reasoning-icon {
+  background-color: #f39c12;
+  box-shadow: 0 3px 6px rgba(243, 156, 18, 0.3);
+}
+
+.questionnaire-icon {
+  background-color: #9b59b6;
+  box-shadow: 0 3px 6px rgba(155, 89, 182, 0.3);
+}
+
+.task-flow-label {
+  text-align: center;
+}
+
+.task-flow-label h3 {
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+  color: #2c3e50;
+}
+
+.task-flow-label p {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.task-flow-arrow {
+  font-size: 1.3rem;
+  color: #95a5a6;
+  margin: 0 0.2rem;
+}
+
+/* Start assessment button */
+.start-assessment-button {
+  background-color: #27ae60;
+  color: white;
+  font-size: 1.3rem;
+  padding: 0.8rem 2.5rem;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+  margin-bottom: 1rem;
+  font-weight: 600;
+  min-width: 220px;
+}
+
+.start-assessment-button:hover {
+  background-color: #219653;
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(39, 174, 96, 0.5);
+}
+
+.start-assessment-button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+.start-description {
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+  max-width: 600px;
+}
+
+/* Developer menu section */
+.dev-menu-section {
+  margin-top: 0.8rem;
+  border-top: 1px solid #eee;
+  padding-top: 1.5rem;
+}
+
+.toggle-menu-button {
+  background-color: #ecf0f1;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 1.2rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.toggle-menu-button:hover {
+  background-color: #dfe6e9;
+  color: #2c3e50;
+}
+
+/* Task grid styling */
+.task-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.2rem;
+  padding: 1.2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.task-category {
+  margin-bottom: 0.8rem;
+}
+
+.task-category-title {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #eaeaea;
+}
+
+.task-cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.task-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 0;
+  background-color: #3498db;
+  transition: height 0.3s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  border-color: #bdc3c7;
+}
+
+.task-card:hover::before {
+  height: 100%;
+}
+
+.task-card h3 {
+  color: #2c3e50;
+  margin-bottom: 0.6rem;
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+.task-card:hover h3 {
+  color: #3498db;
+}
+
+.task-card p {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Footer styles */
+.home-footer {
+  margin-top: 2rem;
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+
+.update-participant-button {
+  background-color: #95a5a6;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.update-participant-button:hover {
+  background-color: #7f8c8d;
+  transform: translateY(-2px);
+}
+
+.footer-note {
+  font-size: 0.8rem;
+  color: #95a5a6;
+  margin-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .home-container {
+    padding: 1rem;
+  }
+  
+  .home-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .start-assessment-button {
+    font-size: 1.1rem;
+    padding: 0.7rem 1.8rem;
+  }
+  
+  .task-flow {
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem;
+  }
+  
+  .task-flow-item {
+    flex-direction: row;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    gap: 0.8rem;
+  }
+  
+  .task-flow-arrow {
+    transform: rotate(90deg);
+    margin: 0.3rem 0;
+  }
+  
+  .task-flow-label {
+    text-align: left;
+  }
+  
+  .task-cards-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply animation to various elements */
+.start-assessment-section, .task-grid, .task-flow {
+  animation: fadeIn 0.5s ease-out forwards;
+} 

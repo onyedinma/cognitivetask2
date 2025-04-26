@@ -7,7 +7,7 @@ import GlobalImageLoader from './components/common/GlobalImageLoader';
 
 // Task components
 import Home from './components/Home';
-import StudentInfo from './components/StudentInfo';
+import ParticipantInfo from './components/ParticipantInfo';
 import ObjectSpanTask from './components/ObjectSpan/ObjectSpanTask';
 import ForwardObjectSpan from './components/ObjectSpan/ForwardObjectSpan';
 import BackwardObjectSpan from './components/ObjectSpan/BackwardObjectSpan';
@@ -48,8 +48,8 @@ import { FullscreenProvider } from './components/FullscreenProvider';
 import FullscreenPrompt from './components/FullscreenPrompt';
 import FullscreenWarning from './components/FullscreenWarning';
 
-// Protected Route component to ensure student info is entered
-function RequireStudentInfo({ children }) {
+// Protected Route component to ensure participant info is entered
+function RequireParticipantInfo({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const location = useLocation();
@@ -100,9 +100,9 @@ function RequireStudentInfo({ children }) {
     return null;
   }
   
-  // Only redirect if we're not already on the student-info page
-  if (!isAuthorized && location.pathname !== '/student-info') {
-    return <Navigate to="/student-info" replace />;
+  // Only redirect if we're not already on the participant-info page
+  if (!isAuthorized && location.pathname !== '/participant-info') {
+    return <Navigate to="/participant-info" replace />;
   }
   
   return children;
@@ -133,283 +133,283 @@ function App() {
         }}
       >
         <div className="App">
-          <RequireStudentInfo>
+          <RequireParticipantInfo>
             <GlobalImageLoader />
-          </RequireStudentInfo>
+          </RequireParticipantInfo>
           <Routes>
-            {/* Student Info Route */}
-            <Route path="/student-info" element={<StudentInfo />} />
+            {/* Participant Info Route */}
+            <Route path="/participant-info" element={<ParticipantInfo />} />
             
             {/* Home Route with Protection */}
             <Route path="/" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <Home />
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Object Span Task Routes - All Protected */}
             <Route path="/object-span" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ObjectSpanTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Forward Object Span */}
             <Route path="/object-span/forward" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ForwardObjectSpan />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Backward Object Span */}
             <Route path="/object-span/backward" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <BackwardObjectSpan />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Object Span Practice */}
             <Route path="/object-span/:direction/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ObjectSpanPractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Object Span Main Task */}
             <Route path="/object-span/:direction/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ObjectSpanMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Digit Span Task Routes - All Protected */}
             <Route path="/digit-span" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <DigitSpanTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Forward Digit Span */}
             <Route path="/digit-span/forward" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ForwardDigitSpan />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Backward Digit Span */}
             <Route path="/digit-span/backward" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <BackwardDigitSpan />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Digit Span Practice */}
             <Route path="/digit-span/:direction/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <DigitSpanPractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Digit Span Main Task */}
             <Route path="/digit-span/:direction/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <DigitSpanMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Shape Counting Routes */}
             <Route path="/shape-counting" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ShapeCountingTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/shape-counting/instructions" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ShapeCountingInstructions />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/shape-counting/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ShapeCountingPractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/shape-counting/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <ShapeCountingMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Counting Game Routes (Ecological Shape Counting) */}
             <Route path="/counting-game" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <CountingGameTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/counting-game/instructions" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <CountingGameInstructions />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/counting-game/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <CountingGamePractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/counting-game/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <CountingGameMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Spatial Memory Task Routes */}
             <Route path="/spatial-memory" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <SpatialMemoryTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/spatial-memory/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <SpatialMemoryPractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/spatial-memory/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <SpatialMemoryMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Restore Ecological Spatial Memory Routes */}
             <Route path="/ecological-spatial" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <EcologicalSpatialTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/ecological-spatial/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <EcologicalSpatialPractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/ecological-spatial/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <EcologicalSpatialMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Keep Ecological Deductive Reasoning Task */}
             <Route path="/ecological-deductive" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <EcologicalDeductiveReasoningTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/ecological-deductive/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <EcologicalDeductiveReasoningPractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/ecological-deductive/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <EcologicalDeductiveReasoningMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Deductive Reasoning Task Routes */}
             <Route path="/deductive-reasoning" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <DeductiveReasoningTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/deductive-reasoning/practice" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <DeductiveReasoningPractice />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             <Route path="/deductive-reasoning/task" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <DeductiveReasoningMainTask />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Questionnaire Route */}
             <Route path="/combined-questionnaire" element={
-              <RequireStudentInfo>
+              <RequireParticipantInfo>
                 <TaskWrapper>
                   <CombinedQuestionnaire />
                 </TaskWrapper>
-              </RequireStudentInfo>
+              </RequireParticipantInfo>
             } />
             
             {/* Fallback route - redirect to home */}

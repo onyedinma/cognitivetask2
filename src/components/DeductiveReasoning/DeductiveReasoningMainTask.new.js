@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DeductiveReasoning.css';
+import { saveTaskResults } from '../../utils/taskResults';
 
 /**
  * DeductiveReasoningMainTask component
@@ -119,30 +120,10 @@ const DeductiveReasoningMainTask = () => {
   const handleComplete = () => {
     // Save results to localStorage for later retrieval
     try {
-      const studentId = localStorage.getItem('studentId') || 'unknown';
-      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
+      // Save results using the central utility function
+      saveTaskResults('deductiveReasoning', results);
       
-      const exportData = {
-        task: 'deductive_reasoning',
-        studentId: studentId,
-        counterBalance: counterBalance,
-        results: results,
-        timestamp: new Date().toISOString(),
-        score: {
-          correct: results.filter(result => result.isCorrect).length,
-          total: results.length,
-          accuracy: results.length > 0 
-            ? Math.round((results.filter(result => result.isCorrect).length / results.length) * 100) 
-            : 0
-        }
-      };
-      
-      // Get existing results or initialize new array
-      const existingResults = JSON.parse(localStorage.getItem('taskResults') || '[]');
-      existingResults.push(exportData);
-      localStorage.setItem('taskResults', JSON.stringify(existingResults));
-      
-      console.log('Deductive Reasoning results saved:', exportData);
+      console.log('Deductive Reasoning results saved');
     } catch (error) {
       console.error('Error saving results:', error);
     }

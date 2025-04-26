@@ -1,70 +1,130 @@
-# Getting Started with Create React App
+# Cognitive Task Assessment Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A comprehensive web-based platform for administering a structured sequence of cognitive assessments to evaluate various mental abilities and cognitive functions.
 
-## Available Scripts
+## Overview
 
-In the project directory, you can run:
+This application provides a collection of validated cognitive tasks designed to measure different aspects of cognitive function, including:
 
-### `npm start`
+- Working memory (visual-spatial)
+- Visual perception
+- Logical reasoning
+- Spatial memory
+- Ecological cognitive assessments (real-world context)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The platform features both laboratory-style tasks and ecological variants with real-world contexts to enable comprehensive assessment of cognitive abilities.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Features
 
-### `npm test`
+- **Structured Task Sequence**: Pre-defined task progression with standardized administration
+- **Adaptive Difficulty**: Tasks adjust difficulty based on participant performance
+- **Comprehensive Data Collection**: Detailed metrics recorded for each task
+- **Centralized Results Export**: Export all task data as a single CSV file with clear headers
+- **Participant Management**: Track participants with unique IDs
+- **Task Instructions**: Clear instructions and practice trials for each task
+- **Responsive Design**: Works on tablets and desktop computers
+- **Focused Assessment Flow**: Prominent "Start Assessment" button with clear task progression
+- **Development Mode**: Hidden menu for accessing individual tasks during development or testing
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## User Interface
 
-### `npm run build`
+The application features an intuitive user interface designed for both participants and administrators:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Participant Information Screen**: Collects a unique identifier for each participant
+2. **Home Screen**: 
+   - Displays a prominent "Start Assessment" button to begin the full assessment sequence
+   - Shows the current participant ID for verification
+   - Includes a hidden developer menu to access individual tasks (toggled by button)
+3. **Task Screens**: Consistent layout across all tasks with clear instructions and intuitive interactions
+4. **Results Export**: Centralized export of all results at the end of the assessment
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Cognitive Tasks
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 1. Working Memory Assessment
 
-### `npm run eject`
+#### Digit Span Task
+- **Forward Mode**: Recall sequences of digits in the presented order
+- **Backward Mode**: Recall sequences of digits in reverse order
+- **Metrics**: Maximum span reached, accuracy per trial, exact responses
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+#### Object Span Task  
+- **Forward Mode**: Recall sequences of objects in the presented order
+- **Backward Mode**: Recall sequences of objects in reverse order
+- **Metrics**: Maximum span reached, accuracy per trial, exact responses
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 2. Visual Working Memory
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### Shape Counting Task
+- Count specific shapes presented in a visual array
+- Increasing difficulty levels
+- Metrics: Accuracy, user counts, correct counts
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+#### Counting Game (Ecological)
+- Count objects in real-world scenes
+- Increasing difficulty levels
+- Metrics: Accuracy, user counts, correct counts
 
-## Learn More
+### 3. Spatial Memory
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+#### Spatial Memory Task
+- Remember locations of shapes in a grid
+- Multiple difficulty levels
+- Metrics: Correct/incorrect selections, completion time
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Ecological Spatial Task
+- Remember locations of objects in real-world scenarios
+- Metrics: Selected items, correct items, completion time
 
-### Code Splitting
+### 4. Logical Reasoning
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+#### Deductive Reasoning Task (Wason Selection Task)
+- Evaluate logical rules using card selection problems
+- Metrics: Selected cards, correct cards, accuracy
 
-### Analyzing the Bundle Size
+#### Ecological Deductive Reasoning
+- Apply logical reasoning to real-world scenarios
+- Metrics: Selected options, correct options, accuracy
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Data Management
 
-### Making a Progressive Web App
+### Data Collection
+All task results are automatically saved to the browser's local storage after each task completion. The data is structured to capture task-specific metrics while maintaining a consistent format.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### CSV Export
+The application provides a comprehensive CSV export with:
+- Detailed headers for all data fields
+- Task section headers for clear organization
+- Separator rows between different task types
+- Consistent formatting across all tasks
 
-### Advanced Configuration
+See [TaskDataFields.md](./TaskDataFields.md) for a detailed explanation of all collected fields.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Getting Started
 
-### Deployment
+### Installation
+1. Clone the repository
+2. Run `npm install` to install dependencies
+3. Run `npm start` to start the development server
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Running the Application
+1. Open [http://localhost:3000](http://localhost:3000) in your browser
+2. Enter a participant ID when prompted
+3. Follow the task sequence as directed or use the developer menu to access specific tasks
+4. Export results after completion using the export functionality
 
-### `npm run build` fails to minify
+## Development
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Available Scripts
+- `npm start` - Runs the app in development mode
+- `npm test` - Launches the test runner
+- `npm run build` - Builds the app for production
+
+### Project Structure
+- `/src/components` - Task-specific React components
+- `/src/utils` - Utility functions for task management
+- `/src/styles` - CSS files for component styling
+- `/src/config.js` - Configuration settings for tasks
+
+## License
+[This App was built for research purposes and is not intended for commercial use.]
+*DEVELOPED BY XINNOV TECH SOLUTIONS (NIGERIA) - +2348038198757, xinovtech@gmail.com*

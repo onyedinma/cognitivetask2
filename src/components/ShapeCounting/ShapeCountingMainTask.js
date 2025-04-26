@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ShapeCounting.css';
+import { saveTaskResults } from '../../utils/taskResults';
 
 /**
  * ShapeCountingMainTask component
@@ -23,7 +24,6 @@ const ShapeCountingMainTask = () => {
   const [results, setResults] = useState([]);
   const [trialComplete, setTrialComplete] = useState(false);
   const [taskComplete, setTaskComplete] = useState(false);
-  const [exportingCSV, setExportingCSV] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   
   // Refs to store and clear timers
@@ -179,9 +179,9 @@ const ShapeCountingMainTask = () => {
     } else {
       // Game completed
       setTaskComplete(true);
-      // Automatically export results when task completes
+      // Save results to centralized storage when task completes
       setTimeout(() => {
-        exportToCSV();
+        saveResultsToStorage();
       }, 500);
     }
   };
@@ -228,47 +228,28 @@ const ShapeCountingMainTask = () => {
     navigate('/counting-game');
   };
   
-  // Export results to CSV
-  const exportToCSV = () => {
-    setExportingCSV(true);
-    
+  // Save results to centralized storage
+  const saveResultsToStorage = () => {
     try {
       // Format results for CSV - simply use all level results since there's only one attempt per level
       const processedResults = [...results].sort((a, b) => a.level - b.level);
       
-      const csvContent = processedResults.map(result => {
-        return [
-          result.timestamp,
-          result.level,
-          result.attempt,
-          result.correctCounts.squares,
-          result.correctCounts.triangles,
-          result.correctCounts.circles,
-          result.userCounts.squares,
-          result.userCounts.triangles,
-          result.userCounts.circles,
-          result.correct ? 1 : 0
-        ].join(',');
-      });
+      // Format results for the centralized storage system
+      const formattedResults = processedResults.map(result => ({
+        level: result.level,
+        shapeType: 'multiple',
+        correctAnswer: `Squares: ${result.correctCounts.squares}, Triangles: ${result.correctCounts.triangles}, Circles: ${result.correctCounts.circles}`,
+        answer: `Squares: ${result.userCounts.squares}, Triangles: ${result.userCounts.triangles}, Circles: ${result.userCounts.circles}`,
+        isCorrect: result.correct,
+        timestamp: result.timestamp
+      }));
       
-      // Add header row
-      const header = 'Timestamp,Level,Attempt,CorrectSquares,CorrectTriangles,CorrectCircles,UserSquares,UserTriangles,UserCircles,Correct';
-      const csv = [header, ...csvContent].join('\n');
+      // Save results using the utility
+      saveTaskResults('shapeCounting', formattedResults);
       
-      // Create and download file
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `shape-counting-results-${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      setExportingCSV(false);
+      console.log('Shape Counting results saved:', formattedResults);
     } catch (error) {
-      console.error('Error exporting CSV:', error);
-      setExportingCSV(false);
+      console.error('Error saving results:', error);
     }
   };
   

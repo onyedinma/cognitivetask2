@@ -203,12 +203,10 @@ const EcologicalDeductiveReasoningMainTask = () => {
       
       // Get student ID for identification
       const studentId = localStorage.getItem('studentId') || 'unknown';
-      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
       
       // Format the export data
       const exportData = {
         studentId,
-        counterBalance,
         timestamp: new Date().toISOString(),
         results: results.map(result => ({
           ...result,

@@ -1,6 +1,6 @@
-/* Student Info Form Styles */
+/* Participant Info Form Styles */
 
-.student-info-container {
+.participant-info-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
@@ -13,13 +13,13 @@
   align-items: center;
 }
 
-.student-info-container h1 {
+.participant-info-container h1 {
   text-align: center;
   margin-bottom: 2rem;
   color: #2c3e50;
 }
 
-.student-info-form {
+.participant-info-form {
   width: 100%;
   max-width: 500px;
   background-color: #f9f9f9;
@@ -66,7 +66,7 @@
 .submit-button {
   width: 100%;
   padding: 15px;
-  background-color: #2ecc71;
+  background-color: #3498db;
   color: white;
   border: none;
   border-radius: 5px;
@@ -78,7 +78,7 @@
 }
 
 .submit-button:hover:not(:disabled) {
-  background-color: #27ae60;
+  background-color: #2980b9;
 }
 
 .submit-button:disabled {
@@ -88,11 +88,11 @@
 }
 
 @media (max-width: 600px) {
-  .student-info-container {
+  .participant-info-container {
     padding: 1rem;
   }
   
-  .student-info-form {
+  .participant-info-form {
     padding: 1.5rem;
   }
 } 

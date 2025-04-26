@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import './DeductiveReasoning.css';
 import { getNextTask, isLastTask } from '../../utils/taskSequence';
+import { saveTaskResults } from '../../utils/taskResults';
 
 /**
  * DeductiveReasoningMainTask component
@@ -126,30 +127,10 @@ const DeductiveReasoningMainTask = () => {
   const handleComplete = () => {
     // Save results to localStorage for later retrieval
     try {
-      const studentId = localStorage.getItem('studentId') || 'unknown';
-      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
+      // Save results using the central utility function
+      saveTaskResults('deductiveReasoning', results);
       
-      const exportData = {
-        task: 'deductive_reasoning',
-        studentId: studentId,
-        counterBalance: counterBalance,
-        results: results,
-        timestamp: new Date().toISOString(),
-        score: {
-          correct: results.filter(result => result.isCorrect).length,
-          total: results.length,
-          accuracy: results.length > 0 
-            ? Math.round((results.filter(result => result.isCorrect).length / results.length) * 100) 
-            : 0
-        }
-      };
-      
-      // Get existing results or initialize new array
-      const existingResults = JSON.parse(localStorage.getItem('taskResults') || '[]');
-      existingResults.push(exportData);
-      localStorage.setItem('taskResults', JSON.stringify(existingResults));
-      
-      console.log('Deductive Reasoning results saved:', exportData);
+      console.log('Deductive Reasoning results saved');
     } catch (error) {
       console.error('Error saving results:', error);
     }
@@ -159,32 +140,12 @@ const DeductiveReasoningMainTask = () => {
   
   // Navigate to the next task in the sequence
   const handleNextTask = () => {
-    // Save results first (same as handleComplete)
+    // Save results first
     try {
-      const studentId = localStorage.getItem('studentId') || 'unknown';
-      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
+      // Save results using the central utility function
+      saveTaskResults('deductiveReasoning', results);
       
-      const exportData = {
-        task: 'deductive_reasoning',
-        studentId: studentId,
-        counterBalance: counterBalance,
-        results: results,
-        timestamp: new Date().toISOString(),
-        score: {
-          correct: results.filter(result => result.isCorrect).length,
-          total: results.length,
-          accuracy: results.length > 0 
-            ? Math.round((results.filter(result => result.isCorrect).length / results.length) * 100) 
-            : 0
-        }
-      };
-      
-      // Get existing results or initialize new array
-      const existingResults = JSON.parse(localStorage.getItem('taskResults') || '[]');
-      existingResults.push(exportData);
-      localStorage.setItem('taskResults', JSON.stringify(existingResults));
-      
-      console.log('Deductive Reasoning results saved:', exportData);
+      console.log('Deductive Reasoning results saved');
     } catch (error) {
       console.error('Error saving results:', error);
     }
@@ -215,84 +176,17 @@ const DeductiveReasoningMainTask = () => {
 
   // Render results screen
   if (showResults) {
-    // Automatically export results as CSV
+    // Save results using the central utility function
     try {
+      // Get student ID and counter balance from localStorage
       const studentId = localStorage.getItem('studentId') || 'unknown';
-      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
       
-      const exportData = {
-        task: 'deductive_reasoning',
-        studentId: studentId,
-        counterBalance: counterBalance,
-        results: results,
-        timestamp: new Date().toISOString(),
-        score: {
-          correct: results.filter(result => result.isCorrect).length,
-          total: results.length,
-          accuracy: results.length > 0 
-            ? Math.round((results.filter(result => result.isCorrect).length / results.length) * 100) 
-            : 0
-        }
-      };
+      // Save results to the centralized storage
+      saveTaskResults('deductiveReasoning', results);
       
-      // Get existing results or initialize new array
-      const existingResults = JSON.parse(localStorage.getItem('taskResults') || '[]');
-      existingResults.push(exportData);
-      localStorage.setItem('taskResults', JSON.stringify(existingResults));
-      
-      // Export results to CSV
-      const csvData = [];
-      // Add header row
-      csvData.push(['Task', 'Student ID', 'Counter Balance', 'Trial', 'Question', 'Is Correct', 'Selected Cards', 'Correct Cards', 'Timestamp']);
-      
-      // Add data rows
-      results.forEach((result, index) => {
-        csvData.push([
-          'deductive_reasoning',
-          studentId,
-          counterBalance,
-          index + 1,
-          result.question || '',
-          result.isCorrect ? '1' : '0',
-          JSON.stringify(result.selectedCards || []),
-          JSON.stringify(result.correctCards || []),
-          result.timestamp || ''
-        ]);
-      });
-      
-      // Add summary row
-      const totalCorrect = results.filter(result => result.isCorrect).length;
-      const accuracy = results.length > 0 
-        ? Math.round((totalCorrect / results.length) * 100) 
-        : 0;
-        
-      csvData.push([
-        'deductive_reasoning_summary',
-        studentId,
-        counterBalance,
-        '',
-        '',
-        `${totalCorrect}/${results.length}`,
-        `${accuracy}%`,
-        '',
-        exportData.timestamp
-      ]);
-      
-      // Create CSV content
-      let csvContent = csvData.map(row => row.join(',')).join('\n');
-      
-      // Create and download CSV file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `deductive_reasoning_${studentId}_${new Date().toISOString()}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      console.log('Deductive Reasoning results saved');
     } catch (error) {
-      console.error('Error saving or exporting results:', error);
+      console.error('Error saving results:', error);
     }
     
     // Get the next task in the sequence

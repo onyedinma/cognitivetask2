@@ -495,9 +495,8 @@ const EcologicalSpatialMainTask = () => {
       // Import the task results utility function
       const { saveTaskResults } = require('../../utils/taskResults');
       
-      // Get student ID and counter balance
+      // Get student ID
       const studentId = localStorage.getItem('studentId') || 'unknown';
-      const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
       
       // Save results to the centralized storage system instead of exporting CSV
       saveTaskResults('ecologicalSpatial', results);

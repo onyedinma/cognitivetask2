@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { setLocalStorageItem, clearLocalStorage } from '../utils/localStorage';
-import './StudentInfo.css';
+import '../styles/ParticipantInfo.css';
 
-const StudentInfo = () => {
-  const [studentId, setStudentId] = useState('');
+const ParticipantInfo = () => {
+  const [participantId, setParticipantId] = useState('');
   const [idError, setIdError] = useState('');
   const navigate = useNavigate();
 
   // Check if already authorized
   useEffect(() => {
-    const savedStudentId = localStorage.getItem('studentId');
+    const savedParticipantId = localStorage.getItem('studentId'); // Keep key as 'studentId' for backward compatibility
     const savedCounterBalance = localStorage.getItem('counterBalance');
     
-    if (savedStudentId && savedCounterBalance) {
+    if (savedParticipantId && savedCounterBalance) {
       navigate('/', { replace: true });
     }
   }, [navigate]);
 
-  // Validate student ID (5-10 digits)
-  const validateStudentId = (id) => {
+  // Validate participant ID (5-10 digits)
+  const validateParticipantId = (id) => {
     return /^\d{5,10}$/.test(id);
   };
 
-  // Handle student ID input change
-  const handleStudentIdChange = (e) => {
+  // Handle participant ID input change
+  const handleParticipantIdChange = (e) => {
     const value = e.target.value;
-    setStudentId(value);
+    setParticipantId(value);
     
     // Clear error if input is valid
-    if (validateStudentId(value)) {
+    if (validateParticipantId(value)) {
       setIdError('');
     }
   };
@@ -38,8 +38,8 @@ const StudentInfo = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validate student ID
-    if (!validateStudentId(studentId)) {
+    // Validate participant ID
+    if (!validateParticipantId(participantId)) {
       setIdError('Please enter a valid ID (5-10 digits)');
       return;
     }
@@ -48,8 +48,8 @@ const StudentInfo = () => {
       // Clear first, then set
       clearLocalStorage();
       
-      // Store values in localStorage
-      setLocalStorageItem('studentId', studentId);
+      // Store values in localStorage (keeping keys the same for backward compatibility)
+      setLocalStorageItem('studentId', participantId);
       setLocalStorageItem('counterBalance', 'A'); // Default value
       
       // Navigate to home page
@@ -62,17 +62,17 @@ const StudentInfo = () => {
   };
 
   return (
-    <div className="student-info-container">
+    <div className="participant-info-container">
       <h1>Cognitive Task Assessment</h1>
       
-      <form onSubmit={handleSubmit} className="student-info-form">
+      <form onSubmit={handleSubmit} className="participant-info-form">
         <div className="input-group">
-          <label htmlFor="studentId">Enter your participant ID:</label>
+          <label htmlFor="participantId">Enter your participant ID:</label>
           <input
             type="text"
-            id="studentId"
-            value={studentId}
-            onChange={handleStudentIdChange}
+            id="participantId"
+            value={participantId}
+            onChange={handleParticipantIdChange}
             placeholder="e.g. 12345678"
             className={idError ? 'error-input' : ''}
           />
@@ -82,7 +82,7 @@ const StudentInfo = () => {
         <button 
           type="submit" 
           className="submit-button"
-          disabled={!validateStudentId(studentId)}
+          disabled={!validateParticipantId(participantId)}
         >
           Start
         </button>
@@ -91,4 +91,4 @@ const StudentInfo = () => {
   );
 };
 
-export default StudentInfo; 
+export default ParticipantInfo; 

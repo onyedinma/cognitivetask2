@@ -200,7 +200,10 @@ const ObjectSpanMainTask = () => {
       span_length: currentSpan,
       attempt_number: currentAttempt,
       is_correct: responseIsCorrect,
-      max_span_reached: maxSpanReached
+      max_span_reached: maxSpanReached,
+      presented_sequence: currentSequence.map(index => TASK_CONFIG.objectSpan.objectMapping[index].name).join(','),
+      expected_response: expectedString,
+      user_response: normalizedUserResponse
     };
     
     setResults([...results, newResult]);
@@ -279,9 +282,20 @@ const ObjectSpanMainTask = () => {
       // Add total_correct_sequences to the results
       const correctSequences = results.filter(r => r.is_correct).length;
       const finalResults = results.map(result => ({
-        ...result,
-        total_correct_sequences: correctSequences,
-        spanMode: isBackward ? 'backward' : 'forward'
+        participantId: result.participant_id,
+        counterBalance: result.counter_balance,
+        taskType: 'objectSpan',
+        spanMode: isBackward ? 'backward' : 'forward',
+        trialNumber: result.trial_number,
+        timestamp: result.timestamp,
+        spanLength: result.span_length,
+        attemptNumber: result.attempt_number,
+        isCorrect: result.is_correct,
+        maxSpanReached: result.max_span_reached,
+        totalCorrectSequences: correctSequences,
+        presentedSequence: result.presented_sequence,
+        expectedResponse: result.expected_response,
+        userResponse: result.user_response
       }));
       
       // Save results using the utility
@@ -302,14 +316,14 @@ const ObjectSpanMainTask = () => {
     navigate('/');
   };
   
-  // Navigate to the next task (from Forward to Backward or Backward to Shape Counting)
+  // Navigate to the next task
   const handleNextTask = () => {
-    if (isBackward) {
-      // If in backward mode, navigate to Shape Counting Task
-      navigate('/shape-counting');
-    } else {
-      // If in forward mode, navigate to backward mode
+    // If in forward mode, navigate to backward mode
+    if (!isBackward) {
       navigate('/object-span/backward');
+    } else {
+      // If in backward mode, navigate to the next task in sequence
+      navigate('/shape-counting');
     }
   };
 
@@ -381,29 +395,33 @@ const ObjectSpanMainTask = () => {
         <div className="results-container">
           <h2>Task Complete</h2>
           
-          <div className="nav-buttons">
-            <button 
-              onClick={handleNextTask} 
-              className="next-button"
-              style={{
-                fontSize: '1.5rem',
-                padding: '16px 32px',
-                fontWeight: 'bold',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                margin: '30px auto',
-                display: 'block',
-                minWidth: '300px',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {isBackward ? 'Next Task: Shape Counting Standardized' : 'Next Task: Backward Recall'}
-            </button>
+          <div className="task-summary">
+            <h3>Task Summary</h3>
+            <p>Maximum span reached: {maxSpanReached}</p>
+            <p>Correct sequences: {results.filter(r => r.is_correct).length} / {results.length}</p>
           </div>
+          
+          <button 
+            onClick={handleNextTask} 
+            className="next-button"
+            style={{
+              fontSize: '1.5rem',
+              padding: '16px 32px',
+              fontWeight: 'bold',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+              margin: '30px auto',
+              display: 'block',
+              minWidth: '300px',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {isBackward ? 'Next Task: Shape Counting' : 'Next Task: Backward Recall'}
+          </button>
         </div>
       )}
       

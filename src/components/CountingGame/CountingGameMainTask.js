@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CountingGame.css';
+import { saveTaskResults } from '../../utils/taskResults';
 
 // Import images - update paths to use public folder
 const dollarBillImage = '/counting/5dollar.jpg';
@@ -212,45 +213,26 @@ const CountingGameMainTask = () => {
   
   // Export results to CSV
   const exportToCSV = () => {
-    setExportingCSV(true);
-    
     try {
       // Format results for CSV - sort by level
       const processedResults = [...results].sort((a, b) => a.level - b.level);
       
-      const csvContent = processedResults.map(result => {
-        return [
-          result.timestamp,
-          result.level,
-          levels[result.level - 1].objects,
-          result.correctCounts.bills,
-          result.correctCounts.buses,
-          result.correctCounts.faces,
-          result.userCounts.bills,
-          result.userCounts.buses,
-          result.userCounts.faces,
-          result.correct ? 1 : 0
-        ].join(',');
-      });
+      // Format results for the centralized storage system
+      const formattedResults = processedResults.map(result => ({
+        level: result.level,
+        imageType: 'multiple',
+        correctAnswer: `Bills: ${result.correctCounts.bills}, Buses: ${result.correctCounts.buses}, Faces: ${result.correctCounts.faces}`,
+        answer: `Bills: ${result.userCounts.bills}, Buses: ${result.userCounts.buses}, Faces: ${result.userCounts.faces}`,
+        isCorrect: result.correct,
+        timestamp: result.timestamp
+      }));
       
-      // Add header row
-      const header = 'Timestamp,Level,ObjectCount,CorrectBills,CorrectBuses,CorrectFaces,UserBills,UserBuses,UserFaces,Correct';
-      const csv = [header, ...csvContent].join('\n');
+      // Save results using the utility
+      saveTaskResults('countingGame', formattedResults);
       
-      // Create and download file
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `counting-game-results-${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      setExportingCSV(false);
+      console.log('Counting Game results saved:', formattedResults);
     } catch (error) {
-      console.error('Error exporting CSV:', error);
-      setExportingCSV(false);
+      console.error('Error saving results:', error);
     }
   };
   
