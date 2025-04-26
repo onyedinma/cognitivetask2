@@ -840,31 +840,42 @@ const EcologicalSpatialMainTask = () => {
               )}
             </>
           ) : (
-            <div className="completion-screen" style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
-              <h1>Task Complete!</h1>
+            <div className="completion-screen">
+              <h2>Task Complete!</h2>
               
-              <div className="action-buttons" style={{ marginTop: '30px' }}>
-                <button 
-                  className="spatial-button next-button" 
-                  onClick={handleNextTask} 
-                  style={{ 
-                    fontSize: '1.2rem', 
-                    padding: '12px 24px',
-                    animation: 'pulse 2s infinite', // Add pulsing animation to draw attention
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                    margin: '0 auto',
-                    display: 'block',
-                    minWidth: '250px'
-                  }}
-                >
-                  Next Task: Deductive Reasoning
-                </button>
-              </div>
+              <button 
+                onClick={handleNextTask} 
+                style={{
+                  fontSize: '1.5rem',
+                  padding: '16px 28px 16px 32px',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
+                  margin: '30px auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '340px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
+                }}
+              >
+                Next Task: Deductive Reasoning
+                <span style={{ marginLeft: '10px', fontSize: '1.6rem' }}>→</span>
+              </button>
             </div>
           )}
         </div>
