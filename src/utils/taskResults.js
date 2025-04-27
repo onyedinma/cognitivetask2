@@ -548,14 +548,109 @@ export const exportAllTaskResults = () => {
       
       // Add data rows
       allResults.shapeCounting.forEach((result, index) => {
+        // Format the expected and user answers in a more compact representation
+        let formattedExpectedAnswer = '';
+        let formattedUserAnswer = '';
+        
+        try {
+          // For expected answer - try to parse the JSON if it's in that format
+          if (result.correctAnswer) {
+            let correctAnswer;
+            if (typeof result.correctAnswer === 'string' && (result.correctAnswer.startsWith('{') || result.correctAnswer.startsWith('['))) {
+              correctAnswer = JSON.parse(result.correctAnswer);
+            } else {
+              correctAnswer = result.correctAnswer;
+            }
+            
+            // If it's an object with shape counts
+            if (correctAnswer && typeof correctAnswer === 'object') {
+              // Format for standard shape counting
+              const parts = [];
+              if (correctAnswer.squares > 0) parts.push(`${correctAnswer.squares}squares`);
+              if (correctAnswer.triangles > 0) parts.push(`${correctAnswer.triangles}triangles`);
+              if (correctAnswer.circles > 0) parts.push(`${correctAnswer.circles}circles`);
+              formattedExpectedAnswer = parts.join(' ');
+            } else if (typeof correctAnswer === 'string' && correctAnswer.includes('Squares:')) {
+              // Handle string format like "Squares: 2, Triangles: 3, Circles: 1"
+              const squares = correctAnswer.match(/Squares: (\d+)/);
+              const triangles = correctAnswer.match(/Triangles: (\d+)/);
+              const circles = correctAnswer.match(/Circles: (\d+)/);
+              
+              const parts = [];
+              if (squares && squares[1] && parseInt(squares[1]) > 0) parts.push(`${squares[1]}squares`);
+              if (triangles && triangles[1] && parseInt(triangles[1]) > 0) parts.push(`${triangles[1]}triangles`);
+              if (circles && circles[1] && parseInt(circles[1]) > 0) parts.push(`${circles[1]}circles`);
+              
+              formattedExpectedAnswer = parts.join(' ');
+            } else {
+              formattedExpectedAnswer = result.correctAnswer;
+            }
+          }
+          
+          // For user answer - check both userAnswer and answer fields
+          // First try userAnswer field
+          let userAnswer = result.userAnswer;
+          
+          // If not found, try the answer field instead
+          if (!userAnswer && result.answer) {
+            userAnswer = result.answer;
+          }
+          
+          // Also look for userCounts object which might be nested
+          if (!userAnswer && result.userCounts) {
+            userAnswer = result.userCounts;
+          }
+          
+          if (userAnswer) {
+            // If it's a string and looks like JSON, parse it
+            if (typeof userAnswer === 'string' && (userAnswer.startsWith('{') || userAnswer.startsWith('['))) {
+              try {
+                userAnswer = JSON.parse(userAnswer);
+              } catch (e) {
+                // If parsing fails, leave as is
+                console.log("Failed to parse user answer JSON:", e);
+              }
+            }
+            
+            // If it's an object with shape counts
+            if (userAnswer && typeof userAnswer === 'object') {
+              // Format for standard shape counting
+              const parts = [];
+              if (userAnswer.squares > 0) parts.push(`${userAnswer.squares}squares`);
+              if (userAnswer.triangles > 0) parts.push(`${userAnswer.triangles}triangles`);
+              if (userAnswer.circles > 0) parts.push(`${userAnswer.circles}circles`);
+              formattedUserAnswer = parts.join(' ');
+            } else if (typeof userAnswer === 'string' && userAnswer.includes('Squares:')) {
+              // Handle string format like "Squares: 2, Triangles: 3, Circles: 1"
+              const squares = userAnswer.match(/Squares: (\d+)/);
+              const triangles = userAnswer.match(/Triangles: (\d+)/);
+              const circles = userAnswer.match(/Circles: (\d+)/);
+              
+              const parts = [];
+              if (squares && squares[1] && parseInt(squares[1]) > 0) parts.push(`${squares[1]}squares`);
+              if (triangles && triangles[1] && parseInt(triangles[1]) > 0) parts.push(`${triangles[1]}triangles`);
+              if (circles && circles[1] && parseInt(circles[1]) > 0) parts.push(`${circles[1]}circles`);
+              
+              formattedUserAnswer = parts.join(' ');
+            } else {
+              formattedUserAnswer = userAnswer.toString();
+            }
+          }
+        } catch (e) {
+          // Fallback to original values if parsing fails
+          console.error('Error formatting shape counts:', e);
+          formattedExpectedAnswer = result.correctAnswer || '';
+          formattedUserAnswer = result.userAnswer || result.answer || '';
+        }
+        
         csvData.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
           formatForCSV(result.level || ''),
           formatForCSV(result.questionText || ''),
-          formatForCSV(result.correctAnswer || ''),
-          formatForCSV(result.userAnswer || ''),
+          formatForCSV(formattedExpectedAnswer),
+          formatForCSV(formattedUserAnswer),
           formatForCSV(result.isCorrect ? '1' : '0'),
           formatForCSV(maxLevel),
           formatForCSV(overallAccuracy)
@@ -566,7 +661,7 @@ export const exportAllTaskResults = () => {
       csvData.push(['']);
     }
     
-    // Process Counting Game Task
+    // Process Counting Game Task (Ecological Shape Counting)
     if (allResults.countingGame && allResults.countingGame.length > 0) {
       // Add section header for Counting Game
       csvData.push(['COUNTING GAME TASK']);
@@ -595,13 +690,149 @@ export const exportAllTaskResults = () => {
       
       // Add data rows
       allResults.countingGame.forEach((result, index) => {
+        // Format the expected and user answers in a more compact representation
+        let formattedExpectedAnswer = '';
+        let formattedUserAnswer = '';
+        
+        try {
+          // For expected answer - try to parse the JSON if it's in that format
+          if (result.correctAnswer) {
+            let correctAnswer;
+            if (typeof result.correctAnswer === 'string' && (result.correctAnswer.startsWith('{') || result.correctAnswer.startsWith('['))) {
+              correctAnswer = JSON.parse(result.correctAnswer);
+            } else {
+              correctAnswer = result.correctAnswer;
+            }
+            
+            // If it's an object with item counts (ecological items)
+            if (correctAnswer && typeof correctAnswer === 'object') {
+              // Format for ecological counting game (e.g., "1bill 2faces 3buses")
+              const parts = [];
+              // Check if it has specific fields
+              if (typeof correctAnswer.bills !== 'undefined' && correctAnswer.bills > 0) {
+                parts.push(`${correctAnswer.bills}bills`);
+              }
+              if (typeof correctAnswer.buses !== 'undefined' && correctAnswer.buses > 0) {
+                parts.push(`${correctAnswer.buses}buses`);
+              }
+              if (typeof correctAnswer.faces !== 'undefined' && correctAnswer.faces > 0) {
+                parts.push(`${correctAnswer.faces}faces`);
+              }
+              
+              // If we found specific fields, use them
+              if (parts.length > 0) {
+                formattedExpectedAnswer = parts.join(' ');
+              } else {
+                // Otherwise iterate through all keys
+                const itemNames = Object.keys(correctAnswer);
+                for (const itemName of itemNames) {
+                  if (correctAnswer[itemName] > 0) {
+                    parts.push(`${correctAnswer[itemName]}${itemName}`);
+                  }
+                }
+                formattedExpectedAnswer = parts.join(' ');
+              }
+            } else if (typeof correctAnswer === 'string' && correctAnswer.includes('Bills:')) {
+              // Handle string format like "Bills: 1, Buses: 2, Faces: 3"
+              const bills = correctAnswer.match(/Bills: (\d+)/);
+              const buses = correctAnswer.match(/Buses: (\d+)/);
+              const faces = correctAnswer.match(/Faces: (\d+)/);
+              
+              const parts = [];
+              if (bills && bills[1] && parseInt(bills[1]) > 0) parts.push(`${bills[1]}bills`);
+              if (buses && buses[1] && parseInt(buses[1]) > 0) parts.push(`${buses[1]}buses`);
+              if (faces && faces[1] && parseInt(faces[1]) > 0) parts.push(`${faces[1]}faces`);
+              
+              formattedExpectedAnswer = parts.join(' ');
+            } else {
+              formattedExpectedAnswer = result.correctAnswer;
+            }
+          }
+          
+          // For user answer - check both userAnswer and answer fields
+          // First try userAnswer field
+          let userAnswer = result.userAnswer;
+          
+          // If not found, try the answer field instead
+          if (!userAnswer && result.answer) {
+            userAnswer = result.answer;
+          }
+          
+          // Also look for userCounts object which might be nested
+          if (!userAnswer && result.userCounts) {
+            userAnswer = result.userCounts;
+          }
+          
+          if (userAnswer) {
+            // If it's a string and looks like JSON, parse it
+            if (typeof userAnswer === 'string' && (userAnswer.startsWith('{') || userAnswer.startsWith('['))) {
+              try {
+                userAnswer = JSON.parse(userAnswer);
+              } catch (e) {
+                // If parsing fails, leave as is
+                console.log("Failed to parse user answer JSON:", e);
+              }
+            }
+            
+            // If it's an object with item counts
+            if (userAnswer && typeof userAnswer === 'object') {
+              // Format for ecological counting game
+              const parts = [];
+              
+              // Check if it has specific fields
+              if (typeof userAnswer.bills !== 'undefined' && userAnswer.bills > 0) {
+                parts.push(`${userAnswer.bills}bills`);
+              }
+              if (typeof userAnswer.buses !== 'undefined' && userAnswer.buses > 0) {
+                parts.push(`${userAnswer.buses}buses`);
+              }
+              if (typeof userAnswer.faces !== 'undefined' && userAnswer.faces > 0) {
+                parts.push(`${userAnswer.faces}faces`);
+              }
+              
+              // If we found specific fields, use them
+              if (parts.length > 0) {
+                formattedUserAnswer = parts.join(' ');
+              } else {
+                // Otherwise iterate through all keys
+                const itemNames = Object.keys(userAnswer);
+                for (const itemName of itemNames) {
+                  if (userAnswer[itemName] > 0) {
+                    parts.push(`${userAnswer[itemName]}${itemName}`);
+                  }
+                }
+                formattedUserAnswer = parts.join(' ');
+              }
+            } else if (typeof userAnswer === 'string' && userAnswer.includes('Bills:')) {
+              // Handle string format like "Bills: 1, Buses: 2, Faces: 3"
+              const bills = userAnswer.match(/Bills: (\d+)/);
+              const buses = userAnswer.match(/Buses: (\d+)/);
+              const faces = userAnswer.match(/Faces: (\d+)/);
+              
+              const parts = [];
+              if (bills && bills[1] && parseInt(bills[1]) > 0) parts.push(`${bills[1]}bills`);
+              if (buses && buses[1] && parseInt(buses[1]) > 0) parts.push(`${buses[1]}buses`);
+              if (faces && faces[1] && parseInt(faces[1]) > 0) parts.push(`${faces[1]}faces`);
+              
+              formattedUserAnswer = parts.join(' ');
+            } else {
+              formattedUserAnswer = userAnswer.toString();
+            }
+          }
+        } catch (e) {
+          // Fallback to original values if parsing fails
+          console.error('Error formatting counting game counts:', e);
+          formattedExpectedAnswer = result.correctAnswer || '';
+          formattedUserAnswer = result.userAnswer || result.answer || '';
+        }
+        
         csvData.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
           formatForCSV(result.level || ''),
-          formatForCSV(result.correctAnswer || ''),
-          formatForCSV(result.userAnswer || ''),
+          formatForCSV(formattedExpectedAnswer),
+          formatForCSV(formattedUserAnswer),
           formatForCSV(result.isCorrect ? '1' : '0'),
           formatForCSV(maxLevel),
           formatForCSV(overallAccuracy)
