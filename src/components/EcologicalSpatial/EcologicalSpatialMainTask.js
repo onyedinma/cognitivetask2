@@ -429,6 +429,9 @@ const EcologicalSpatialMainTask = () => {
     const totalMovedObjects = movedPositions.length;
     const isLevelPassed = levelScore >= totalMovedObjects * 0.5;
     
+    // Get completion time
+    const completionTime = new Date().getTime();
+    
     console.log(`Level ${currentLevel}: Score = ${levelScore}/${totalMovedObjects} (${correctSelections.length} correct, ${incorrectSelections.length} incorrect)`);
     
     // Provide feedback
@@ -440,13 +443,30 @@ const EcologicalSpatialMainTask = () => {
       setFeedbackMessage(`Level ${currentLevel} finished. Let's move on to the next level.`);
     }
     
-    // Store result for current attempt
+    // Format target objects and selected objects as strings for CSV export
+    const targetObjectsString = movedObjectPairs.map(obj => obj.imageName).join(',');
+    const selectedObjectsString = selectedCells.map(pos => {
+      const obj = movedShapes.find(s => s.position === pos);
+      return obj ? obj.imageName : 'none';
+    }).join(',');
+    
+    // Store result for current attempt with comprehensive data format
     const currentResult = {
+      participantId: localStorage.getItem('studentId') || 'unknown',
+      timestamp: new Date().toISOString(),
+      trialNumber: currentLevel, // Using level as trial number for this task
       level: currentLevel,
+      scenarioId: currentLevel, // Using level as scenario ID for now
+      scenarioName: `Ecological Scene ${currentLevel}`,
+      sceneDescription: `Level ${currentLevel} scene with ${shapes.length} objects`,
+      targetObjects: targetObjectsString,
+      selectedObjects: selectedObjectsString,
       correctSelections: correctSelections.length,
       incorrectSelections: incorrectSelections.length,
       totalMovedObjects: totalMovedObjects,
+      completionTime: completionTime,
       score: levelScore,
+      isCorrect: isLevelPassed, // For accuracy calculation
       movedObjectPairs: movedObjectPairs,
       passed: isLevelPassed
     };
@@ -495,10 +515,28 @@ const EcologicalSpatialMainTask = () => {
       // Import the task results utility function
       const { saveTaskResults } = require('../../utils/taskResults');
       
-      // Save results to the centralized storage system instead of exporting CSV
-      saveTaskResults('ecologicalSpatial', results);
+      // Format the results for CSV export to match expected fields
+      const formattedResults = results.map(result => ({
+        participantId: result.participantId || localStorage.getItem('studentId') || 'unknown',
+        timestamp: result.timestamp || new Date().toISOString(),
+        trialNumber: result.trialNumber || result.level,
+        level: result.level,
+        scenarioId: result.scenarioId || result.level,
+        scenarioName: result.scenarioName || `Ecological Scene ${result.level}`,
+        sceneDescription: result.sceneDescription || `Level ${result.level} scene`,
+        targetObjects: result.targetObjects || '',
+        selectedObjects: result.selectedObjects || '',
+        correctSelections: result.correctSelections,
+        incorrectSelections: result.incorrectSelections,
+        completionTime: result.completionTime || 0,
+        isCorrect: result.isCorrect || result.passed,
+        score: result.score
+      }));
       
-      console.log('Ecological Spatial results saved:', results);
+      // Save results to the centralized storage system
+      saveTaskResults('ecologicalSpatial', formattedResults);
+      
+      console.log('Ecological Spatial results saved:', formattedResults);
     } catch (error) {
       console.error('Error saving results:', error);
     }

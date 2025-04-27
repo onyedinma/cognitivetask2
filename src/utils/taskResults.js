@@ -63,6 +63,31 @@ export const exportAllTaskResults = () => {
     // Prepare data for CSV
     const csvData = [];
     
+    // Helper function to properly format values for CSV export
+    const formatForCSV = (value) => {
+      if (value === null || value === undefined) return '';
+      
+      // Convert the value to string
+      let strValue = String(value);
+      
+      // If it looks like JSON, replace commas with semicolons
+      if (strValue.startsWith('[') || strValue.startsWith('{')) {
+        strValue = strValue.replace(/,/g, ';');
+      }
+      
+      // If the value contains quotes, double them for CSV escape
+      if (strValue.includes('"')) {
+        strValue = strValue.replace(/"/g, '""');
+      }
+      
+      // Wrap in quotes if it contains commas, quotes, or newlines
+      if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n') || strValue.includes('\r')) {
+        strValue = `"${strValue}"`;
+      }
+      
+      return strValue;
+    };
+    
     // Process Forward Digit Span Task - Explicit handling
     if (allResults.digitSpanForward && allResults.digitSpanForward.length > 0) {
       console.log('Found digitSpanForward results:', allResults.digitSpanForward.length, 'entries');
@@ -97,16 +122,16 @@ export const exportAllTaskResults = () => {
       // Add data rows
       allResults.digitSpanForward.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.spanLength || '',
-          result.sequence || '',
-          result.expectedResponse || '',
-          result.userResponse || '',
-          result.isCorrect ? '1' : '0',
-          maxSpan,
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(index + 1),
+          formatForCSV(result.spanLength || ''),
+          formatForCSV(result.sequence || ''),
+          formatForCSV(result.expectedResponse || ''),
+          formatForCSV(result.userResponse || ''),
+          formatForCSV(result.isCorrect ? '1' : '0'),
+          formatForCSV(maxSpan),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -147,16 +172,16 @@ export const exportAllTaskResults = () => {
       // Add data rows
       allResults.digitSpanBackward.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.spanLength || '',
-          result.sequence || '',
-          result.expectedResponse || '',
-          result.userResponse || '',
-          result.isCorrect ? '1' : '0',
-          maxSpan,
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(index + 1),
+          formatForCSV(result.spanLength || ''),
+          formatForCSV(result.sequence || ''),
+          formatForCSV(result.expectedResponse || ''),
+          formatForCSV(result.userResponse || ''),
+          formatForCSV(result.isCorrect ? '1' : '0'),
+          formatForCSV(maxSpan),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -202,17 +227,17 @@ export const exportAllTaskResults = () => {
       // Add data rows with flexible field names
       allResults.objectSpanForward.forEach((result, index) => {
         csvData.push([
-          result.participantId || result.participant_id || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.spanLength || result.span_length || '',
-          result.presentedSequence || result.presented_sequence || '',
-          result.expectedResponse || result.expected_response || '',
-          result.userResponse || result.user_response || '',
-          (result.isCorrect || result.is_correct) ? '1' : '0',
-          maxSpan,
-          result.totalCorrectSequences || correctTrials,
-          overallAccuracy
+          formatForCSV(result.participantId || result.participant_id || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(index + 1),
+          formatForCSV(result.spanLength || result.span_length || ''),
+          formatForCSV(result.presentedSequence || result.presented_sequence || ''),
+          formatForCSV(result.expectedResponse || result.expected_response || ''),
+          formatForCSV(result.userResponse || result.user_response || ''),
+          formatForCSV((result.isCorrect || result.is_correct) ? '1' : '0'),
+          formatForCSV(maxSpan),
+          formatForCSV(result.totalCorrectSequences || correctTrials),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -256,17 +281,17 @@ export const exportAllTaskResults = () => {
       // Add data rows
       allResults.objectSpanBackward.forEach((result, index) => {
         csvData.push([
-          result.participantId || result.participant_id || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.spanLength || result.span_length || '',
-          result.presentedSequence || result.presented_sequence || '',
-          result.expectedResponse || result.expected_response || '',
-          result.userResponse || result.user_response || '',
-          (result.isCorrect || result.is_correct) ? '1' : '0',
-          maxSpan,
-          result.totalCorrectSequences || correctTrials,
-          overallAccuracy
+          formatForCSV(result.participantId || result.participant_id || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(index + 1),
+          formatForCSV(result.spanLength || result.span_length || ''),
+          formatForCSV(result.presentedSequence || result.presented_sequence || ''),
+          formatForCSV(result.expectedResponse || result.expected_response || ''),
+          formatForCSV(result.userResponse || result.user_response || ''),
+          formatForCSV((result.isCorrect || result.is_correct) ? '1' : '0'),
+          formatForCSV(maxSpan),
+          formatForCSV(result.totalCorrectSequences || correctTrials),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -313,16 +338,16 @@ export const exportAllTaskResults = () => {
         // Add data rows
         forwardResults.forEach((result, index) => {
           csvData.push([
-            result.participantId || studentId,
-            result.timestamp || timestamp,
-            index + 1,
-            result.spanLength || '',
-            result.sequence || '',
-            result.expectedResponse || '',
-            result.userResponse || '',
-            result.isCorrect ? '1' : '0',
-            maxSpan,
-            overallAccuracy
+            formatForCSV(result.participantId || studentId),
+            formatForCSV(result.timestamp || timestamp),
+            formatForCSV(index + 1),
+            formatForCSV(result.spanLength || ''),
+            formatForCSV(result.sequence || ''),
+            formatForCSV(result.expectedResponse || ''),
+            formatForCSV(result.userResponse || ''),
+            formatForCSV(result.isCorrect ? '1' : '0'),
+            formatForCSV(maxSpan),
+            formatForCSV(overallAccuracy)
           ]);
         });
         
@@ -361,16 +386,16 @@ export const exportAllTaskResults = () => {
         // Add data rows
         backwardResults.forEach((result, index) => {
           csvData.push([
-            result.participantId || studentId,
-            result.timestamp || timestamp,
-            index + 1,
-            result.spanLength || '',
-            result.sequence || '',
-            result.expectedResponse || '',
-            result.userResponse || '',
-            result.isCorrect ? '1' : '0',
-            maxSpan,
-            overallAccuracy
+            formatForCSV(result.participantId || studentId),
+            formatForCSV(result.timestamp || timestamp),
+            formatForCSV(index + 1),
+            formatForCSV(result.spanLength || ''),
+            formatForCSV(result.sequence || ''),
+            formatForCSV(result.expectedResponse || ''),
+            formatForCSV(result.userResponse || ''),
+            formatForCSV(result.isCorrect ? '1' : '0'),
+            formatForCSV(maxSpan),
+            formatForCSV(overallAccuracy)
           ]);
         });
         
@@ -422,17 +447,17 @@ export const exportAllTaskResults = () => {
         // Add data rows
         forwardResults.forEach((result, index) => {
           csvData.push([
-            result.participantId || result.participant_id || studentId,
-            result.timestamp || timestamp,
-            index + 1,
-            result.spanLength || result.span_length || '',
-            result.presentedSequence || result.presented_sequence || '',
-            result.expectedResponse || result.expected_response || '',
-            result.userResponse || result.user_response || '',
-            (result.isCorrect || result.is_correct) ? '1' : '0',
-            maxSpan,
-            correctTrials,
-            overallAccuracy
+            formatForCSV(result.participantId || result.participant_id || studentId),
+            formatForCSV(result.timestamp || timestamp),
+            formatForCSV(index + 1),
+            formatForCSV(result.spanLength || result.span_length || ''),
+            formatForCSV(result.presentedSequence || result.presented_sequence || ''),
+            formatForCSV(result.expectedResponse || result.expected_response || ''),
+            formatForCSV(result.userResponse || result.user_response || ''),
+            formatForCSV((result.isCorrect || result.is_correct) ? '1' : '0'),
+            formatForCSV(maxSpan),
+            formatForCSV(correctTrials),
+            formatForCSV(overallAccuracy)
           ]);
         });
         
@@ -474,17 +499,17 @@ export const exportAllTaskResults = () => {
         // Add data rows
         backwardResults.forEach((result, index) => {
           csvData.push([
-            result.participantId || result.participant_id || studentId,
-            result.timestamp || timestamp,
-            index + 1,
-            result.spanLength || result.span_length || '',
-            result.presentedSequence || result.presented_sequence || '',
-            result.expectedResponse || result.expected_response || '',
-            result.userResponse || result.user_response || '',
-            (result.isCorrect || result.is_correct) ? '1' : '0',
-            maxSpan,
-            correctTrials,
-            overallAccuracy
+            formatForCSV(result.participantId || result.participant_id || studentId),
+            formatForCSV(result.timestamp || timestamp),
+            formatForCSV(index + 1),
+            formatForCSV(result.spanLength || result.span_length || ''),
+            formatForCSV(result.presentedSequence || result.presented_sequence || ''),
+            formatForCSV(result.expectedResponse || result.expected_response || ''),
+            formatForCSV(result.userResponse || result.user_response || ''),
+            formatForCSV((result.isCorrect || result.is_correct) ? '1' : '0'),
+            formatForCSV(maxSpan),
+            formatForCSV(correctTrials),
+            formatForCSV(overallAccuracy)
           ]);
         });
         
@@ -524,16 +549,16 @@ export const exportAllTaskResults = () => {
       // Add data rows
       allResults.shapeCounting.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.level || '',
-          result.questionText || '',
-          result.correctAnswer || '',
-          result.userAnswer || '',
-          result.isCorrect ? '1' : '0',
-          maxLevel,
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(index + 1),
+          formatForCSV(result.level || ''),
+          formatForCSV(result.questionText || ''),
+          formatForCSV(result.correctAnswer || ''),
+          formatForCSV(result.userAnswer || ''),
+          formatForCSV(result.isCorrect ? '1' : '0'),
+          formatForCSV(maxLevel),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -571,15 +596,15 @@ export const exportAllTaskResults = () => {
       // Add data rows
       allResults.countingGame.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.level || '',
-          result.correctAnswer || '',
-          result.userAnswer || '',
-          result.isCorrect ? '1' : '0',
-          maxLevel,
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(index + 1),
+          formatForCSV(result.level || ''),
+          formatForCSV(result.correctAnswer || ''),
+          formatForCSV(result.userAnswer || ''),
+          formatForCSV(result.isCorrect ? '1' : '0'),
+          formatForCSV(maxLevel),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -589,43 +614,66 @@ export const exportAllTaskResults = () => {
     
     // Process Spatial Memory Task
     if (allResults.spatialMemory && allResults.spatialMemory.length > 0) {
+      console.log('Found spatialMemory results:', allResults.spatialMemory.length, 'entries');
+      
       // Add section header for Spatial Memory
       csvData.push(['SPATIAL MEMORY TASK']);
       
-      // Add task-specific headers
+      // Add task-specific headers matching the image
       csvData.push([
         'Participant ID',
         'Timestamp',
-        'Trial Number',
-        'Level',
-        'Expected Sequence',
-        'User Sequence',
-        'Correct (1/0)',
+        'Trial Num',
+        'Difficulty Level',
+        'Grid Size',
+        'Target Positions',
+        'Selected Positions',
+        'Correct Selections',
+        'Incorrect Selections',
+        'Total Selections Made',
+        'Completion Time (ms)',
         'Max Level Reached',
         'Overall Accuracy'
       ]);
       
       // Calculate max level reached and overall accuracy
       const maxLevel = allResults.spatialMemory.reduce((max, result) => {
-        return result.isCorrect && result.level > max ? result.level : max;
+        return (result.isCorrect || result.passed) && result.level > max ? result.level : max;
       }, 0);
       
-      const totalTrials = allResults.spatialMemory.length;
-      const correctTrials = allResults.spatialMemory.filter(r => r.isCorrect).length;
-      const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
+      // Calculate overall accuracy based on correct selections vs total moved shapes
+      // This is more appropriate than using isCorrect/passed flags
+      const totalCorrectSelections = allResults.spatialMemory.reduce((sum, result) => {
+        return sum + (result.correctSelections || 0);
+      }, 0);
       
-      // Add data rows
+      const totalPossibleSelections = allResults.spatialMemory.reduce((sum, result) => {
+        return sum + (result.totalMovedShapes || 0);
+      }, 0);
+      
+      // Calculate accuracy based on correct selections
+      const overallAccuracy = totalPossibleSelections > 0 
+        ? (totalCorrectSelections / totalPossibleSelections * 100).toFixed(2) + '%' 
+        : '0%';
+      
+      console.log(`Spatial Memory accuracy calculation: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections = ${overallAccuracy}`);
+      
+      // Add data rows with expanded fields
       allResults.spatialMemory.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.level || '',
-          result.expectedSequence || '',
-          result.userSequence || '',
-          result.isCorrect ? '1' : '0',
-          maxLevel,
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(result.trial || result.trialNumber || index + 1),
+          formatForCSV(result.difficultyLevel || result.level || ''),
+          formatForCSV(result.gridSize || ''),
+          formatForCSV(result.targetPositions || ''),
+          formatForCSV(result.selectedPositions || ''),
+          formatForCSV(result.correctSelections || 0),
+          formatForCSV(result.incorrectSelections || 0),
+          formatForCSV(result.totalSelectionsCount || result.correctSelections + result.incorrectSelections || 0),
+          formatForCSV(result.completionTime || ''),
+          formatForCSV(maxLevel),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -635,43 +683,45 @@ export const exportAllTaskResults = () => {
     
     // Process Ecological Spatial Task
     if (allResults.ecologicalSpatial && allResults.ecologicalSpatial.length > 0) {
+      console.log('Found ecologicalSpatial results:', allResults.ecologicalSpatial.length, 'entries');
+      
       // Add section header for Ecological Spatial
       csvData.push(['ECOLOGICAL SPATIAL TASK']);
       
-      // Add task-specific headers
+      // Add task-specific headers matching the image
       csvData.push([
         'Participant ID',
         'Timestamp',
-        'Trial Number',
-        'Level',
-        'Expected Sequence',
-        'User Sequence',
+        'Trial Num',
+        'Scenario ID',
+        'Scenario Name',
+        'Scene Description',
+        'Target Objects',
+        'Selected Objects',
         'Correct (1/0)',
-        'Max Level Reached',
+        'Completion Time (ms)',
         'Overall Accuracy'
       ]);
       
-      // Calculate max level reached and overall accuracy
-      const maxLevel = allResults.ecologicalSpatial.reduce((max, result) => {
-        return result.isCorrect && result.level > max ? result.level : max;
-      }, 0);
-      
+      // Calculate overall accuracy
       const totalTrials = allResults.ecologicalSpatial.length;
-      const correctTrials = allResults.ecologicalSpatial.filter(r => r.isCorrect).length;
+      const correctTrials = allResults.ecologicalSpatial.filter(r => r.isCorrect || r.passed).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
-      // Add data rows
+      // Add data rows with all fields
       allResults.ecologicalSpatial.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.level || '',
-          result.expectedSequence || '',
-          result.userSequence || '',
-          result.isCorrect ? '1' : '0',
-          maxLevel,
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(result.trialNumber || index + 1),
+          formatForCSV(result.scenarioId || result.level || index + 1),
+          formatForCSV(result.scenarioName || `Scenario ${result.level || index + 1}`),
+          formatForCSV(result.sceneDescription || ''),
+          formatForCSV(result.targetObjects || ''),
+          formatForCSV(result.selectedObjects || ''),
+          formatForCSV((result.isCorrect || result.passed) ? '1' : '0'),
+          formatForCSV(result.completionTime || ''),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -707,17 +757,17 @@ export const exportAllTaskResults = () => {
       // Add data rows
       allResults.deductiveReasoning.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.level || '',
-          result.scenarioName || '',
-          result.question || '',
-          result.correctItem || '',
-          result.userSelectedItem || '',
-          result.isCorrect ? '1' : '0',
-          result.maxLevelReached || '',
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(index + 1),
+          formatForCSV(result.level || ''),
+          formatForCSV(result.scenarioName || ''),
+          formatForCSV(result.question || ''),
+          formatForCSV(result.correctItem || ''),
+          formatForCSV(result.userSelectedItem || ''),
+          formatForCSV(result.isCorrect ? '1' : '0'),
+          formatForCSV(result.maxLevelReached || ''),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -727,43 +777,50 @@ export const exportAllTaskResults = () => {
     
     // Process Ecological Deductive Reasoning Task
     if (allResults.ecologicalDeductiveReasoning && allResults.ecologicalDeductiveReasoning.length > 0) {
+      console.log('Found ecologicalDeductiveReasoning results:', allResults.ecologicalDeductiveReasoning.length, 'entries');
+      
       // Add section header for Ecological Deductive Reasoning
       csvData.push(['ECOLOGICAL DEDUCTIVE REASONING TASK']);
       
-      // Add task-specific headers
+      // Add task-specific headers matching expected fields
       csvData.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
-        'Level',
+        'Scenario ID',
         'Scenario Name',
         'Question',
-        'Correct Item',
-        'User Selected Item',
+        'Correct Items',
+        'Selected Items',
         'Correct (1/0)',
-        'Max Level Reached',
+        'Completion Time (ms)',
         'Overall Accuracy'
       ]);
+      
+      // Log available field names for debugging
+      if (allResults.ecologicalDeductiveReasoning.length > 0) {
+        console.log('First ecologicalDeductiveReasoning result fields:', Object.keys(allResults.ecologicalDeductiveReasoning[0]));
+      }
       
       // Calculate overall accuracy
       const totalTrials = allResults.ecologicalDeductiveReasoning.length;
       const correctTrials = allResults.ecologicalDeductiveReasoning.filter(r => r.isCorrect).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
-      // Add data rows
+      // Add data rows with flexible field mapping
       allResults.ecologicalDeductiveReasoning.forEach((result, index) => {
         csvData.push([
-          result.participantId || studentId,
-          result.timestamp || timestamp,
-          index + 1,
-          result.level || '',
-          result.scenarioName || '',
-          result.question || '',
-          result.correctItem || '',
-          result.userSelectedItem || '',
-          result.isCorrect ? '1' : '0',
-          result.maxLevelReached || '',
-          overallAccuracy
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(result.trialNumber || index + 1),
+          formatForCSV(result.scenarioId || result.level || index + 1),
+          formatForCSV(result.scenarioName || `Scenario ${result.level || index + 1}`),
+          formatForCSV(result.question || ''),
+          formatForCSV(result.correctItem || ''),
+          formatForCSV(result.userSelectedItem || ''),
+          formatForCSV(result.isCorrect ? '1' : '0'),
+          formatForCSV(result.completionTime || ''),
+          formatForCSV(overallAccuracy)
         ]);
       });
       
@@ -771,7 +828,7 @@ export const exportAllTaskResults = () => {
       csvData.push(['']);
     }
     
-    // Create CSV content
+    // Create CSV content - each field is already properly formatted for CSV by the formatForCSV function
     const csvContent = csvData.map(row => row.join(',')).join('\n');
     
     // Create a Blob and trigger download

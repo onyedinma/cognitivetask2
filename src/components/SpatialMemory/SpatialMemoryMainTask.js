@@ -324,9 +324,13 @@ const SpatialMemoryMainTask = () => {
     });
     
     const totalMovedShapes = changedShapes.length;
+    const totalSelectionsCount = selectedCells.length;
     
     // Calculate score: correctSelections minus incorrectSelections
     const levelScore = correctSelections - incorrectSelections;
+    
+    // Record completion time (we could add a timer in the future)
+    const completionTime = new Date().getTime(); // Placeholder for now
     
     // Update score and max score
     setScore(prevScore => prevScore + levelScore);
@@ -334,17 +338,31 @@ const SpatialMemoryMainTask = () => {
     // Update max score by adding the number of moved objects for this level
     setMaxScore(prevMax => prevMax + totalMovedShapes);
     
-    // Record results for this level
+    // Create formatted target and selected positions strings
+    const targetPositions = changedShapes.map(shape => shape.newPosition).join(',');
+    const selectedPositions = selectedCells.join(',');
+    
+    // Record results for this level with comprehensive data format
     const result = {
-      level: currentLevel,
+      participantId: localStorage.getItem('studentId') || 'unknown',
+      timestamp: new Date().toISOString(),
       trial: trialCount,
-      totalShapes,
-      totalMovedShapes,
-      correctSelections,
-      incorrectSelections,
+      level: currentLevel,
+      difficultyLevel: currentLevel, // Same as level for this task
+      gridSize: `${dimensions.columns}x${dimensions.rows}`,
+      targetPositions: targetPositions,
+      selectedPositions: selectedPositions,
+      correctSelections: correctSelections,
+      incorrectSelections: incorrectSelections,
+      totalSelectionsCount: totalSelectionsCount,
+      totalMovedShapes: totalMovedShapes,
+      completionTime: completionTime,
       score: levelScore,
-      timestamp: new Date().toISOString()
+      maxLevelReached: currentLevel, // Will be updated in exportResults based on all results
+      isCorrect: correctSelections > incorrectSelections // Used for accuracy calculation
     };
+    
+    console.log(`Level ${currentLevel}: ${correctSelections} correct out of ${totalMovedShapes} possible. Score: ${levelScore}`);
     
     setResults(prevResults => [...prevResults, result]);
     

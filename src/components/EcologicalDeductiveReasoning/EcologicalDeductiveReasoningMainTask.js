@@ -204,19 +204,35 @@ const EcologicalDeductiveReasoningMainTask = () => {
       // Get student ID for identification
       const studentId = localStorage.getItem('studentId') || 'unknown';
       
-      // Format the export data
-      const exportData = {
-        studentId,
-        timestamp: new Date().toISOString(),
-        results: results.map(result => ({
-          ...result,
-          selectedCards: result.selectedCards || [],
-          correctCards: result.correctCards || []
-        }))
-      };
+      // Format the results with all necessary fields
+      const formattedResults = results.map((result, index) => {
+        const currentPuzzle = mainPuzzles[result.puzzleIndex];
+        
+        // Format arrays to use semicolons instead of commas
+        const correctCards = currentPuzzle ? JSON.stringify(currentPuzzle.correctCards).replace(/,/g, ';') : '';
+        const selectedCards = JSON.stringify(result.selectedCards || []).replace(/,/g, ';');
+        
+        return {
+          participantId: studentId,
+          timestamp: result.timestamp || new Date().toISOString(),
+          trialNumber: index + 1,
+          level: result.puzzleIndex + 1,
+          scenarioId: result.puzzleIndex + 1,
+          scenarioName: `Ecological Problem ${result.puzzleIndex + 1}`,
+          question: result.question || currentPuzzle.question,
+          correctItem: correctCards,
+          userSelectedItem: selectedCards,
+          isCorrect: result.isCorrect,
+          maxLevelReached: results.length, // Number of puzzles completed
+          completionTime: new Date().getTime(), // Current timestamp for completion time
+          explanation: currentPuzzle ? currentPuzzle.explanation : ''
+        };
+      });
       
-      // Save this task's results
-      saveTaskResults('ecologicalDeductive', exportData.results);
+      // Save results with the EXACT key expected by the export function
+      saveTaskResults('ecologicalDeductiveReasoning', formattedResults);
+      
+      console.log('Ecological Deductive Reasoning results saved:', formattedResults);
       
       // Export ALL tasks' results as a single CSV file
       exportAllTaskResults();

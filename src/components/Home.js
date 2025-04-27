@@ -186,11 +186,11 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
-
+      
       <footer className="home-footer">
         <button 
           className="update-participant-button"
