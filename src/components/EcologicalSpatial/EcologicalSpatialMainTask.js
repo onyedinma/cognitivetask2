@@ -878,17 +878,17 @@ const EcologicalSpatialMainTask = () => {
             <div className="completion-screen">
               <h2>Task Complete!</h2>
               
-              <button 
-                onClick={handleNextTask} 
-                style={{
+                <button 
+                  onClick={handleNextTask} 
+                  style={{ 
                   fontSize: '1.5rem',
                   padding: '16px 28px 16px 32px',
                   fontWeight: 'bold',
                   background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-                  color: 'white',
-                  border: 'none',
+                    color: 'white',
+                    border: 'none',
                   borderRadius: '12px',
-                  cursor: 'pointer',
+                    cursor: 'pointer',
                   boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
                   margin: '30px auto',
                   display: 'flex',
@@ -906,11 +906,11 @@ const EcologicalSpatialMainTask = () => {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
-                }}
-              >
-                Next Task: Deductive Reasoning
+                  }}
+                >
+                  Next Task: Deductive Reasoning
                 <span style={{ marginLeft: '10px', fontSize: '1.6rem' }}>→</span>
-              </button>
+                </button>
             </div>
           )}
         </div>

@@ -234,37 +234,89 @@ const MFQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row - exclude response data
-      let csvContent = 'StudentID,Timestamp,QuestionID,Score\n';
+      // Helper function to properly escape CSV field values
+      const escapeCSVField = (value) => {
+        if (value === null || value === undefined) {
+          return '""';
+        }
+        
+        // Convert to string if not already
+        const stringValue = String(value);
+        
+        // Replace any double quotes with two double quotes (proper CSV escaping)
+        const escapedValue = stringValue.replace(/"/g, '""');
+        
+        // Always wrap in quotes to safely handle commas, newlines, etc.
+        return `"${escapedValue}"`;
+      };
+      
+      // Create CSV header row with expanded fields
+      let csvContent = 'StudentID,Timestamp,Section,QuestionID,QuestionText,Response,Score,ScoreType,ScoringFormula,PossibleResponses\n';
       
       // Add row for each question with score only
       questions.forEach(question => {
         const response = formData[question.id];
         const numericScore = parseInt(response) || 0;
+        const section = 'Mood and Feelings';
+        const scoreType = 'Depression Scale (0-2)';
+        const scoringFormula = 'NOT TRUE = 0, SOMETIMES = 1, TRUE = 2, Refused = -9';
+        const possibleResponses = 'NOT TRUE, SOMETIMES, TRUE, Refused';
         
         csvContent += [
-          studentId,
-          timestamp,
-          question.id,
-          numericScore
+          escapeCSVField(studentId),
+          escapeCSVField(timestamp),
+          escapeCSVField(section),
+          escapeCSVField(question.id),
+          escapeCSVField(question.text),
+          escapeCSVField(response || 'Not Answered'),
+          numericScore,
+          escapeCSVField(scoreType),
+          escapeCSVField(scoringFormula),
+          escapeCSVField(possibleResponses)
         ].join(',') + '\n';
       });
       
+      // Add scoring explanation
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Mood and Feelings'),
+        escapeCSVField('SCORING_INFO'),
+        escapeCSVField('Scoring Information'),
+        escapeCSVField(''),
+        '',
+        escapeCSVField('Depression Scale'),
+        escapeCSVField('Higher scores indicate more depressive symptoms. Total score range: 0-26'),
+        escapeCSVField('')
+      ].join(',') + '\n';
+      
       // Add total score row
       csvContent += [
-        studentId,
-        timestamp,
-        'TOTAL',
-        totalScore
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Summary'),
+        escapeCSVField('TOTAL'),
+        escapeCSVField('Total MFQ Score'),
+        escapeCSVField(''),
+        totalScore,
+        escapeCSVField('Sum of all items'),
+        escapeCSVField('Sum of all question scores, higher total indicates more depressive symptoms. Clinical cutoff is 12 or higher.'),
+        escapeCSVField('')
       ].join(',') + '\n';
       
       // Add interpretation row
       if (interpretationText) {
         csvContent += [
-          studentId,
-          timestamp,
-          'INTERPRETATION',
-          `"${interpretationText}"`
+          escapeCSVField(studentId),
+          escapeCSVField(timestamp),
+          escapeCSVField('Summary'),
+          escapeCSVField('INTERPRETATION'),
+          escapeCSVField('Score Interpretation'),
+          escapeCSVField(''),
+          '',
+          escapeCSVField(interpretationLevel),
+          escapeCSVField(interpretationText),
+          escapeCSVField('')
         ].join(',') + '\n';
       }
       

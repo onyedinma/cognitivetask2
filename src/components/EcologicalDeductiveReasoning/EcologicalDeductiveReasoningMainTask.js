@@ -207,7 +207,7 @@ const EcologicalDeductiveReasoningMainTask = () => {
       // Format the results with all necessary fields
       const formattedResults = results.map((result, index) => {
         const currentPuzzle = mainPuzzles[result.puzzleIndex];
-        
+      
         // Format arrays to use semicolons instead of commas
         const correctCards = currentPuzzle ? JSON.stringify(currentPuzzle.correctCards).replace(/,/g, ';') : '';
         const selectedCards = JSON.stringify(result.selectedCards || []).replace(/,/g, ';');

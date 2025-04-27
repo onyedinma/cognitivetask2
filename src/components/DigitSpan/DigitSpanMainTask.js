@@ -311,20 +311,20 @@ const DigitSpanMainTask = () => {
         <div className="completion-screen">
           <h1>Task Complete</h1>
           
-          <button 
-            onClick={handleNextTask} 
+            <button 
+              onClick={handleNextTask} 
             className="next-task-button"
-            style={{
-              fontSize: '1.5rem',
+              style={{
+                fontSize: '1.5rem',
               padding: '16px 28px 16px 32px',
-              fontWeight: 'bold',
+                fontWeight: 'bold',
               background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-              color: 'white',
-              border: 'none',
+                color: 'white',
+                border: 'none',
               borderRadius: '12px',
-              cursor: 'pointer',
+                cursor: 'pointer',
               boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-              margin: '30px auto',
+                margin: '30px auto',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -344,7 +344,7 @@ const DigitSpanMainTask = () => {
           >
             {isBackward ? 'Next Task: Object Span' : 'Next Task: Backward Recall'}
             <span style={{ marginLeft: '10px', fontSize: '1.6rem' }}>→</span>
-          </button>
+            </button>
         </div>
       )}
     </div>

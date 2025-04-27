@@ -248,7 +248,7 @@ const CombinedQuestionnaire = () => {
     
     // ACEIQ section
     csvData.push([escapeCSVField('===== ADVERSE CHILDHOOD EXPERIENCES QUESTIONNAIRE (ACE-IQ) =====')]);
-    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Section'), escapeCSVField('Response')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Section'), escapeCSVField('Response'), escapeCSVField('Scoring Formula'), escapeCSVField('Question Text')]);
     
     if (aceiqResults.questions && Array.isArray(aceiqResults.questions)) {
       // Map question IDs to their types for the CSV
@@ -272,6 +272,43 @@ const CombinedQuestionnaire = () => {
       yesNoQuestions.forEach(id => aceiqQuestionTypes[id] = 'Binary');
       communityViolenceQuestions.forEach(id => aceiqQuestionTypes[id] = 'Community Violence (1-4)');
       
+      // Define scoring formulas for each question type
+      const scoringFormulas = {
+        binary: 'Yes = 2, No = 1, Refused = -9',
+        frequency4: 'Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9',
+        frequency5: 'Always = 1, Most of the time = 2, Sometimes = 3, Rarely = 4, Never = 5, Refused = -9'
+      };
+      
+      // Map of question IDs to their text content
+      const questionTexts = {
+        'parentsUnderstandProblems': 'Did your parents/guardians understand your problems and worries?',
+        'parentsKnowFreeTime': 'Did your parents/guardians really know what you were doing with your free time?',
+        'notEnoughFood': 'Did you or your family not have enough food?',
+        'parentsDrunkOrDrugs': 'Were your parents/guardians too drunk or intoxicated by drugs to take care of you?',
+        'notSentToSchool': 'Were you not sent to school, or did you stop going to school?',
+        'alcoholicHouseholdMember': 'Did you live with a household member who was a problem drinker, alcoholic, or misused street or prescription drugs?',
+        'mentallyIllHouseholdMember': 'Did you live with a household member who was depressed, mentally ill, or suicidal?',
+        'imprisonedHouseholdMember': 'Did you live with a household member who was ever sent to jail or prison?',
+        'parentsSeparated': 'Were your parents ever separated or divorced?',
+        'parentDied': 'Did your parent/guardian die?',
+        'witnessedVerbalAbuse': 'Did you see or hear a parent or household member in your home being yelled at, screamed at, sworn at, insulted, or humiliated?',
+        'witnessedPhysicalAbuse': 'Did you see or hear a parent or household member in your home being slapped, kicked, punched, or beaten up?',
+        'witnessedWeaponAbuse': 'Did you see or hear a parent or household member in your home being hit or cut with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?',
+        'verbalAbuse': 'Did a parent, guardian, or other household member yell, scream, or swear at you, insult or humiliate you?',
+        'threatenedAbandonment': 'Did a parent, guardian, or other household member threaten to, or actually, abandon you or throw you out of the house?',
+        'physicalAbuse': 'Did a parent, guardian, or other household member spank, slap, kick, punch, or beat you up?',
+        'weaponAbuse': 'Did a parent, guardian, or other household member hit or cut you with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?',
+        'sexualTouching': 'Did someone touch or fondle you in a sexual way when you did not want them to?',
+        'sexualFondling': 'Did someone make you touch their body in a sexual way when you did not want them to?',
+        'attemptedSexualIntercourse': 'Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?',
+        'completedSexualIntercourse': 'Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?',
+        'bullied': 'Were you bullied?',
+        'physicalFight': 'Were you in a physical fight?',
+        'witnessedBeating': 'Did you see or hear someone being beaten up in real life?',
+        'witnessedStabbingOrShooting': 'Did you see or hear someone being stabbed or shot in real life?',
+        'witnessedThreatenedWithWeapon': 'Did you see or hear someone being threatened with a knife or gun in real life?'
+      };
+
       aceiqResults.questions.forEach(q => {
         // Determine score type if not already set
         let scoreType = q.type || aceiqQuestionTypes[q.id] || 'Frequency (1-4)';
@@ -298,7 +335,22 @@ const CombinedQuestionnaire = () => {
         const formattedScore = formatRefusedResponse(q.score);
         
         // Include original response if available
-        const response = q.response ? formatRefusedResponse(q.response) : '';
+        const response = aceiqResults.formData && aceiqResults.formData[q.id] ? 
+                        formatRefusedResponse(aceiqResults.formData[q.id]) : 
+                        (q.response ? formatRefusedResponse(q.response) : '');
+        
+        // Determine the scoring formula for this question
+        let formula = '';
+        if (yesNoQuestions.includes(q.id)) {
+          formula = scoringFormulas.binary;
+        } else if (frequencyType5Questions.includes(q.id)) {
+          formula = scoringFormulas.frequency5;
+        } else {
+          formula = scoringFormulas.frequency4;
+        }
+        
+        // Get question text if available
+        const questionText = questionTexts[q.id] || '';
         
         csvData.push([
           escapeCSVField('ACEIQ'), 
@@ -306,11 +358,37 @@ const CombinedQuestionnaire = () => {
           escapeCSVField(formattedScore),
           escapeCSVField(scoreType),
           escapeCSVField(section),
-          escapeCSVField(response)
+          escapeCSVField(response),
+          escapeCSVField(formula),
+          escapeCSVField(questionText)
         ]);
       });
       
-      csvData.push([escapeCSVField('ACEIQ'), escapeCSVField('TOTAL'), escapeCSVField(aceiqResults.totalScore), escapeCSVField('Sum of all items'), '', '']);
+      // Add scoring explanation
+      csvData.push([]);
+      csvData.push([
+        escapeCSVField('ACEIQ'), 
+        escapeCSVField('SCORING_INFO'),
+        '',
+        escapeCSVField('Relationship with Parents'),
+        escapeCSVField('Protective Factors'),
+        '',
+        escapeCSVField('Reverse scored: 6 - original score'),
+        escapeCSVField('Higher scores on these items indicate LESS protection')
+      ]);
+      
+      csvData.push([
+        escapeCSVField('ACEIQ'), 
+        escapeCSVField('SCORING_INFO'),
+        '',
+        escapeCSVField('Risk Factors'),
+        escapeCSVField('All other sections'),
+        '',
+        escapeCSVField('Direct scoring'),
+        escapeCSVField('Higher scores indicate MORE adversity')
+      ]);
+      
+      csvData.push([escapeCSVField('ACEIQ'), escapeCSVField('TOTAL'), escapeCSVField(aceiqResults.totalScore), escapeCSVField('Sum of all items'), escapeCSVField('Overall ACE-IQ Score'), '', escapeCSVField('Sum of all scored items'), escapeCSVField('Higher total score indicates more childhood adversity')]);
     }
     
     // Blank row between questionnaires
@@ -319,9 +397,25 @@ const CombinedQuestionnaire = () => {
     
     // SES section
     csvData.push([escapeCSVField('===== SOCIOECONOMIC STATUS QUESTIONNAIRE (SES) =====')]);
-    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Response')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Section'), escapeCSVField('Response'), escapeCSVField('Scoring Formula'), escapeCSVField('Question Text')]);
     
     if (sesResults.questions && Array.isArray(sesResults.questions)) {
+      // Define SES question texts
+      const sesQuestionTexts = {
+        'parentsEducation': 'What is the highest level of education your parents or guardians have completed?',
+        'parentsOccupation': 'What is your parents\' or guardians\' current occupation?',
+        'householdIncome': 'What is your household\'s approximate annual income?',
+        'livingConditions': 'How would you describe your living conditions?',
+        'struggledFinancially': 'In the past year, how often has your family struggled financially?',
+        'accessToResources': 'How would you rate your access to resources like healthcare, education, and other services?'
+      };
+      
+      // Define SES scoring formulas
+      const sesScoringFormulas = {
+        'standard': 'Higher values = Higher socioeconomic status (1-5)',
+        'reverse': 'Lower values = Higher socioeconomic status (5-1)'
+      };
+      
       sesResults.questions.forEach(q => {
         // Determine score type - only struggledFinancially is reverse scored
         const scoreType = q.type || (q.id === 'struggledFinancially' ? 'Reverse scored' : 'Standard scored');
@@ -332,15 +426,27 @@ const CombinedQuestionnaire = () => {
         // Include original response if available
         const response = q.response ? formatRefusedResponse(q.response) : '';
         
+        // Get question text
+        const questionText = sesQuestionTexts[q.id] || '';
+        
+        // Get scoring formula
+        const formula = q.id === 'struggledFinancially' ? sesScoringFormulas.reverse : sesScoringFormulas.standard;
+        
+        // Determine section
+        const section = 'Socioeconomic Status';
+        
         csvData.push([
           escapeCSVField('SES'), 
           escapeCSVField(q.id), 
           escapeCSVField(formattedScore), 
-          escapeCSVField(scoreType), 
-          escapeCSVField(response)
+          escapeCSVField(scoreType),
+          escapeCSVField(section),
+          escapeCSVField(response),
+          escapeCSVField(formula),
+          escapeCSVField(questionText)
         ]);
       });
-      csvData.push([escapeCSVField('SES'), escapeCSVField('TOTAL'), escapeCSVField(sesResults.totalScore), escapeCSVField('Sum of all items'), '']);
+      csvData.push([escapeCSVField('SES'), escapeCSVField('TOTAL'), escapeCSVField(sesResults.totalScore), escapeCSVField('Sum of all items'), escapeCSVField('Overall SES Score'), '', escapeCSVField('Sum of all scored items'), escapeCSVField('Higher total score indicates higher socioeconomic status')]);
     }
     
     // Blank row between questionnaires
@@ -349,9 +455,29 @@ const CombinedQuestionnaire = () => {
     
     // MFQ section
     csvData.push([escapeCSVField('===== MOOD AND FEELINGS QUESTIONNAIRE (MFQ) =====')]);
-    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Response')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Section'), escapeCSVField('Response'), escapeCSVField('Scoring Formula'), escapeCSVField('Question Text')]);
     
     if (mfqResults.questions && Array.isArray(mfqResults.questions)) {
+      // Define MFQ question texts
+      const mfqQuestionTexts = {
+        'felt_miserable': 'I felt miserable or unhappy',
+        'didnt_enjoy': 'I didn\'t enjoy anything at all',
+        'tired_easily': 'I was very tired, and had no energy',
+        'restless': 'I was very restless',
+        'felt_worthless': 'I felt I was no good anymore',
+        'cried_a_lot': 'I cried a lot',
+        'concentration_difficult': 'I found it hard to think properly or concentrate',
+        'hated_self': 'I hated myself',
+        'bad_person': 'I was a bad person',
+        'felt_lonely': 'I felt lonely',
+        'nobody_loved': 'Nobody really loved me',
+        'was_not_good': 'I was not as good as other people',
+        'did_wrong_things': 'I did everything wrong',
+      };
+      
+      // Define MFQ scoring formula - all items scored the same way
+      const mfqScoringFormula = 'Not true = 0, Sometimes = 1, True = 2, Refused = -9';
+      
       mfqResults.questions.forEach(q => {
         // Format score for REFUSED responses
         const formattedScore = formatRefusedResponse(q.score);
@@ -359,19 +485,28 @@ const CombinedQuestionnaire = () => {
         // Include original response if available
         const response = q.response ? formatRefusedResponse(q.response) : '';
         
+        // Get question text
+        const questionText = mfqQuestionTexts[q.id] || '';
+        
+        // All MFQ items are in the same section
+        const section = 'Depression Symptoms';
+        
         csvData.push([
           escapeCSVField('MFQ'), 
           escapeCSVField(q.id), 
           escapeCSVField(formattedScore), 
-          escapeCSVField(q.type || 'Standard scored'), 
-          escapeCSVField(response)
+          escapeCSVField(q.type || 'Standard scored'),
+          escapeCSVField(section),
+          escapeCSVField(response),
+          escapeCSVField(mfqScoringFormula),
+          escapeCSVField(questionText)
         ]);
       });
-      csvData.push([escapeCSVField('MFQ'), escapeCSVField('TOTAL'), escapeCSVField(mfqResults.totalScore), escapeCSVField('Sum of all items'), '']);
+      csvData.push([escapeCSVField('MFQ'), escapeCSVField('TOTAL'), escapeCSVField(mfqResults.totalScore), escapeCSVField('Sum of all items'), escapeCSVField('Overall Depression Score'), '', escapeCSVField('Sum of all scored items'), escapeCSVField('Higher total indicates more depressive symptoms')]);
       
       // Add interpretation row
       if (mfqResults.interpretation) {
-        csvData.push([escapeCSVField('MFQ'), escapeCSVField('INTERPRETATION'), escapeCSVField(mfqResults.interpretation), escapeCSVField('Clinical interpretation'), '']);
+        csvData.push([escapeCSVField('MFQ'), escapeCSVField('INTERPRETATION'), escapeCSVField(mfqResults.interpretation), escapeCSVField('Clinical interpretation'), '', '', '', '']);
       }
     }
     
@@ -381,20 +516,82 @@ const CombinedQuestionnaire = () => {
     
     // SDQ section
     csvData.push([escapeCSVField('===== STRENGTHS AND DIFFICULTIES QUESTIONNAIRE (SDQ) =====')]);
-    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Response')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Section'), escapeCSVField('Response'), escapeCSVField('Scoring Formula'), escapeCSVField('Question Text')]);
     
     if (sdqResults.questions && Array.isArray(sdqResults.questions)) {
+      // Define SDQ question texts
+      const sdqQuestionTexts = {
+        // Emotional symptoms items
+        'emotional1': 'I get a lot of headaches, stomach-aches or sickness',
+        'emotional2': 'I worry a lot',
+        'emotional3': 'I am often unhappy, down-hearted or tearful',
+        'emotional4': 'I am nervous in new situations. I easily lose confidence',
+        'emotional5': 'I have many fears, I am easily scared',
+        
+        // Conduct problems items
+        'conduct1': 'I get very angry and often lose my temper',
+        'conduct2': 'I usually do as I am told',
+        'conduct3': 'I fight a lot. I can make other people do what I want',
+        'conduct4': 'I am often accused of lying or cheating',
+        'conduct5': 'I take things that are not mine from home, school or elsewhere',
+        
+        // Hyperactivity items
+        'hyperactivity1': 'I am restless, I cannot stay still for long',
+        'hyperactivity2': 'I am constantly fidgeting or squirming',
+        'hyperactivity3': 'I am easily distracted, I find it difficult to concentrate',
+        'hyperactivity4': 'I think before I do things',
+        'hyperactivity5': 'I finish the work I\'m doing. My attention is good',
+        
+        // Peer problems items
+        'peer1': 'I am usually on my own. I generally play alone or keep to myself',
+        'peer2': 'I have one good friend or more',
+        'peer3': 'Other people my age generally like me',
+        'peer4': 'Other children or young people pick on me or bully me',
+        'peer5': 'I get on better with adults than with people my own age',
+        
+        // Prosocial items
+        'prosocial1': 'I try to be nice to other people. I care about their feelings',
+        'prosocial2': 'I usually share with others (food, games, pens etc.)',
+        'prosocial3': 'I am helpful if someone is hurt, upset or feeling ill',
+        'prosocial4': 'I am kind to younger children',
+        'prosocial5': 'I often volunteer to help others (parents, teachers, children)'
+      };
+      
+      // Define SDQ scoring formulas
+      const sdqScoringFormulas = {
+        'standard': 'Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9',
+        'reverse': 'Not true = 2, Somewhat true = 1, Certainly true = 0, Refused = -9'
+      };
+      
       sdqResults.questions.forEach(q => {
         // Determine if question is reverse scored based on subscale and item
         let scoreType = q.type || 'Standard scored';
         
+        // Get section based on question ID
+        let section = '';
+        if (q.id.startsWith('emotional')) {
+          section = 'Emotional Symptoms';
+        } else if (q.id.startsWith('conduct')) {
+          section = 'Conduct Problems';
+        } else if (q.id.startsWith('hyperactivity')) {
+          section = 'Hyperactivity/Inattention';
+        } else if (q.id.startsWith('peer')) {
+          section = 'Peer Relationship Problems';
+        } else if (q.id.startsWith('prosocial')) {
+          section = 'Prosocial Behavior';
+        }
+        
+        // Determine scoring formula and score type
+        let formula = sdqScoringFormulas.standard;
+        
         // Prosocial items are reverse scored relative to problems
-        if (!q.type && q.id.startsWith('prosocial')) {
+        if (q.id.startsWith('prosocial')) {
           scoreType = 'Prosocial item (higher is better)';
         }
         // Specific reverse scored items in the difficulties subscales
-        else if (!q.type && ['emotional7', 'conduct5', 'conduct7', 'hyperactivity2', 'hyperactivity10', 'peer6'].includes(q.id)) {
+        else if (['conduct2', 'hyperactivity4', 'hyperactivity5', 'peer2', 'peer3'].includes(q.id)) {
           scoreType = 'Reverse scored';
+          formula = sdqScoringFormulas.reverse;
         }
         
         // Format score for REFUSED responses
@@ -403,19 +600,25 @@ const CombinedQuestionnaire = () => {
         // Include original response if available
         const response = q.response ? formatRefusedResponse(q.response) : '';
         
+        // Get question text
+        const questionText = sdqQuestionTexts[q.id] || '';
+        
         csvData.push([
           escapeCSVField('SDQ'), 
           escapeCSVField(q.id), 
           escapeCSVField(formattedScore), 
-          escapeCSVField(scoreType), 
-          escapeCSVField(response)
+          escapeCSVField(scoreType),
+          escapeCSVField(section),
+          escapeCSVField(response),
+          escapeCSVField(formula),
+          escapeCSVField(questionText)
         ]);
       });
       
       // Add a separator before summary scores
       csvData.push([]);
       csvData.push([escapeCSVField('===== SDQ SUMMARY SCORES =====')]);
-      csvData.push([escapeCSVField('Scale'), escapeCSVField('Score'), escapeCSVField('Category'), '', '']);
+      csvData.push([escapeCSVField('Scale'), escapeCSVField('Score'), escapeCSVField('Category'), escapeCSVField('Score Type'), escapeCSVField('Interpretation')]);
       
       // Include subscale scores with categories
       if (sdqResults.scores) {

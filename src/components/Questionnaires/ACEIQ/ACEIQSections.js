@@ -2,8 +2,7 @@ import React from 'react';
 
 // Section 2: Neglect
 export const NeglectSection = ({ formData, handleChange }) => (
-  <section className="questionnaire-section">
-    <h2 className="questionnaire-section-title">NEGLECT</h2>
+  <>
     <div className="question-description">
       When you were growing up, during the first 18 years of your life...
     </div>
@@ -13,7 +12,7 @@ export const NeglectSection = ({ formData, handleChange }) => (
         <span className="question-number">2.1</span>
         How often did your parents/guardians not give you enough food even when they could easily have done so?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -77,7 +76,7 @@ export const NeglectSection = ({ formData, handleChange }) => (
         <span className="question-number">2.2</span>
         Were your parents/guardians too drunk or intoxicated by drugs to take care of you?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -141,7 +140,7 @@ export const NeglectSection = ({ formData, handleChange }) => (
         <span className="question-number">2.3</span>
         How often did your parents/guardians not send you to school even when it was available?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -199,13 +198,12 @@ export const NeglectSection = ({ formData, handleChange }) => (
         </div>
       </div>
     </div>
-  </section>
+  </>
 );
 
 // Section 3: Family Environment
 export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
-  <section className="questionnaire-section">
-    <h2 className="questionnaire-section-title">FAMILY ENVIRONMENT</h2>
+  <>
     <div className="question-description">
       When you were growing up, during the first 18 years of your life...
     </div>
@@ -215,7 +213,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.1</span>
         Did you live with a household member who was a problem drinker or alcoholic, or misused street or prescription drugs?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -257,7 +255,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.2</span>
         Did you live with a household member who was depressed, mentally ill or suicidal?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -299,7 +297,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.3</span>
         Did you live with a household member who was ever sent to jail or prison?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -341,7 +339,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.4</span>
         Were your parents ever separated or divorced?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -383,7 +381,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.5</span>
         Did your mother, father or guardian die?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -429,7 +427,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.6</span>
         Did you see or hear a parent or household member in your home being yelled at, screamed at, sworn at, insulted or humiliated?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -493,7 +491,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.7</span>
         Did you see or hear a parent or household member in your home being slapped, kicked, punched or beaten up?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -557,7 +555,7 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         <span className="question-number">3.8</span>
         Did you see or hear a parent or household member in your home being hit or cut with an object, such as a stick (or cane), bottle, club, knife, whip etc.?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -615,17 +613,14 @@ export const FamilyEnvironmentSection = ({ formData, handleChange }) => (
         </div>
       </div>
     </div>
-  </section>
+  </>
 );
-
-// More sections can be defined here... 
 
 // Section 4: Direct Abuse
 export const DirectAbuseSection = ({ formData, handleChange }) => (
-  <section className="questionnaire-section">
-    <h2 className="questionnaire-section-title">DIRECT ABUSE</h2>
+  <>
     <div className="question-description">
-      These next questions are about certain things YOU may have experienced. When you were growing up, during the first 18 years of your life...
+      When you were growing up, during the first 18 years of your life...
     </div>
     
     <div className="question-item">
@@ -633,7 +628,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.1</span>
         Did a parent, guardian or other household member yell, scream or swear at you, insult or humiliate you?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -697,7 +692,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.2</span>
         Did a parent, guardian or other household member threaten to, or actually, abandon you or throw you out of the house?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -761,7 +756,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.3</span>
         Did a parent, guardian or other household member spank, slap, kick, punch or beat you up?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -825,7 +820,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.4</span>
         Did a parent, guardian or other household member hit or cut you with an object, such as a stick (or cane), bottle, club, knife, whip etc?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -889,7 +884,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.5</span>
         Did someone touch or fondle you in a sexual way when you did not want them to?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -953,7 +948,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.6</span>
         Did someone make you touch their body in a sexual way when you did not want them to?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1017,7 +1012,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.7</span>
         Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1081,7 +1076,7 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         <span className="question-number">4.8</span>
         Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1139,16 +1134,13 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
         </div>
       </div>
     </div>
-  </section>
+  </>
 );
 
 // Section 5: Peer Violence
 export const PeerViolenceSection = ({ formData, handleChange }) => (
-  <section className="questionnaire-section">
-    <h2 className="questionnaire-section-title">PEER VIOLENCE</h2>
+  <>
     <div className="question-description">
-      These next questions are about BEING BULLIED when you were growing up. Bullying is when a young person or group of young people say or do bad and unpleasant things to another young person. It is also bullying when a young person is teased a lot in an unpleasant way or when a young person is left out of things on purpose. It is not bullying when two young people of about the same strength or power argue or fight or when teasing is done in a friendly and fun way.
-      
       When you were growing up, during the first 18 years of your life...
     </div>
     
@@ -1157,7 +1149,7 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
         <span className="question-number">5.1</span>
         How often were you bullied?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1221,7 +1213,7 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
         <span className="question-number">5.2</span>
         How were you bullied most often?
       </div>
-      <div className="radio-options vertical">
+      <div className="radio-options vertical bullying-types">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1324,7 +1316,7 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
         <span className="question-number">5.3</span>
         How often were you in a physical fight?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1382,13 +1374,12 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
         </div>
       </div>
     </div>
-  </section>
+  </>
 );
 
 // Section 6: Community Violence
 export const CommunityViolenceSection = ({ formData, handleChange }) => (
-  <section className="questionnaire-section">
-    <h2 className="questionnaire-section-title">WITNESSING COMMUNITY VIOLENCE</h2>
+  <>
     <div className="question-description">
       These next questions are about how often, when you were a child, YOU may have seen or heard certain things in your NEIGHBOURHOOD OR COMMUNITY (not in your home or on TV, movies, or the radio).
       
@@ -1400,7 +1391,7 @@ export const CommunityViolenceSection = ({ formData, handleChange }) => (
         <span className="question-number">6.1</span>
         Did you see or hear someone being beaten up in real life?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1464,7 +1455,7 @@ export const CommunityViolenceSection = ({ formData, handleChange }) => (
         <span className="question-number">6.2</span>
         Did you see or hear someone being stabbed or shot?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1528,7 +1519,7 @@ export const CommunityViolenceSection = ({ formData, handleChange }) => (
         <span className="question-number">6.3</span>
         Did you see or hear someone being threatened with a knife or gun in real life?
       </div>
-      <div className="radio-options">
+      <div className="radio-options frequency-scale">
         <div className="radio-option">
           <input 
             type="radio" 
@@ -1586,5 +1577,5 @@ export const CommunityViolenceSection = ({ formData, handleChange }) => (
         </div>
       </div>
     </div>
-  </section>
+  </>
 ); 

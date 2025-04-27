@@ -15,6 +15,8 @@ const SDQQuestionnaire = ({ onComplete }) => {
   const [exportingCSV, setExportingCSV] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [scores, setScores] = useState({});
+  const [exportError, setExportError] = useState('');
+  const [exportSuccess, setExportSuccess] = useState('');
   
   // Simulate loading to ensure consistent rendering
   useEffect(() => {
@@ -84,8 +86,9 @@ const SDQQuestionnaire = ({ onComplete }) => {
   
   // Check if all questions are answered
   useEffect(() => {
-    const allAnswered = Object.values(formData).every(value => value !== '');
-    setAllQuestionsAnswered(allAnswered);
+    // Only require the main SDQ questions (not impact questions)
+    const allMainQuestionsAnswered = Object.keys(formData).every(key => formData[key] !== '');
+    setAllQuestionsAnswered(allMainQuestionsAnswered);
     setValidationError(false); // Reset validation error when form changes
   }, [formData]);
   
@@ -107,12 +110,12 @@ const SDQQuestionnaire = ({ onComplete }) => {
     prosocial: ['q1', 'q4', 'q9', 'q17', 'q20']
   };
   
-  // Some items are reverse-scored
+  // Reverse-scored items (scored as 2-1-0 instead of 0-1-2)
   const reverseScored = ['q7', 'q11', 'q14', 'q21', 'q25'];
   
   // Calculate SDQ scores and subscales
   const calculateScores = () => {
-    // Check if all questions are answered
+    // Calculate subscale scores
     const emotional = calculateSubscaleScore('emotional');
     const conduct = calculateSubscaleScore('conduct');
     const hyperactivity = calculateSubscaleScore('hyperactivity');
@@ -154,55 +157,63 @@ const SDQQuestionnaire = ({ onComplete }) => {
   
   // Calculate score for a specific subscale
   const calculateSubscaleScore = (subscale) => {
-    const subscaleQuestions = {
-      emotional: ['often_complains_of_headaches', 'many_worries', 'often_unhappy', 'nervous_or_clingy', 'many_fears'],
-      conduct: ['often_has_temper_tantrums', 'generally_obedient', 'often_fights_with_other_children', 'often_lies_or_cheats', 'steals_from_home'],
-      hyperactivity: ['restless_overactive', 'constantly_fidgeting', 'easily_distracted', 'thinks_things_out', 'sees_tasks_through'],
-      peer: ['rather_solitary', 'has_at_least_one_good_friend', 'generally_liked_by_others', 'picked_on_or_bullied', 'gets_on_better_with_adults'],
-      prosocial: ['considerate_of_others', 'shares_readily', 'helpful_if_someone_hurt', 'kind_to_younger_children', 'often_volunteers']
-    };
-
-    const reverseScored = {
-      conduct: ['generally_obedient'],
-      hyperactivity: ['thinks_things_out', 'sees_tasks_through'],
-      peer: ['has_at_least_one_good_friend', 'generally_liked_by_others']
-    };
+    // Get the questions for this subscale
+    const subscaleQuestions = scales[subscale];
     
     // Calculate score for the subscale
-    return subscaleQuestions[subscale].reduce((sum, qId) => {
-      const score = formData[qId] ? parseInt(formData[qId]) : 0;
+    return subscaleQuestions.reduce((sum, qId) => {
+      // Get the response value (0, 1, or 2)
+      const responseValue = formData[qId] ? parseInt(formData[qId]) : 0;
+      
       // Check if this question is reverse scored
-      if (reverseScored[subscale] && reverseScored[subscale].includes(qId)) {
-        return sum + (2 - score); // Reverse scoring: 0->2, 1->1, 2->0
+      if (reverseScored.includes(qId)) {
+        return sum + (2 - responseValue); // Reverse scoring: 0->2, 1->1, 2->0
       }
-      return sum + score;
+      
+      // Standard scoring (0, 1, 2)
+      return sum + responseValue;
     }, 0);
   };
   
-  // Get clinical category based on score and subscale
-  const getCategoryScore = (score, subscale) => {
-    // Clinical cutoff values based on parent-report SDQ (ages 4-17)
-    const cutoffs = {
-      emotional: { normal: [0, 3], borderline: [4, 4], abnormal: [5, 10] },
-      conduct: { normal: [0, 2], borderline: [3, 3], abnormal: [4, 10] },
-      hyperactivity: { normal: [0, 5], borderline: [6, 6], abnormal: [7, 10] },
-      peer: { normal: [0, 2], borderline: [3, 3], abnormal: [4, 10] },
-      prosocial: { normal: [6, 10], borderline: [5, 5], abnormal: [0, 4] }, // Note: Reversed thresholds
-      totalDifficulties: { normal: [0, 13], borderline: [14, 16], abnormal: [17, 40] }
-    };
-    
-    // Determine category
-    if (cutoffs[subscale]) {
-      if (score >= cutoffs[subscale].normal[0] && score <= cutoffs[subscale].normal[1]) {
-        return 'Normal';
-      } else if (score >= cutoffs[subscale].borderline[0] && score <= cutoffs[subscale].borderline[1]) {
-        return 'Borderline';
-      } else if (score >= cutoffs[subscale].abnormal[0] && score <= cutoffs[subscale].abnormal[1]) {
-        return 'Abnormal';
-      }
+  // Get category based on score and type
+  const getCategoryScore = (score, type) => {
+    if (type === 'totalDifficulties') {
+      if (score <= 13) return 'Close to average';
+      if (score <= 16) return 'Slightly raised';
+      if (score <= 19) return 'High';
+      return 'Very high';
     }
-    
-    return 'Unknown'; // Default if no match
+    else if (type === 'emotional') {
+      if (score <= 3) return 'Close to average';
+      if (score === 4) return 'Slightly raised';
+      if (score === 5) return 'High';
+      return 'Very high';
+    }
+    else if (type === 'conduct') {
+      if (score <= 2) return 'Close to average';
+      if (score === 3) return 'Slightly raised';
+      if (score === 4) return 'High';
+      return 'Very high';
+    }
+    else if (type === 'hyperactivity') {
+      if (score <= 5) return 'Close to average';
+      if (score === 6) return 'Slightly raised';
+      if (score === 7) return 'High';
+      return 'Very high';
+    }
+    else if (type === 'peer') {
+      if (score <= 2) return 'Close to average';
+      if (score === 3) return 'Slightly raised';
+      if (score === 4) return 'High';
+      return 'Very high';
+    }
+    else if (type === 'prosocial') {
+      if (score >= 8) return 'Close to average';
+      if (score === 7) return 'Slightly lowered';
+      if (score === 6) return 'Low';
+      return 'Very low';
+    }
+    return 'Unknown';
   };
   
   // Reusable question component for each item
@@ -234,19 +245,21 @@ const SDQQuestionnaire = ({ onComplete }) => {
     );
   };
   
-  // Generate overall interpretation text based on scores
-  const generateInterpretation = (scores) => {
-    let interpretation = '';
+  // Generate interpretation based on total difficulties score
+  const generateInterpretation = (totalDifficultiesScore) => {
+    const category = getCategoryScore(totalDifficultiesScore, 'totalDifficulties');
     
-    if (scores.totalDifficultiesCategory === 'Abnormal') {
-      interpretation = 'The total difficulties score suggests significant difficulties that likely warrant further assessment and intervention.';
-    } else if (scores.totalDifficultiesCategory === 'Borderline') {
-      interpretation = 'The total difficulties score suggests some difficulties that may warrant monitoring or follow-up.';
-    } else {
-      interpretation = 'The total difficulties score is within the normal range.';
-    }
+    if (category === 'Close to average') {
+      return 'The total difficulties score is within the normal range for children of this age.';
+    } else if (category === 'Slightly raised') {
+      return 'The total difficulties score is slightly raised, which may reflect some difficulties.';
+    } else if (category === 'High') {
+      return 'The total difficulties score is high, which may reflect significant difficulties in multiple areas.';
+    } else if (category === 'Very high') {
+      return 'The total difficulties score is very high, suggesting substantial risk of clinically significant problems.';
+    } 
     
-    return interpretation;
+    return 'Unable to generate interpretation.';
   };
   
   // Handle form submission
@@ -261,6 +274,7 @@ const SDQQuestionnaire = ({ onComplete }) => {
     
     // Calculate all SDQ scores
     const calculatedScores = calculateScores();
+    
     setScores(calculatedScores);
     
     // Create a structured array of questions with their scores and types
@@ -268,27 +282,29 @@ const SDQQuestionnaire = ({ onComplete }) => {
       const response = formData[question.id];
       const numericScore = parseInt(response) || 0;
       
-      // Determine if question is reverse scored based on subscale and item
-      let scoreType = 'Standard scored';
+      // Determine if question is reverse scored
+      const isReversed = reverseScored.includes(question.id);
+      let scoreType = isReversed ? 'Reverse scored' : 'Standard scored';
       
-      // Prosocial items are reverse scored relative to problems (higher is better)
-      if (question.id.startsWith('prosocial')) {
-        scoreType = 'Prosocial item (higher is better)';
-      }
-      // Specific reverse scored items in the difficulties subscales
-      else if (['emotional7', 'conduct5', 'conduct7', 'hyperactivity2', 'hyperactivity10', 'peer6'].includes(question.id)) {
-        scoreType = 'Reverse scored';
-      }
+      // Identify which scale this question belongs to
+      let scale = '';
+      Object.keys(scales).forEach(key => {
+        if (scales[key].includes(question.id)) {
+          scale = key;
+        }
+      });
       
       return {
         id: question.id,
+        scale: scale,
         score: numericScore,
+        finalScore: isReversed ? 2 - numericScore : numericScore,
         type: scoreType
       };
     });
     
     // Generate overall interpretation
-    const overallInterpretation = generateInterpretation(calculatedScores);
+    const overallInterpretation = generateInterpretation(calculatedScores.totalDifficulties);
     
     // Create results object
     const studentId = localStorage.getItem('studentId') || 'unknown';
@@ -322,112 +338,78 @@ const SDQQuestionnaire = ({ onComplete }) => {
     
     const dataStr = JSON.stringify({
       formData,
-      scores,
-      timestamp: new Date().toISOString()
+      scores
     }, null, 2);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
     
-    const exportFileDefaultName = `sdq_results_${new Date().toISOString().slice(0, 10)}.json`;
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportFileDefaultName = `SDQ_Results_${localStorage.getItem('studentId') || 'unknown'}_${new Date().toISOString().split('T')[0]}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
+    
+    setExportError('');
+    setExportSuccess('Results exported successfully!');
   };
 
   // Export results as CSV
   const exportToCSV = () => {
     setExportingCSV(true);
     
-    try {
-      // Get participant ID and timestamp
-      const studentId = localStorage.getItem('studentId') || 'unknown';
-      const timestamp = new Date().toISOString();
-      
-      // Create CSV header row - exclude response data
-      let csvContent = 'StudentID,Timestamp,QuestionID,Score,Score Type\n';
-      
-      // Add row for each question
-      questions.forEach(question => {
-        const response = formData[question.id];
-        const numericScore = parseInt(response) || 0;
-        
-        // Determine if question is reverse scored or a special type
-        let scoreType = 'Standard scored';
-        
-        // Prosocial items are reverse scored relative to problems
-        if (question.id.startsWith('prosocial')) {
-          scoreType = 'Prosocial item (higher is better)';
-        }
-        // Specific reverse scored items in the difficulties subscales
-        else if (['emotional7', 'conduct5', 'conduct7', 'hyperactivity2', 'hyperactivity10', 'peer6'].includes(question.id)) {
-          scoreType = 'Reverse scored';
-        }
-        
-        csvContent += [
-          studentId,
-          timestamp,
-          question.id,
-          numericScore,
-          `"${scoreType}"`
-        ].join(',') + '\n';
-      });
-      
-      // Add subscale scores
-      const scoreEntries = [
-        ['EMOTIONAL', scores.emotional, 'Subscale total'],
-        ['EMOTIONAL_CATEGORY', `"${scores.emotionalCategory}"`, 'Clinical category'],
-        ['CONDUCT', scores.conduct, 'Subscale total'],
-        ['CONDUCT_CATEGORY', `"${scores.conductCategory}"`, 'Clinical category'],
-        ['HYPERACTIVITY', scores.hyperactivity, 'Subscale total'],
-        ['HYPERACTIVITY_CATEGORY', `"${scores.hyperactivityCategory}"`, 'Clinical category'],
-        ['PEER', scores.peer, 'Subscale total'],
-        ['PEER_CATEGORY', `"${scores.peerCategory}"`, 'Clinical category'],
-        ['PROSOCIAL', scores.prosocial, 'Subscale total (higher is better)'],
-        ['PROSOCIAL_CATEGORY', `"${scores.prosocialCategory}"`, 'Clinical category'],
-        ['TOTAL_DIFFICULTIES', scores.totalDifficulties, 'Sum of problem subscales'],
-        ['TOTAL_CATEGORY', `"${scores.totalDifficultiesCategory}"`, 'Clinical category'],
-        ['EXTERNALIZING', scores.externalizing, 'Conduct + Hyperactivity'],
-        ['INTERNALIZING', scores.internalizing, 'Emotional + Peer']
-      ];
-      
-      scoreEntries.forEach(([label, value, type]) => {
-        csvContent += [
-          studentId,
-          timestamp,
-          label,
-          value,
-          `"${type}"`
-        ].join(',') + '\n';
-      });
-      
-      // Add interpretation if available
-      const interpretation = generateInterpretation(scores);
-      if (interpretation) {
-        csvContent += [
-          studentId,
-          timestamp,
-          'INTERPRETATION',
-          `"${interpretation}"`,
-          '"Clinical interpretation"'
-        ].join(',') + '\n';
-      }
-      
-      // Create downloadable link
-      const encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `sdq_results_${studentId}_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      
-      // Download file
-      link.click();
-      document.body.removeChild(link);
-      setExportingCSV(false);
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      setExportingCSV(false);
-    }
+    // Calculate scores again to ensure latest data
+    const emotionalScore = calculateSubscaleScore('emotional');
+    const conductScore = calculateSubscaleScore('conduct');
+    const hyperactivityScore = calculateSubscaleScore('hyperactivity');
+    const peerScore = calculateSubscaleScore('peer');
+    const prosocialScore = calculateSubscaleScore('prosocial');
+    const totalDifficultiesScore = emotionalScore + conductScore + hyperactivityScore + peerScore;
+
+    // Get categories for each score
+    const emotionalCategory = getCategoryScore(emotionalScore, 'emotional');
+    const conductCategory = getCategoryScore(conductScore, 'conduct');
+    const hyperactivityCategory = getCategoryScore(hyperactivityScore, 'hyperactivity');
+    const peerCategory = getCategoryScore(peerScore, 'peer');
+    const prosocialCategory = getCategoryScore(prosocialScore, 'prosocial');
+    const totalDifficultiesCategory = getCategoryScore(totalDifficultiesScore, 'totalDifficulties');
+    
+    const studentId = localStorage.getItem('studentId') || 'unknown';
+    
+    // Create CSV content with header row
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Add metadata headers
+    csvContent += "Student ID,Timestamp,";
+    
+    // Add score headers
+    csvContent += "Emotional Problems Score,Emotional Problems Category,";
+    csvContent += "Conduct Problems Score,Conduct Problems Category,";
+    csvContent += "Hyperactivity Score,Hyperactivity Category,";
+    csvContent += "Peer Problems Score,Peer Problems Category,";
+    csvContent += "Prosocial Behavior Score,Prosocial Behavior Category,";
+    csvContent += "Total Difficulties Score,Total Difficulties Category\n";
+    
+    // Add data row
+    const timestamp = new Date().toISOString();
+    csvContent += `${studentId},${timestamp},`;
+    csvContent += `${emotionalScore},${emotionalCategory},`;
+    csvContent += `${conductScore},${conductCategory},`;
+    csvContent += `${hyperactivityScore},${hyperactivityCategory},`;
+    csvContent += `${peerScore},${peerCategory},`;
+    csvContent += `${prosocialScore},${prosocialCategory},`;
+    csvContent += `${totalDifficultiesScore},${totalDifficultiesCategory}\n`;
+    
+    // Create download link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `SDQ_Results_${studentId}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setExportError('');
+    setExportSuccess('Results exported successfully!');
   };
   
   // Return to main menu
@@ -473,26 +455,28 @@ const SDQQuestionnaire = ({ onComplete }) => {
           
           {validationError && (
             <div className="validation-error">
-              Please answer all questions before submitting.
+              Please answer all of the first 25 questions before submitting.
             </div>
           )}
           
           <form onSubmit={handleSubmit} className="sdq-form">
-            <div className="sdq-response-header">
-              <div></div>
-              <div className="sdq-response-label">NOT TRUE</div>
-              <div className="sdq-response-label">SOMEWHAT TRUE</div>
-              <div className="sdq-response-label">CERTAINLY TRUE</div>
+            <div className="sdq-section">
+              <div className="sdq-response-header">
+                <div></div>
+                <div className="sdq-response-label">NOT TRUE</div>
+                <div className="sdq-response-label">SOMEWHAT TRUE</div>
+                <div className="sdq-response-label">CERTAINLY TRUE</div>
+              </div>
+              
+              {questions.map(question => (
+                <QuestionItem
+                  key={question.id}
+                  question={question}
+                  value={formData[question.id]}
+                  onChange={handleChange}
+                />
+              ))}
             </div>
-            
-            {questions.map(question => (
-              <QuestionItem
-                key={question.id}
-                question={question}
-                value={formData[question.id]}
-                onChange={handleChange}
-              />
-            ))}
             
             <div className="form-actions">
               <button
@@ -512,13 +496,55 @@ const SDQQuestionnaire = ({ onComplete }) => {
           
           <div className="score-summary">
             <h2>SDQ Score Summary</h2>
-            <p>Your questionnaire has been successfully submitted.</p>
-            <p>The results will be analyzed by a qualified professional.</p>
+            
+            <div className="scores-grid">
+              <div className="score-item">
+                <h3>Emotional Problems:</h3>
+                <p className="score">{scores.emotional}</p>
+                <p className="category">{scores.emotionalCategory}</p>
+              </div>
+              
+              <div className="score-item">
+                <h3>Conduct Problems:</h3>
+                <p className="score">{scores.conduct}</p>
+                <p className="category">{scores.conductCategory}</p>
+              </div>
+              
+              <div className="score-item">
+                <h3>Hyperactivity:</h3>
+                <p className="score">{scores.hyperactivity}</p>
+                <p className="category">{scores.hyperactivityCategory}</p>
+              </div>
+              
+              <div className="score-item">
+                <h3>Peer Problems:</h3>
+                <p className="score">{scores.peer}</p>
+                <p className="category">{scores.peerCategory}</p>
+              </div>
+              
+              <div className="score-item">
+                <h3>Prosocial Behavior:</h3>
+                <p className="score">{scores.prosocial}</p>
+                <p className="category">{scores.prosocialCategory}</p>
+              </div>
+              
+              <div className="score-item total">
+                <h3>Total Difficulties:</h3>
+                <p className="score">{scores.totalDifficulties}</p>
+                <p className="category">{scores.totalDifficultiesCategory}</p>
+              </div>
+            </div>
+            
+            <p className="interpretation">{generateInterpretation(scores.totalDifficulties)}</p>
+            
             <p className="note" style={{ color: '#3498db', marginTop: '15px', fontStyle: 'italic' }}>
               A combined CSV file with all questionnaire results will be available for download 
               after completing all questionnaires.
             </p>
           </div>
+          
+          {exportError && <div className="error-message">{exportError}</div>}
+          {exportSuccess && <div className="success-message">{exportSuccess}</div>}
           
           <div className="form-actions">
             <button

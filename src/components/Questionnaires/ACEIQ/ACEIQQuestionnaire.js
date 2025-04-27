@@ -208,11 +208,20 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   
   // Handle navigation between sections
   const nextSection = () => {
-    setCurrentSection(prev => prev + 1);
+    console.log(`Moving to section ${currentSection + 1} of ${sections.length}`);
+    console.log('Current section:', currentSection);
+    console.log('Sections length:', sections.length);
+    
+    // Ensure we never exceed the available sections
+    const nextIndex = Math.min(currentSection + 1, sections.length - 1);
+    
+    // Set the next section index directly instead of incrementing
+    setCurrentSection(nextIndex);
     window.scrollTo(0, 0);
   };
   
   const prevSection = () => {
+    console.log(`Moving back to section ${currentSection - 1} of ${sections.length}`);
     setCurrentSection(prev => prev - 1);
     window.scrollTo(0, 0);
   };
@@ -220,6 +229,14 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Safety check: ensure we've seen all sections
+    console.log(`Submitting form from section ${currentSection} of ${sections.length}`);
+    if (currentSection < sections.length - 1) {
+      console.warn("Form submitted before reaching the last section. Navigating to the next section instead.");
+      nextSection();
+      return;
+    }
     
     // Check if all questions are answered
     if (!allQuestionsAnswered) {
@@ -364,17 +381,18 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         return `"${escapedValue}"`;
       };
       
-      // Create CSV header row - include score only, not responses
-      let csvContent = 'StudentID,Timestamp,Section,QuestionID,QuestionText,Score,ScoreType,Response\n';
+      // Create CSV header row with expanded fields
+      let csvContent = 'StudentID,Timestamp,Section,QuestionID,QuestionText,Response,Score,ScoreType,ScoringFormula,PossibleResponses\n';
       
-      // Add row for each question with score only, not response
+      // Add row for each question with expanded information
       questions.forEach(question => {
         const response = formData[question.id];
-        // Don't remove commas, properly escape the text instead
         const questionText = question.text;
         let score = 0;
         let scoreType = '';
         let section = '';
+        let scoringFormula = '';
+        let possibleResponses = '';
         
         // Determine section
         if (['parentsUnderstandProblems', 'parentsKnowFreeTime'].includes(question.id)) {
@@ -397,6 +415,8 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         if (yesNoQuestions.includes(question.id)) {
           score = response ? scoringValues.yesNo[response] || 0 : 0;
           scoreType = 'Binary (1-2)';
+          scoringFormula = 'Yes = 2, No = 1, Refused = -9';
+          possibleResponses = 'Yes, No, Refused';
         } 
         // Check if this is a frequency4 question
         else if (frequencyType4Questions.includes(question.id)) {
@@ -408,11 +428,16 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
           } else {
             scoreType = 'Frequency (1-4)';
           }
+          
+          scoringFormula = 'Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9';
+          possibleResponses = 'Many times, A few times, Once, Never, Refused';
         }
         // Handle frequency5 questions with different scoring
         else if (frequencyType5Questions.includes(question.id)) {
           score = response ? scoringValues.frequency5[response] || 0 : 0;
           scoreType = 'Protection (1-5)';
+          scoringFormula = 'Always = 1, Most of the time = 2, Sometimes = 3, Rarely = 4, Never = 5, Refused = -9';
+          possibleResponses = 'Always, Most of the time, Sometimes, Rarely, Never, Refused';
         }
         
         csvContent += [
@@ -421,11 +446,54 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
           escapeCSVField(section),
           escapeCSVField(question.id),
           escapeCSVField(questionText),
+          escapeCSVField(response || 'Not Answered'),
           score, // Numeric value, no escaping needed
           escapeCSVField(scoreType),
-          escapeCSVField(response || 'Not Answered')
+          escapeCSVField(scoringFormula),
+          escapeCSVField(possibleResponses)
         ].join(',') + '\n';
       });
+      
+      // Add section-specific scoring information
+      csvContent += '\n';
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Scoring Information'),
+        escapeCSVField('SECTION_INFO'),
+        escapeCSVField('Relationship with Parents - Protective Factors'),
+        escapeCSVField(''),
+        '', // No score for this row
+        escapeCSVField('Protective Factors'),
+        escapeCSVField('Reverse scoring: 6 - original score'),
+        escapeCSVField('')
+      ].join(',') + '\n';
+      
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Scoring Information'),
+        escapeCSVField('SECTION_INFO'),
+        escapeCSVField('Neglect, Family Environment, Direct Abuse, Peer Violence'),
+        escapeCSVField(''),
+        '', // No score for this row
+        escapeCSVField('Risk Factors'),
+        escapeCSVField('Higher scores indicate greater exposure to adverse events'),
+        escapeCSVField('')
+      ].join(',') + '\n';
+      
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Scoring Information'),
+        escapeCSVField('SECTION_INFO'),
+        escapeCSVField('Community Violence'),
+        escapeCSVField(''),
+        '', // No score for this row
+        escapeCSVField('Community Risk Factors'),
+        escapeCSVField('Higher scores indicate greater exposure to community violence'),
+        escapeCSVField('')
+      ].join(',') + '\n\n';
       
       // Add total score row
       csvContent += [
@@ -434,8 +502,24 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         escapeCSVField('Summary'),
         escapeCSVField('TOTAL_SCORE'),
         escapeCSVField('Total ACE-IQ Score'),
+        escapeCSVField(''),
         calculateTotalScore(formData),
         escapeCSVField('Sum of all items'),
+        escapeCSVField('Sum of all question scores, higher total indicates more adversity'),
+        escapeCSVField('')
+      ].join(',') + '\n\n';
+      
+      // Add demographic info section header
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Demographics'),
+        escapeCSVField('SECTION_HEADER'),
+        escapeCSVField('Demographic Information'),
+        escapeCSVField(''),
+        '',
+        escapeCSVField(''),
+        escapeCSVField(''),
         escapeCSVField('')
       ].join(',') + '\n';
       
@@ -446,9 +530,11 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         escapeCSVField('Demographics'),
         escapeCSVField('sex'),
         escapeCSVField('Sex'),
+        escapeCSVField(formData.sex || 'Not Answered'),
         '', // No score for demographic fields
         escapeCSVField(''),
-        escapeCSVField(formData.sex || 'Not Answered')
+        escapeCSVField(''),
+        escapeCSVField('Male, Female')
       ].join(',') + '\n';
       
       csvContent += [
@@ -457,9 +543,24 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         escapeCSVField('Demographics'),
         escapeCSVField('age'),
         escapeCSVField('Age'),
+        escapeCSVField(formData.age || 'Not Answered'),
         '', // No score for demographic fields
         escapeCSVField(''),
-        escapeCSVField(formData.age || 'Not Answered')
+        escapeCSVField(''),
+        escapeCSVField('')
+      ].join(',') + '\n';
+      
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Demographics'),
+        escapeCSVField('birthDate'),
+        escapeCSVField('Birth Date'),
+        escapeCSVField(formData.birthDate || 'Not Answered'),
+        '', // No score for demographic fields
+        escapeCSVField(''),
+        escapeCSVField(''),
+        escapeCSVField('')
       ].join(',') + '\n';
       
       csvContent += [
@@ -468,9 +569,11 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         escapeCSVField('Demographics'),
         escapeCSVField('ethnicity'),
         escapeCSVField('Ethnicity'),
+        escapeCSVField(formData.ethnicity || 'Not Answered'),
         '', // No score for demographic fields
         escapeCSVField(''),
-        escapeCSVField(formData.ethnicity || 'Not Answered')
+        escapeCSVField(''),
+        escapeCSVField('')
       ].join(',') + '\n';
       
       // Create downloadable link
@@ -515,8 +618,11 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   // Define the sections of the questionnaire
   const sections = [
     // Section 0: Demographic Information
-    <section key="demographics" className="questionnaire-section">
-      <h2 className="questionnaire-section-title">DEMOGRAPHIC INFORMATION</h2>
+    <section key="demographics" className="questionnaire-section demographics-section">
+      <div className="section-header demographics-header">
+        <h2 className="questionnaire-section-title">DEMOGRAPHIC INFORMATION</h2>
+        <div className="section-icon">👤</div>
+      </div>
       
       <div className="demographics-container">
         <div className="question-item compact">
@@ -604,8 +710,11 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     </section>,
     
     // Section 1: Relationship with Parents/Guardians
-    <section key="parents" className="questionnaire-section">
-      <h2 className="questionnaire-section-title">RELATIONSHIP WITH PARENTS/GUARDIANS</h2>
+    <section key="parents" className="questionnaire-section parents-section">
+      <div className="section-header parents-header">
+        <h2 className="questionnaire-section-title">RELATIONSHIP WITH PARENTS/GUARDIANS</h2>
+        <div className="section-icon">👪</div>
+      </div>
       <div className="question-description">
         When you were growing up, during the first 18 years of your life...
       </div>
@@ -615,7 +724,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
           <span className="question-number">1.1</span>
           Did your parents/guardians understand your problems and worries?
         </div>
-        <div className="radio-options">
+        <div className="radio-options frequency-scale">
           <div className="radio-option">
             <input 
               type="radio" 
@@ -690,7 +799,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
           <span className="question-number">1.2</span>
           Did your parents/guardians really know what you were doing with your free time when you were not at school or work?
         </div>
-        <div className="radio-options">
+        <div className="radio-options frequency-scale">
           <div className="radio-option">
             <input 
               type="radio" 
@@ -761,12 +870,47 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       </div>
     </section>,
     
-    // Sections imported from ACEIQSections.js
-    <NeglectSection key="neglect" formData={formData} handleChange={handleChange} />,
-    <FamilyEnvironmentSection key="family" formData={formData} handleChange={handleChange} />,
-    <DirectAbuseSection key="direct-abuse" formData={formData} handleChange={handleChange} />,
-    <PeerViolenceSection key="peer-violence" formData={formData} handleChange={handleChange} />,
-    <CommunityViolenceSection key="community-violence" formData={formData} handleChange={handleChange} />
+    // Sections imported from ACEIQSections.js with custom wrappers
+    <section key="neglect" className="questionnaire-section neglect-section">
+      <div className="section-header neglect-header">
+        <h2 className="questionnaire-section-title">NEGLECT</h2>
+        <div className="section-icon">⚠️</div>
+      </div>
+      <NeglectSection formData={formData} handleChange={handleChange} />
+    </section>,
+    
+    <section key="family" className="questionnaire-section family-section">
+      <div className="section-header family-header">
+        <h2 className="questionnaire-section-title">FAMILY ENVIRONMENT</h2>
+        <div className="section-icon">🏠</div>
+      </div>
+      <FamilyEnvironmentSection formData={formData} handleChange={handleChange} />
+    </section>,
+    
+    <section key="direct-abuse" className="questionnaire-section abuse-section">
+      <div className="section-header abuse-header">
+        <h2 className="questionnaire-section-title">DIRECT ABUSE</h2>
+        <div className="section-icon">🛑</div>
+      </div>
+      <DirectAbuseSection formData={formData} handleChange={handleChange} />
+    </section>,
+    
+    <section key="peer-violence" className="questionnaire-section peer-section">
+      <div className="section-header peer-header">
+        <h2 className="questionnaire-section-title">PEER VIOLENCE</h2>
+        <div className="section-icon">👥</div>
+      </div>
+      <PeerViolenceSection formData={formData} handleChange={handleChange} />
+    </section>,
+    
+    // New Section 6: Community Violence
+    <section key="community-violence" className="questionnaire-section community-section">
+      <div className="section-header community-header">
+        <h2 className="questionnaire-section-title">COMMUNITY VIOLENCE</h2>
+        <div className="section-icon">🏙️</div>
+      </div>
+      <CommunityViolenceSection formData={formData} handleChange={handleChange} />
+    </section>
   ];
   
   // Questions array - contains all questions we want to track scores for
@@ -841,21 +985,33 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         <div className="questionnaire-container">
           <h1 className="questionnaire-title">Adverse Childhood Experiences International Questionnaire (ACE-IQ)</h1>
           
+          {/* Debug info - will only show in browser console */}
+          <div style={{display: 'none'}}>
+            {console.log('Current section:', currentSection)}
+            {console.log('Number of sections:', sections.length)}
+            {console.log('Sections array:', sections.map((_, i) => getSectionName(i)))}
+          </div>
+          
           {/* Add section progress indicator */}
           <div className="section-progress">
             <div className="section-progress-text">
-              Section {currentSection + 1} of {sections.length}
+              Section {currentSection + 1} of {sections.length} - {getSectionName(currentSection)}
             </div>
             <div className="section-progress-bar">
               <div 
                 className="section-progress-fill" 
-                style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
+                style={{ 
+                  width: `${((currentSection + 1) / sections.length) * 100}%`,
+                  backgroundColor: getProgressBarColor(currentSection)
+                }}
               ></div>
             </div>
           </div>
           
           <form onSubmit={handleSubmit}>
-            {sections[currentSection]}
+            <div className="section-container" style={{ background: getSectionBackground(currentSection) }}>
+              {sections[currentSection]}
+            </div>
             
             <div className="form-buttons">
               {currentSection > 0 && (
@@ -873,8 +1029,9 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
                   type="button" 
                   className="form-button next" 
                   onClick={nextSection}
+                  data-next-section={currentSection + 1}
                 >
-                  Next ({sections.length - currentSection - 1} more section{sections.length - currentSection - 1 !== 1 ? 's' : ''})
+                  Next {currentSection === sections.length - 2 ? "(Last section)" : `(${sections.length - currentSection - 1} more sections)`}
                 </button>
               ) : (
                 <button 
@@ -934,3 +1091,48 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
 };
 
 export default ACEIQQuestionnaire; 
+
+// Helper function to get section name from index
+const getSectionName = (index) => {
+  const sectionNames = [
+    "Demographics",
+    "Parents/Guardians", 
+    "Neglect",
+    "Family Environment",
+    "Direct Abuse",
+    "Peer Violence",
+    "Community Violence"
+  ];
+  
+  return sectionNames[index] || "";
+};
+
+// Helper function for section styling
+const getSectionBackground = (sectionIndex) => {
+  const backgrounds = [
+    'linear-gradient(to bottom, #e8f4f8, #ffffff)', // Demographics 
+    'linear-gradient(to bottom, #f0f8e8, #ffffff)', // Parents
+    'linear-gradient(to bottom, #fff8e8, #ffffff)', // Neglect
+    'linear-gradient(to bottom, #f8e8f4, #ffffff)', // Family 
+    'linear-gradient(to bottom, #f8e8e8, #ffffff)', // Abuse
+    'linear-gradient(to bottom, #e8e8f8, #ffffff)', // Peer
+    'linear-gradient(to bottom, #f0e8f8, #ffffff)'  // Community
+  ];
+  
+  return backgrounds[sectionIndex] || backgrounds[0];
+};
+
+// Helper function for progress bar color
+const getProgressBarColor = (sectionIndex) => {
+  const colors = [
+    '#3498db', // Demographics - Blue
+    '#2ecc71', // Parents - Green
+    '#f1c40f', // Neglect - Yellow
+    '#9b59b6', // Family - Purple
+    '#e74c3c', // Abuse - Red
+    '#34495e', // Peer - Dark Blue
+    '#1abc9c'  // Community - Turquoise
+  ];
+  
+  return colors[sectionIndex] || colors[0];
+}; 

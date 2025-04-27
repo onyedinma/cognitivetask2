@@ -259,8 +259,24 @@ const SESQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
-      // Create CSV header row - exclude response data
-      let csvContent = 'StudentID,Timestamp,QuestionID,Score,Score Type\n';
+      // Helper function to properly escape CSV field values
+      const escapeCSVField = (value) => {
+        if (value === null || value === undefined) {
+          return '""';
+        }
+        
+        // Convert to string if not already
+        const stringValue = String(value);
+        
+        // Replace any double quotes with two double quotes (proper CSV escaping)
+        const escapedValue = stringValue.replace(/"/g, '""');
+        
+        // Always wrap in quotes to safely handle commas, newlines, etc.
+        return `"${escapedValue}"`;
+      };
+      
+      // Create CSV header row with expanded fields
+      let csvContent = 'StudentID,Timestamp,Section,QuestionID,QuestionText,Response,Score,ScoreType,ScoringFormula,PossibleResponses\n';
       
       // Add rows for each question
       questions.forEach(question => {
@@ -270,29 +286,57 @@ const SESQuestionnaire = ({ onComplete }) => {
         // Add special handling for the reverse-scored item
         let finalScore = score;
         let scoreType = 'Standard scored';
+        let section = 'Socioeconomic Status';
+        let scoringFormula = 'Strongly Disagree = 1, Disagree = 2, Neither Agree nor Disagree = 3, Agree = 4, Strongly Agree = 5, Refused = -9';
+        let possibleResponses = 'Strongly Disagree, Disagree, Neither Agree nor Disagree, Agree, Strongly Agree, Refused';
         
-        if (question.id === 'struggledFinancially') {
+        if (question.isReversed) {
           // Apply reverse scoring for 5-point scale (5->1, 4->2, 3->3, 2->4, 1->5)
-          finalScore = 6 - score;
+          finalScore = response ? (6 - score) : 0;
           scoreType = 'Reverse scored';
+          scoringFormula = 'Strongly Disagree = 5, Disagree = 4, Neither Agree nor Disagree = 3, Agree = 2, Strongly Agree = 1, Refused = -9';
         }
         
         csvContent += [
-          studentId,
-          timestamp,
-          question.id,
-          finalScore,
-          `"${scoreType}"`
+          escapeCSVField(studentId),
+          escapeCSVField(timestamp),
+          escapeCSVField(section),
+          escapeCSVField(question.id),
+          escapeCSVField(question.text),
+          escapeCSVField(response || 'Not Answered'),
+          finalScore, // Numeric value, no escaping needed
+          escapeCSVField(scoreType),
+          escapeCSVField(scoringFormula),
+          escapeCSVField(possibleResponses)
         ].join(',') + '\n';
       });
       
+      // Add scoring explanation
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Socioeconomic Status'),
+        escapeCSVField('SCORING_INFO'),
+        escapeCSVField('Scoring Information'),
+        escapeCSVField(''),
+        '',
+        escapeCSVField(''),
+        escapeCSVField('Higher scores indicate higher socioeconomic status. The "struggledFinancially" item is reverse-scored.'),
+        escapeCSVField('')
+      ].join(',') + '\n';
+      
       // Add total score row
       csvContent += [
-        studentId,
-        timestamp,
-        'TOTAL',
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Summary'),
+        escapeCSVField('TOTAL'),
+        escapeCSVField('Total SES Score'),
+        escapeCSVField(''),
         calculateScore(),
-        '"Sum of all items"'
+        escapeCSVField('Sum of all items'),
+        escapeCSVField('Sum of all question scores, higher total indicates higher socioeconomic status'),
+        escapeCSVField('')
       ].join(',') + '\n';
       
       // Create downloadable link
