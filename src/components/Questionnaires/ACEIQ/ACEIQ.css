@@ -333,3 +333,52 @@
   font-size: 0.9rem;
   margin-top: 0.5rem;
 }
+
+/* Add styles for section progress indicator */
+.section-progress {
+  margin: 20px 0;
+  width: 100%;
+  text-align: center;
+}
+
+.section-progress-text {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.section-progress-bar {
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.section-progress-fill {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s ease;
+}
+
+/* Enhance buttons to make navigation clearer */
+.form-button.next {
+  background-color: #2196f3;
+  font-weight: bold;
+}
+
+.form-button.next:hover {
+  background-color: #0b7dda;
+}
+
+/* Add styles to make the Community Violence section more noticeable */
+.questionnaire-section-title {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #333;
+  text-align: center;
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 5px;
+}

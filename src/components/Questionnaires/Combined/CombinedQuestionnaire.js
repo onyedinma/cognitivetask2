@@ -84,6 +84,39 @@ const CombinedQuestionnaire = () => {
     }
   };
 
+  // Helper function to properly escape CSV field values
+  const escapeCSVField = (value) => {
+    if (value === null || value === undefined) {
+      return '""';
+    }
+    
+    // Convert to string if not already
+    const stringValue = String(value);
+    
+    // Replace any double quotes with two double quotes (proper CSV escaping)
+    const escapedValue = stringValue.replace(/"/g, '""');
+    
+    // Always wrap in quotes to safely handle commas, newlines, etc.
+    return `"${escapedValue}"`;
+  };
+
+  // Format REFUSED responses for the CSV export
+  const formatRefusedResponse = (value) => {
+    // For numeric values, check if it's -9 (conventional missing data code)
+    if (typeof value === 'number') {
+      return value === -9 ? "REFUSED" : value;
+    }
+    
+    // For string values, handle 'Refused' or other formats
+    if (typeof value === 'string') {
+      if (value === 'Refused' || value === 'REFUSED' || value === '-9') {
+        return "REFUSED";
+      }
+    }
+    
+    return value;
+  };
+
   // Export all questionnaire results as a single CSV
   const exportCombinedResults = () => {
     if (!aceiqResults || !sesResults || !mfqResults || !sdqResults) return;
@@ -93,19 +126,19 @@ const CombinedQuestionnaire = () => {
     const timestamp = new Date().toISOString();
     
     // Add file header
-    csvData.push(['COGNITIVE TASKS QUESTIONNAIRE RESULTS']);
-    csvData.push(['Student ID:', studentId]);
-    csvData.push(['Export Date:', timestamp]);
+    csvData.push([escapeCSVField('COGNITIVE TASKS QUESTIONNAIRE RESULTS')]);
+    csvData.push([escapeCSVField('Student ID:'), escapeCSVField(studentId)]);
+    csvData.push([escapeCSVField('Export Date:'), escapeCSVField(timestamp)]);
     csvData.push([]);  // Blank row
     
     // ===== DEMOGRAPHIC INFORMATION SECTION =====
     // This section will stand out in the CSV file with clear formatting
-    csvData.push(['=========================================']);
-    csvData.push(['========== DEMOGRAPHIC INFORMATION ==========']);
-    csvData.push(['=========================================']);
+    csvData.push([escapeCSVField('=========================================')]);
+    csvData.push([escapeCSVField('========== DEMOGRAPHIC INFORMATION ==========')]);
+    csvData.push([escapeCSVField('=========================================')]);
     
     // Add demographic headers
-    csvData.push(['Category', 'Value', 'Source']);
+    csvData.push([escapeCSVField('Category'), escapeCSVField('Value'), escapeCSVField('Source')]);
     
     // Get demographic information from ACEIQ results, which contains sex, age, ethnicity data
     // Extract demographic data from aceiqResults if available
@@ -118,7 +151,13 @@ const CombinedQuestionnaire = () => {
         Object.entries(demographics).forEach(([key, value]) => {
           if (value) { // Only add if there's a value
             const fieldName = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize first letter
-            csvData.push([fieldName, `"${value}"`, 'ACE-IQ']);
+            // Format REFUSED responses
+            const formattedValue = formatRefusedResponse(value);
+            csvData.push([
+              escapeCSVField(fieldName), 
+              escapeCSVField(formattedValue), 
+              escapeCSVField('ACE-IQ')
+            ]);
           }
         });
       }
@@ -126,52 +165,90 @@ const CombinedQuestionnaire = () => {
       else if (aceiqResults && aceiqResults.formData) {
         // Sex
         if (aceiqResults.formData.sex) {
-          csvData.push(['Sex', `"${aceiqResults.formData.sex}"`, 'ACE-IQ']);
+          // Format REFUSED responses
+          const formattedSex = formatRefusedResponse(aceiqResults.formData.sex);
+          csvData.push([
+            escapeCSVField('Sex'), 
+            escapeCSVField(formattedSex), 
+            escapeCSVField('ACE-IQ')
+          ]);
         }
         
         // Age
         if (aceiqResults.formData.age) {
-          csvData.push(['Age', aceiqResults.formData.age, 'ACE-IQ']);
+          // Format REFUSED responses
+          const formattedAge = formatRefusedResponse(aceiqResults.formData.age);
+          csvData.push([
+            escapeCSVField('Age'), 
+            escapeCSVField(formattedAge), 
+            escapeCSVField('ACE-IQ')
+          ]);
         }
         
         // Birth Date
         if (aceiqResults.formData.birthDate) {
-          csvData.push(['Birth Date', `"${aceiqResults.formData.birthDate}"`, 'ACE-IQ']);
+          // Format REFUSED responses
+          const formattedBirthDate = formatRefusedResponse(aceiqResults.formData.birthDate);
+          csvData.push([
+            escapeCSVField('Birth Date'), 
+            escapeCSVField(formattedBirthDate), 
+            escapeCSVField('ACE-IQ')
+          ]);
         }
         
         // Ethnicity
         if (aceiqResults.formData.ethnicity) {
-          csvData.push(['Ethnicity', `"${aceiqResults.formData.ethnicity}"`, 'ACE-IQ']);
+          // Format REFUSED responses
+          const formattedEthnicity = formatRefusedResponse(aceiqResults.formData.ethnicity);
+          csvData.push([
+            escapeCSVField('Ethnicity'), 
+            escapeCSVField(formattedEthnicity), 
+            escapeCSVField('ACE-IQ')
+          ]);
         }
       } else {
         // Extract from direct properties if neither demographics nor formData is available
         const demoProperties = ['sex', 'age', 'birthDate', 'ethnicity'];
         demoProperties.forEach(prop => {
           if (aceiqResults && aceiqResults[prop]) {
+            // Format REFUSED responses
+            const formattedValue = formatRefusedResponse(aceiqResults[prop]);
             csvData.push([
-              prop.charAt(0).toUpperCase() + prop.slice(1), // Capitalize first letter
-              `"${aceiqResults[prop]}"`,
-              'ACE-IQ'
+              escapeCSVField(prop.charAt(0).toUpperCase() + prop.slice(1)), // Capitalize first letter
+              escapeCSVField(formattedValue),
+              escapeCSVField('ACE-IQ')
             ]);
           }
         });
       }
     } catch (error) {
       console.error('Error extracting demographic data:', error);
-      csvData.push(['Error', '"Failed to extract demographic data"', 'System']);
+      csvData.push([
+        escapeCSVField('Error'), 
+        escapeCSVField('Failed to extract demographic data'), 
+        escapeCSVField('System')
+      ]);
     }
     
     // Add additional demographic information
-    csvData.push(['Participant ID', `"${studentId}"`, 'System']);
-    csvData.push(['Testing Date', `"${new Date().toLocaleDateString()}"`, 'System']);
+    csvData.push([
+      escapeCSVField('Participant ID'), 
+      escapeCSVField(studentId), 
+      escapeCSVField('System')
+    ]);
+    csvData.push([
+      escapeCSVField('Testing Date'), 
+      escapeCSVField(new Date().toLocaleDateString()), 
+      escapeCSVField('System')
+    ]);
     
     // Add blank separator rows
     csvData.push([]);
     csvData.push([]);
     
     // ACEIQ section
-    csvData.push(['===== ADVERSE CHILDHOOD EXPERIENCES QUESTIONNAIRE (ACE-IQ) =====']);
-    csvData.push(['Questionnaire', 'Question ID', 'Score', 'Score Type']);
+    csvData.push([escapeCSVField('===== ADVERSE CHILDHOOD EXPERIENCES QUESTIONNAIRE (ACE-IQ) =====')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Section'), escapeCSVField('Response')]);
     
     if (aceiqResults.questions && Array.isArray(aceiqResults.questions)) {
       // Map question IDs to their types for the CSV
@@ -183,24 +260,57 @@ const CombinedQuestionnaire = () => {
         'alcoholicHouseholdMember', 'mentallyIllHouseholdMember', 
         'imprisonedHouseholdMember', 'parentsSeparated', 'parentDied'
       ];
+      
+      // Community violence questions
+      const communityViolenceQuestions = [
+        'witnessedBeating', 'witnessedStabbingOrShooting', 'witnessedThreatenedWithWeapon'
+      ];
+      
       // All other questions are frequency4 type
       
       frequencyType5Questions.forEach(id => aceiqQuestionTypes[id] = 'Reverse scored (Protective factor)');
       yesNoQuestions.forEach(id => aceiqQuestionTypes[id] = 'Binary');
+      communityViolenceQuestions.forEach(id => aceiqQuestionTypes[id] = 'Community Violence (1-4)');
       
       aceiqResults.questions.forEach(q => {
         // Determine score type if not already set
-        let scoreType = q.type || aceiqQuestionTypes[q.id] || '0-3 scale';
+        let scoreType = q.type || aceiqQuestionTypes[q.id] || 'Frequency (1-4)';
+        
+        // Determine section
+        let section = '';
+        if (frequencyType5Questions.includes(q.id)) {
+          section = 'Relationship with Parents';
+        } else if (['notEnoughFood', 'parentsDrunkOrDrugs', 'notSentToSchool'].includes(q.id)) {
+          section = 'Neglect';
+        } else if (yesNoQuestions.includes(q.id) || 
+                  ['witnessedVerbalAbuse', 'witnessedPhysicalAbuse', 'witnessedWeaponAbuse'].includes(q.id)) {
+          section = 'Family Environment';
+        } else if (['verbalAbuse', 'threatenedAbandonment', 'physicalAbuse', 'weaponAbuse', 
+                    'sexualTouching', 'sexualFondling', 'attemptedSexualIntercourse', 'completedSexualIntercourse'].includes(q.id)) {
+          section = 'Direct Abuse';
+        } else if (['bullied', 'physicalFight'].includes(q.id)) {
+          section = 'Peer Violence';
+        } else if (communityViolenceQuestions.includes(q.id)) {
+          section = 'Community Violence';
+        }
+        
+        // Format score for REFUSED responses
+        const formattedScore = formatRefusedResponse(q.score);
+        
+        // Include original response if available
+        const response = q.response ? formatRefusedResponse(q.response) : '';
         
         csvData.push([
-          'ACEIQ', 
-          q.id, 
-          q.score,
-          scoreType
+          escapeCSVField('ACEIQ'), 
+          escapeCSVField(q.id), 
+          escapeCSVField(formattedScore),
+          escapeCSVField(scoreType),
+          escapeCSVField(section),
+          escapeCSVField(response)
         ]);
       });
       
-      csvData.push(['ACEIQ', 'TOTAL', aceiqResults.totalScore, 'Sum of all items']);
+      csvData.push([escapeCSVField('ACEIQ'), escapeCSVField('TOTAL'), escapeCSVField(aceiqResults.totalScore), escapeCSVField('Sum of all items'), '', '']);
     }
     
     // Blank row between questionnaires
@@ -208,16 +318,29 @@ const CombinedQuestionnaire = () => {
     csvData.push([]);
     
     // SES section
-    csvData.push(['===== SOCIOECONOMIC STATUS QUESTIONNAIRE (SES) =====']);
-    csvData.push(['Questionnaire', 'Question ID', 'Score', 'Score Type']);
+    csvData.push([escapeCSVField('===== SOCIOECONOMIC STATUS QUESTIONNAIRE (SES) =====')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Response')]);
     
     if (sesResults.questions && Array.isArray(sesResults.questions)) {
       sesResults.questions.forEach(q => {
         // Determine score type - only struggledFinancially is reverse scored
         const scoreType = q.type || (q.id === 'struggledFinancially' ? 'Reverse scored' : 'Standard scored');
-        csvData.push(['SES', q.id, q.score, scoreType]);
+        
+        // Format score for REFUSED responses
+        const formattedScore = formatRefusedResponse(q.score);
+        
+        // Include original response if available
+        const response = q.response ? formatRefusedResponse(q.response) : '';
+        
+        csvData.push([
+          escapeCSVField('SES'), 
+          escapeCSVField(q.id), 
+          escapeCSVField(formattedScore), 
+          escapeCSVField(scoreType), 
+          escapeCSVField(response)
+        ]);
       });
-      csvData.push(['SES', 'TOTAL', sesResults.totalScore, 'Sum of all items']);
+      csvData.push([escapeCSVField('SES'), escapeCSVField('TOTAL'), escapeCSVField(sesResults.totalScore), escapeCSVField('Sum of all items'), '']);
     }
     
     // Blank row between questionnaires
@@ -225,18 +348,30 @@ const CombinedQuestionnaire = () => {
     csvData.push([]);
     
     // MFQ section
-    csvData.push(['===== MOOD AND FEELINGS QUESTIONNAIRE (MFQ) =====']);
-    csvData.push(['Questionnaire', 'Question ID', 'Score', 'Score Type']);
+    csvData.push([escapeCSVField('===== MOOD AND FEELINGS QUESTIONNAIRE (MFQ) =====')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Response')]);
     
     if (mfqResults.questions && Array.isArray(mfqResults.questions)) {
       mfqResults.questions.forEach(q => {
-        csvData.push(['MFQ', q.id, q.score, q.type || 'Standard scored']);
+        // Format score for REFUSED responses
+        const formattedScore = formatRefusedResponse(q.score);
+        
+        // Include original response if available
+        const response = q.response ? formatRefusedResponse(q.response) : '';
+        
+        csvData.push([
+          escapeCSVField('MFQ'), 
+          escapeCSVField(q.id), 
+          escapeCSVField(formattedScore), 
+          escapeCSVField(q.type || 'Standard scored'), 
+          escapeCSVField(response)
+        ]);
       });
-      csvData.push(['MFQ', 'TOTAL', mfqResults.totalScore, 'Sum of all items']);
+      csvData.push([escapeCSVField('MFQ'), escapeCSVField('TOTAL'), escapeCSVField(mfqResults.totalScore), escapeCSVField('Sum of all items'), '']);
       
       // Add interpretation row
       if (mfqResults.interpretation) {
-        csvData.push(['MFQ', 'INTERPRETATION', mfqResults.interpretation, 'Clinical interpretation']);
+        csvData.push([escapeCSVField('MFQ'), escapeCSVField('INTERPRETATION'), escapeCSVField(mfqResults.interpretation), escapeCSVField('Clinical interpretation'), '']);
       }
     }
     
@@ -245,8 +380,8 @@ const CombinedQuestionnaire = () => {
     csvData.push([]);
     
     // SDQ section
-    csvData.push(['===== STRENGTHS AND DIFFICULTIES QUESTIONNAIRE (SDQ) =====']);
-    csvData.push(['Questionnaire', 'Question ID', 'Score', 'Score Type']);
+    csvData.push([escapeCSVField('===== STRENGTHS AND DIFFICULTIES QUESTIONNAIRE (SDQ) =====')]);
+    csvData.push([escapeCSVField('Questionnaire'), escapeCSVField('Question ID'), escapeCSVField('Score'), escapeCSVField('Score Type'), escapeCSVField('Response')]);
     
     if (sdqResults.questions && Array.isArray(sdqResults.questions)) {
       sdqResults.questions.forEach(q => {
@@ -262,44 +397,67 @@ const CombinedQuestionnaire = () => {
           scoreType = 'Reverse scored';
         }
         
-        csvData.push(['SDQ', q.id, q.score, scoreType]);
+        // Format score for REFUSED responses
+        const formattedScore = formatRefusedResponse(q.score);
+        
+        // Include original response if available
+        const response = q.response ? formatRefusedResponse(q.response) : '';
+        
+        csvData.push([
+          escapeCSVField('SDQ'), 
+          escapeCSVField(q.id), 
+          escapeCSVField(formattedScore), 
+          escapeCSVField(scoreType), 
+          escapeCSVField(response)
+        ]);
       });
       
       // Add a separator before summary scores
       csvData.push([]);
-      csvData.push(['===== SDQ SUMMARY SCORES =====']);
-      csvData.push(['Scale', 'Score', 'Category']);
+      csvData.push([escapeCSVField('===== SDQ SUMMARY SCORES =====')]);
+      csvData.push([escapeCSVField('Scale'), escapeCSVField('Score'), escapeCSVField('Category'), '', '']);
       
       // Include subscale scores with categories
       if (sdqResults.scores) {
-        csvData.push(['SDQ', 'EMOTIONAL_PROBLEMS', sdqResults.scores.emotional, 'Subscale total']);
-        csvData.push(['SDQ', 'EMOTIONAL_CATEGORY', sdqResults.scores.emotionalCategory, 'Clinical category']);
+        // Format scores for REFUSED responses
+        const formattedEmotional = formatRefusedResponse(sdqResults.scores.emotional);
+        const formattedConduct = formatRefusedResponse(sdqResults.scores.conduct);
+        const formattedHyperactivity = formatRefusedResponse(sdqResults.scores.hyperactivity);
+        const formattedPeer = formatRefusedResponse(sdqResults.scores.peer);
+        const formattedProsocial = formatRefusedResponse(sdqResults.scores.prosocial);
+        const formattedTotalDifficulties = formatRefusedResponse(sdqResults.scores.totalDifficulties);
+        const formattedExternalizing = formatRefusedResponse(sdqResults.scores.externalizing);
+        const formattedInternalizing = formatRefusedResponse(sdqResults.scores.internalizing);
         
-        csvData.push(['SDQ', 'CONDUCT_PROBLEMS', sdqResults.scores.conduct, 'Subscale total']);
-        csvData.push(['SDQ', 'CONDUCT_CATEGORY', sdqResults.scores.conductCategory, 'Clinical category']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('EMOTIONAL_PROBLEMS'), escapeCSVField(formattedEmotional), escapeCSVField('Subscale total'), '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('EMOTIONAL_CATEGORY'), escapeCSVField(sdqResults.scores.emotionalCategory), escapeCSVField('Clinical category'), '']);
         
-        csvData.push(['SDQ', 'HYPERACTIVITY', sdqResults.scores.hyperactivity, 'Subscale total']);
-        csvData.push(['SDQ', 'HYPERACTIVITY_CATEGORY', sdqResults.scores.hyperactivityCategory, 'Clinical category']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('CONDUCT_PROBLEMS'), escapeCSVField(formattedConduct), escapeCSVField('Subscale total'), '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('CONDUCT_CATEGORY'), escapeCSVField(sdqResults.scores.conductCategory), escapeCSVField('Clinical category'), '']);
         
-        csvData.push(['SDQ', 'PEER_PROBLEMS', sdqResults.scores.peer, 'Subscale total']);
-        csvData.push(['SDQ', 'PEER_CATEGORY', sdqResults.scores.peerCategory, 'Clinical category']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('HYPERACTIVITY'), escapeCSVField(formattedHyperactivity), escapeCSVField('Subscale total'), '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('HYPERACTIVITY_CATEGORY'), escapeCSVField(sdqResults.scores.hyperactivityCategory), escapeCSVField('Clinical category'), '']);
         
-        csvData.push(['SDQ', 'PROSOCIAL', sdqResults.scores.prosocial, 'Subscale total (higher is better)']);
-        csvData.push(['SDQ', 'PROSOCIAL_CATEGORY', sdqResults.scores.prosocialCategory, 'Clinical category']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('PEER_PROBLEMS'), escapeCSVField(formattedPeer), escapeCSVField('Subscale total'), '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('PEER_CATEGORY'), escapeCSVField(sdqResults.scores.peerCategory), escapeCSVField('Clinical category'), '']);
         
-        csvData.push(['SDQ', 'TOTAL_DIFFICULTIES', sdqResults.scores.totalDifficulties, 'Sum of problem subscales']);
-        csvData.push(['SDQ', 'TOTAL_CATEGORY', sdqResults.scores.totalDifficultiesCategory, 'Clinical category']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('PROSOCIAL'), escapeCSVField(formattedProsocial), escapeCSVField('Subscale total (higher is better)'), '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('PROSOCIAL_CATEGORY'), escapeCSVField(sdqResults.scores.prosocialCategory), escapeCSVField('Clinical category'), '']);
         
-        csvData.push(['SDQ', 'EXTERNALIZING', sdqResults.scores.externalizing, 'Conduct + Hyperactivity']);
-        csvData.push(['SDQ', 'INTERNALIZING', sdqResults.scores.internalizing, 'Emotional + Peer']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('TOTAL_DIFFICULTIES'), escapeCSVField(formattedTotalDifficulties), escapeCSVField('Sum of problem subscales'), '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('TOTAL_CATEGORY'), escapeCSVField(sdqResults.scores.totalDifficultiesCategory), escapeCSVField('Clinical category'), '']);
+        
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('EXTERNALIZING'), escapeCSVField(formattedExternalizing), escapeCSVField('Conduct + Hyperactivity'), '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('INTERNALIZING'), escapeCSVField(formattedInternalizing), escapeCSVField('Emotional + Peer'), '']);
       }
       
       // Interpretation
       if (sdqResults.interpretation) {
-        csvData.push(['SDQ', 'INTERPRETATION', sdqResults.interpretation, '']);
+        csvData.push([escapeCSVField('SDQ'), escapeCSVField('INTERPRETATION'), escapeCSVField(sdqResults.interpretation), '', '']);
       }
     }
     
+    // Create the CSV content from the data
     const csvContent = csvData.map(row => row.join(',')).join('\n');
     
     // Export to CSV file

@@ -50,37 +50,87 @@ export const clearAllTaskResults = () => {
   }
 };
 
+// Helper function to process and format REFUSED responses for CSV export
+const formatRefusedResponse = (value) => {
+  // For numeric values, return -9 (conventional missing data code)
+  if (typeof value === 'number') {
+    return value === -9 ? "REFUSED" : value;
+  }
+  
+  // For string values, handle 'Refused' or other formats
+  if (typeof value === 'string') {
+    if (value === 'Refused' || value === 'REFUSED' || value === '-9') {
+      return "REFUSED";
+    }
+  }
+  
+  return value;
+};
+
+/**
+ * Properly escapes a value for CSV export
+ * - Converts non-string values to strings
+ * - Wraps text in double quotes
+ * - Escapes any double quotes in the text by doubling them
+ */
+const escapeCSVField = (value) => {
+  if (value === null || value === undefined) {
+    return '""';
+  }
+  
+  // Convert to string if not already
+  const stringValue = String(value);
+  
+  // Replace any double quotes with two double quotes (proper CSV escaping)
+  const escapedValue = stringValue.replace(/"/g, '""');
+  
+  // Always wrap in quotes to safely handle commas, newlines, etc.
+  return `"${escapedValue}"`;
+};
+
+// Update the formatForCSV function to use the new escaping function
+const formatForCSV = (value) => {
+  // Handle special cases for numbers and boolean values
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return value;
+  }
+  
+  // Use the new escapeCSVField function for text values
+  return escapeCSVField(value);
+};
+
 // Export all task results as a single CSV file with task-specific headers
 export const exportAllTaskResults = () => {
   try {
-    const allResults = getAllTaskResults();
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
     const timestamp = new Date().toISOString();
     
-    // Log what's available in the results for debugging
-    console.log('All task results available for export:', Object.keys(allResults));
+    console.log('Exporting all task results for student ID:', studentId);
     
-    // Prepare data for CSV
-    const csvData = [];
+    // Create CSV content with detailed header rows for all tasks
+    let csvContent = [];
     
     // Add file header
-    csvData.push(['COGNITIVE ASSESSMENT RESULTS']);
-    csvData.push(['Participant ID:', studentId]);
-    csvData.push(['Counterbalance Condition:', counterBalance]);
-    csvData.push(['Export Date:', timestamp]);
-    csvData.push([]);  // Blank row
-
+    csvContent.push(['COGNITIVE TASK RESULTS']);
+    csvContent.push(['Student ID:', studentId]);
+    csvContent.push(['Export Date:', timestamp]);
+    csvContent.push([]);  // Blank row
+    
+    // Retrieve all results
+    const allResults = getAllTaskResults();
+    console.debug('All task results to be exported:', allResults);
+    
     // ===== DEMOGRAPHIC INFORMATION SECTION =====
     // This section will stand out in the CSV file
-    csvData.push(['========== DEMOGRAPHIC INFORMATION ==========']);
+    csvContent.push(['========== DEMOGRAPHIC INFORMATION ==========']);
     
     // Get demographic data from localStorage (all questionnaire data stored in localStorage)
     const aceiqDataStr = localStorage.getItem('aceiqResults');
     const sesDataStr = localStorage.getItem('sesResults');
     
     // Add demographic headers
-    csvData.push(['Data Type', 'Category', 'Value', 'Source']);
+    csvContent.push(['Data Type', 'Category', 'Value', 'Source']);
     
     // Extract demographic information from the ACEIQ questionnaire if available
     if (aceiqDataStr) {
@@ -97,7 +147,7 @@ export const exportAllTaskResults = () => {
           Object.entries(demographics).forEach(([key, value]) => {
             if (value) { // Only add if there's a value
               const fieldName = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize first letter
-              csvData.push(['DEMOGRAPHIC', fieldName, `"${value}"`, 'ACE-IQ']);
+              csvContent.push(['DEMOGRAPHIC', fieldName, `"${value}"`, 'ACE-IQ']);
             }
           });
         }
@@ -110,31 +160,31 @@ export const exportAllTaskResults = () => {
           if (demographicData) {
             // Sex
             if (demographicData.sex) {
-              csvData.push(['DEMOGRAPHIC', 'Sex', `"${demographicData.sex}"`, 'ACE-IQ']);
+              csvContent.push(['DEMOGRAPHIC', 'Sex', `"${demographicData.sex}"`, 'ACE-IQ']);
             }
             
             // Age
             if (demographicData.age) {
-              csvData.push(['DEMOGRAPHIC', 'Age', demographicData.age, 'ACE-IQ']);
+              csvContent.push(['DEMOGRAPHIC', 'Age', demographicData.age, 'ACE-IQ']);
             }
             
             // Birth Date
             if (demographicData.birthDate) {
-              csvData.push(['DEMOGRAPHIC', 'Birth Date', `"${demographicData.birthDate}"`, 'ACE-IQ']);
+              csvContent.push(['DEMOGRAPHIC', 'Birth Date', `"${demographicData.birthDate}"`, 'ACE-IQ']);
             }
             
             // Ethnicity
             if (demographicData.ethnicity) {
-              csvData.push(['DEMOGRAPHIC', 'Ethnicity', `"${demographicData.ethnicity}"`, 'ACE-IQ']);
+              csvContent.push(['DEMOGRAPHIC', 'Ethnicity', `"${demographicData.ethnicity}"`, 'ACE-IQ']);
             }
           }
         }
       } catch (error) {
         console.error('Error extracting demographic data from ACE-IQ:', error);
-        csvData.push(['DEMOGRAPHIC', 'Error', '"Error extracting ACE-IQ demographic data"', 'System']);
+        csvContent.push(['DEMOGRAPHIC', 'Error', '"Error extracting ACE-IQ demographic data"', 'System']);
       }
     } else {
-      csvData.push(['DEMOGRAPHIC', 'ACE-IQ Data', '"Not available"', 'System']);
+      csvContent.push(['DEMOGRAPHIC', 'ACE-IQ Data', '"Not available"', 'System']);
     }
     
     // Add any additional demographic information that might be available
@@ -145,47 +195,22 @@ export const exportAllTaskResults = () => {
     
     // Add each additional demographic item
     Object.entries(additionalDemoData).forEach(([key, value]) => {
-      csvData.push(['DEMOGRAPHIC', key, `"${value}"`, 'System']);
+      csvContent.push(['DEMOGRAPHIC', key, `"${value}"`, 'System']);
     });
     
     // Add a blank separator row
-    csvData.push([]);
-    csvData.push([]);
+    csvContent.push([]);
+    csvContent.push([]);
 
-    // Helper function to properly format values for CSV export
-    const formatForCSV = (value) => {
-      if (value === null || value === undefined) return '';
-      
-      // Convert the value to string
-      let strValue = String(value);
-      
-      // If it looks like JSON, replace commas with semicolons
-      if (strValue.startsWith('[') || strValue.startsWith('{')) {
-        strValue = strValue.replace(/,/g, ';');
-      }
-      
-      // If the value contains quotes, double them for CSV escape
-      if (strValue.includes('"')) {
-        strValue = strValue.replace(/"/g, '""');
-      }
-      
-      // Wrap in quotes if it contains commas, quotes, or newlines
-      if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n') || strValue.includes('\r')) {
-        strValue = `"${strValue}"`;
-      }
-      
-      return strValue;
-    };
-    
     // Process Forward Digit Span Task - Explicit handling
     if (allResults.digitSpanForward && allResults.digitSpanForward.length > 0) {
       console.log('Found digitSpanForward results:', allResults.digitSpanForward.length, 'entries');
       
       // Add section header for Forward Digit Span
-      csvData.push(['FORWARD DIGIT SPAN TASK']);
+      csvContent.push(['FORWARD DIGIT SPAN TASK']);
       
       // Add task-specific headers
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -210,7 +235,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows
       allResults.digitSpanForward.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
@@ -225,7 +250,7 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Backward Digit Span Task - Explicit handling
@@ -233,10 +258,10 @@ export const exportAllTaskResults = () => {
       console.log('Found digitSpanBackward results:', allResults.digitSpanBackward.length, 'entries');
       
       // Add section header for Backward Digit Span
-      csvData.push(['BACKWARD DIGIT SPAN TASK']);
+      csvContent.push(['BACKWARD DIGIT SPAN TASK']);
       
       // Add task-specific headers
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -260,7 +285,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows
       allResults.digitSpanBackward.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
@@ -275,7 +300,7 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Forward Object Span Task - Explicit handling
@@ -283,10 +308,10 @@ export const exportAllTaskResults = () => {
       console.log('Found objectSpanForward results:', allResults.objectSpanForward.length, 'entries');
       
       // Add section header for Forward Object Span
-      csvData.push(['FORWARD OBJECT SPAN TASK']);
+      csvContent.push(['FORWARD OBJECT SPAN TASK']);
       
       // Add task-specific headers
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -315,7 +340,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows with flexible field names
       allResults.objectSpanForward.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || result.participant_id || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
@@ -331,7 +356,7 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Backward Object Span Task
@@ -339,10 +364,10 @@ export const exportAllTaskResults = () => {
       console.log('Found objectSpanBackward results:', allResults.objectSpanBackward.length, 'entries');
       
       // Add section header for Backward Object Span
-      csvData.push(['BACKWARD OBJECT SPAN TASK']);
+      csvContent.push(['BACKWARD OBJECT SPAN TASK']);
       
       // Add task-specific headers
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -369,7 +394,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows
       allResults.objectSpanBackward.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || result.participant_id || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
@@ -385,7 +410,7 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Check for legacy data format and include if present
@@ -398,10 +423,10 @@ export const exportAllTaskResults = () => {
       // Process Forward Digit Span legacy data
       if (forwardResults.length > 0 && (!allResults.digitSpanForward || allResults.digitSpanForward.length === 0)) {
         // Add section header for Forward Digit Span
-        csvData.push(['FORWARD DIGIT SPAN TASK (LEGACY FORMAT)']);
+        csvContent.push(['FORWARD DIGIT SPAN TASK (LEGACY FORMAT)']);
         
         // Add task-specific headers
-        csvData.push([
+        csvContent.push([
           'Participant ID',
           'Timestamp',
           'Trial Number',
@@ -426,7 +451,7 @@ export const exportAllTaskResults = () => {
         
         // Add data rows
         forwardResults.forEach((result, index) => {
-          csvData.push([
+          csvContent.push([
             formatForCSV(result.participantId || studentId),
             formatForCSV(result.timestamp || timestamp),
             formatForCSV(index + 1),
@@ -441,16 +466,16 @@ export const exportAllTaskResults = () => {
         });
         
         // Add blank separator row
-        csvData.push(['']);
+        csvContent.push(['']);
       }
       
       // Process Backward Digit Span legacy data
       if (backwardResults.length > 0 && (!allResults.digitSpanBackward || allResults.digitSpanBackward.length === 0)) {
         // Add section header for Backward Digit Span
-        csvData.push(['BACKWARD DIGIT SPAN TASK (LEGACY FORMAT)']);
+        csvContent.push(['BACKWARD DIGIT SPAN TASK (LEGACY FORMAT)']);
         
         // Add task-specific headers
-        csvData.push([
+        csvContent.push([
           'Participant ID',
           'Timestamp',
           'Trial Number',
@@ -474,7 +499,7 @@ export const exportAllTaskResults = () => {
         
         // Add data rows
         backwardResults.forEach((result, index) => {
-          csvData.push([
+          csvContent.push([
             formatForCSV(result.participantId || studentId),
             formatForCSV(result.timestamp || timestamp),
             formatForCSV(index + 1),
@@ -489,7 +514,7 @@ export const exportAllTaskResults = () => {
         });
         
         // Add blank separator row
-        csvData.push(['']);
+        csvContent.push(['']);
       }
     }
     
@@ -505,10 +530,10 @@ export const exportAllTaskResults = () => {
       // Process Forward Object Span legacy data
       if (forwardResults.length > 0 && (!allResults.objectSpanForward || allResults.objectSpanForward.length === 0)) {
         // Add section header for Forward Object Span
-        csvData.push(['FORWARD OBJECT SPAN TASK (LEGACY FORMAT)']);
+        csvContent.push(['FORWARD OBJECT SPAN TASK (LEGACY FORMAT)']);
         
         // Add task-specific headers
-        csvData.push([
+        csvContent.push([
           'Participant ID',
           'Timestamp',
           'Trial Number',
@@ -535,7 +560,7 @@ export const exportAllTaskResults = () => {
         
         // Add data rows
         forwardResults.forEach((result, index) => {
-          csvData.push([
+          csvContent.push([
             formatForCSV(result.participantId || result.participant_id || studentId),
             formatForCSV(result.timestamp || timestamp),
             formatForCSV(index + 1),
@@ -551,16 +576,16 @@ export const exportAllTaskResults = () => {
         });
         
         // Add blank separator row
-        csvData.push(['']);
+        csvContent.push(['']);
       }
       
       // Process Backward Object Span legacy data
       if (backwardResults.length > 0 && (!allResults.objectSpanBackward || allResults.objectSpanBackward.length === 0)) {
         // Add section header for Backward Object Span
-        csvData.push(['BACKWARD OBJECT SPAN TASK (LEGACY FORMAT)']);
+        csvContent.push(['BACKWARD OBJECT SPAN TASK (LEGACY FORMAT)']);
         
         // Add task-specific headers
-        csvData.push([
+        csvContent.push([
           'Participant ID',
           'Timestamp',
           'Trial Number',
@@ -587,7 +612,7 @@ export const exportAllTaskResults = () => {
         
         // Add data rows
         backwardResults.forEach((result, index) => {
-          csvData.push([
+          csvContent.push([
             formatForCSV(result.participantId || result.participant_id || studentId),
             formatForCSV(result.timestamp || timestamp),
             formatForCSV(index + 1),
@@ -603,17 +628,17 @@ export const exportAllTaskResults = () => {
         });
         
         // Add blank separator row
-        csvData.push(['']);
+        csvContent.push(['']);
       }
     }
     
     // Process Shape Counting Task
     if (allResults.shapeCounting && allResults.shapeCounting.length > 0) {
       // Add section header for Shape Counting
-      csvData.push(['SHAPE COUNTING TASK']);
+      csvContent.push(['SHAPE COUNTING TASK']);
       
       // Add task-specific headers
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -732,7 +757,7 @@ export const exportAllTaskResults = () => {
           formattedUserAnswer = result.userAnswer || result.answer || '';
         }
         
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
@@ -747,16 +772,16 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Counting Game Task (Ecological Shape Counting)
     if (allResults.countingGame && allResults.countingGame.length > 0) {
       // Add section header for Counting Game
-      csvData.push(['COUNTING GAME TASK']);
+      csvContent.push(['COUNTING GAME TASK']);
       
       // Add task-specific headers
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -915,7 +940,7 @@ export const exportAllTaskResults = () => {
           formattedUserAnswer = result.userAnswer || result.answer || '';
         }
         
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
@@ -929,7 +954,7 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Spatial Memory Task
@@ -937,10 +962,10 @@ export const exportAllTaskResults = () => {
       console.log('Found spatialMemory results:', allResults.spatialMemory.length, 'entries');
       
       // Add section header for Spatial Memory
-      csvData.push(['SPATIAL MEMORY TASK']);
+      csvContent.push(['SPATIAL MEMORY TASK']);
       
       // Add task-specific headers matching the image
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Num',
@@ -980,7 +1005,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows with expanded fields
       allResults.spatialMemory.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(result.trial || result.trialNumber || index + 1),
@@ -998,7 +1023,7 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Ecological Spatial Task
@@ -1006,10 +1031,10 @@ export const exportAllTaskResults = () => {
       console.log('Found ecologicalSpatial results:', allResults.ecologicalSpatial.length, 'entries');
       
       // Add section header for Ecological Spatial
-      csvData.push(['ECOLOGICAL SPATIAL TASK']);
+      csvContent.push(['ECOLOGICAL SPATIAL TASK']);
       
       // Add task-specific headers matching the image
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Num',
@@ -1030,7 +1055,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows with all fields
       allResults.ecologicalSpatial.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(result.trialNumber || index + 1),
@@ -1046,16 +1071,16 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Deductive Reasoning Task
     if (allResults.deductiveReasoning && allResults.deductiveReasoning.length > 0) {
       // Add section header for Deductive Reasoning
-      csvData.push(['DEDUCTIVE REASONING TASK']);
+      csvContent.push(['DEDUCTIVE REASONING TASK']);
       
       // Add task-specific headers
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -1076,7 +1101,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows
       allResults.deductiveReasoning.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(index + 1),
@@ -1092,7 +1117,7 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Process Ecological Deductive Reasoning Task
@@ -1100,10 +1125,10 @@ export const exportAllTaskResults = () => {
       console.log('Found ecologicalDeductiveReasoning results:', allResults.ecologicalDeductiveReasoning.length, 'entries');
       
       // Add section header for Ecological Deductive Reasoning
-      csvData.push(['ECOLOGICAL DEDUCTIVE REASONING TASK']);
+      csvContent.push(['ECOLOGICAL DEDUCTIVE REASONING TASK']);
       
       // Add task-specific headers matching expected fields
-      csvData.push([
+      csvContent.push([
         'Participant ID',
         'Timestamp',
         'Trial Number',
@@ -1129,7 +1154,7 @@ export const exportAllTaskResults = () => {
       
       // Add data rows with flexible field mapping
       allResults.ecologicalDeductiveReasoning.forEach((result, index) => {
-        csvData.push([
+        csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
           formatForCSV(result.trialNumber || index + 1),
@@ -1145,14 +1170,14 @@ export const exportAllTaskResults = () => {
       });
       
       // Add blank separator row
-      csvData.push(['']);
+      csvContent.push(['']);
     }
     
     // Create CSV content - each field is already properly formatted for CSV by the formatForCSV function
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const csvContentString = csvContent.map(row => row.join(',')).join('\n');
     
     // Create a Blob and trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvContentString], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);

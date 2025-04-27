@@ -35,6 +35,8 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       "Refused": -9
     },
     frequency4: {
+      // Community Violence questions scoring:
+      // Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9
       "Never": 1,
       "Once": 2,
       "A few times": 3,
@@ -346,13 +348,30 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       const studentId = localStorage.getItem('studentId') || 'unknown';
       const timestamp = new Date().toISOString();
       
+      // Helper function to properly escape CSV field values
+      const escapeCSVField = (value) => {
+        if (value === null || value === undefined) {
+          return '""';
+        }
+        
+        // Convert to string if not already
+        const stringValue = String(value);
+        
+        // Replace any double quotes with two double quotes (proper CSV escaping)
+        const escapedValue = stringValue.replace(/"/g, '""');
+        
+        // Always wrap in quotes to safely handle commas, newlines, etc.
+        return `"${escapedValue}"`;
+      };
+      
       // Create CSV header row - include score only, not responses
       let csvContent = 'StudentID,Timestamp,Section,QuestionID,QuestionText,Score,ScoreType,Response\n';
       
       // Add row for each question with score only, not response
       questions.forEach(question => {
         const response = formData[question.id];
-        const questionText = question.text.replace(/,/g, ''); // Remove commas to avoid CSV issues
+        // Don't remove commas, properly escape the text instead
+        const questionText = question.text;
         let score = 0;
         let scoreType = '';
         let section = '';
@@ -382,7 +401,13 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         // Check if this is a frequency4 question
         else if (frequencyType4Questions.includes(question.id)) {
           score = response ? scoringValues.frequency4[response] || 0 : 0;
-          scoreType = 'Frequency (1-4)';
+          
+          // Special label for community violence questions
+          if (['witnessedBeating', 'witnessedStabbingOrShooting', 'witnessedThreatenedWithWeapon'].includes(question.id)) {
+            scoreType = 'Community Violence (1-4)';
+          } else {
+            scoreType = 'Frequency (1-4)';
+          }
         }
         // Handle frequency5 questions with different scoring
         else if (frequencyType5Questions.includes(question.id)) {
@@ -391,61 +416,61 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         }
         
         csvContent += [
-          studentId,
-          timestamp,
-          `"${section}"`,
-          question.id,
-          `"${questionText}"`,
-          score,
-          `"${scoreType}"`,
-          `"${response || 'Not Answered'}"`
+          escapeCSVField(studentId),
+          escapeCSVField(timestamp),
+          escapeCSVField(section),
+          escapeCSVField(question.id),
+          escapeCSVField(questionText),
+          score, // Numeric value, no escaping needed
+          escapeCSVField(scoreType),
+          escapeCSVField(response || 'Not Answered')
         ].join(',') + '\n';
       });
       
       // Add total score row
       csvContent += [
-        studentId,
-        timestamp,
-        '"Summary"',
-        'TOTAL_SCORE',
-        '"Total ACE-IQ Score"',
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Summary'),
+        escapeCSVField('TOTAL_SCORE'),
+        escapeCSVField('Total ACE-IQ Score'),
         calculateTotalScore(formData),
-        '"Sum of all items"',
-        '""'
+        escapeCSVField('Sum of all items'),
+        escapeCSVField('')
       ].join(',') + '\n';
       
-      // Add demographic info
+      // Add demographic info with proper escaping
       csvContent += [
-        studentId,
-        timestamp,
-        '"Demographics"',
-        'sex',
-        '"Sex"',
-        '',
-        '',
-        `"${formData.sex || 'Not Answered'}"`
-      ].join(',') + '\n';
-      
-      csvContent += [
-        studentId,
-        timestamp,
-        '"Demographics"',
-        'age',
-        '"Age"',
-        '',
-        '',
-        `"${formData.age || 'Not Answered'}"`
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Demographics'),
+        escapeCSVField('sex'),
+        escapeCSVField('Sex'),
+        '', // No score for demographic fields
+        escapeCSVField(''),
+        escapeCSVField(formData.sex || 'Not Answered')
       ].join(',') + '\n';
       
       csvContent += [
-        studentId,
-        timestamp,
-        '"Demographics"',
-        'ethnicity',
-        '"Ethnicity"',
-        '',
-        '',
-        `"${formData.ethnicity || 'Not Answered'}"`
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Demographics'),
+        escapeCSVField('age'),
+        escapeCSVField('Age'),
+        '', // No score for demographic fields
+        escapeCSVField(''),
+        escapeCSVField(formData.age || 'Not Answered')
+      ].join(',') + '\n';
+      
+      csvContent += [
+        escapeCSVField(studentId),
+        escapeCSVField(timestamp),
+        escapeCSVField('Demographics'),
+        escapeCSVField('ethnicity'),
+        escapeCSVField('Ethnicity'),
+        '', // No score for demographic fields
+        escapeCSVField(''),
+        escapeCSVField(formData.ethnicity || 'Not Answered')
       ].join(',') + '\n';
       
       // Create downloadable link
@@ -769,6 +794,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     { id: 'completedSexualIntercourse', text: 'Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?' },
     { id: 'bullied', text: 'Were you bullied?' },
     { id: 'physicalFight', text: 'Were you in a physical fight?' },
+    // Community Violence questions (Section 6)
     { id: 'witnessedBeating', text: 'Did you see or hear someone being beaten up in real life?' },
     { id: 'witnessedStabbingOrShooting', text: 'Did you see or hear someone being stabbed or shot in real life?' },
     { id: 'witnessedThreatenedWithWeapon', text: 'Did you see or hear someone being threatened with a knife or gun in real life?' }
@@ -815,6 +841,19 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         <div className="questionnaire-container">
           <h1 className="questionnaire-title">Adverse Childhood Experiences International Questionnaire (ACE-IQ)</h1>
           
+          {/* Add section progress indicator */}
+          <div className="section-progress">
+            <div className="section-progress-text">
+              Section {currentSection + 1} of {sections.length}
+            </div>
+            <div className="section-progress-bar">
+              <div 
+                className="section-progress-fill" 
+                style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+          
           <form onSubmit={handleSubmit}>
             {sections[currentSection]}
             
@@ -835,7 +874,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
                   className="form-button next" 
                   onClick={nextSection}
                 >
-                  Next
+                  Next ({sections.length - currentSection - 1} more section{sections.length - currentSection - 1 !== 1 ? 's' : ''})
                 </button>
               ) : (
                 <button 
