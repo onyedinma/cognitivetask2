@@ -1,45 +1,46 @@
 .home-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 1.5rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   font-family: 'Arial', sans-serif;
   color: #333;
-  line-height: 1.5;
+  line-height: 1.4;
   background-color: #f8f9fa;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Header styles */
 .home-header {
   text-align: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid #e9ecef;
 }
 
 .home-header h1 {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   color: #2c3e50;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
   font-weight: 700;
 }
 
 .subtitle {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #6c757d;
   max-width: 800px;
   margin: 0 auto;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .participant-info {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #fff;
   font-weight: 600;
-  margin-top: 0.7rem;
-  padding: 0.4rem 0.8rem;
+  margin-top: 0.3rem;
+  padding: 0.3rem 0.7rem;
   background-color: #3498db;
   border-radius: 4px;
   display: inline-block;
@@ -50,8 +51,9 @@
 .main-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0.5rem;
   flex: 1;
+  overflow-y: auto;
 }
 
 /* Start assessment section */
@@ -59,10 +61,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.8rem;
+  padding: 0.8rem 1.5rem;
   background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease;
 }
 
@@ -71,9 +73,9 @@
 }
 
 .welcome-heading {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   color: #2c3e50;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   text-align: center;
   font-weight: 600;
 }
@@ -81,12 +83,12 @@
 .assessment-description {
   text-align: center;
   max-width: 700px;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 0.8rem;
 }
 
 .assessment-description p {
-  margin-bottom: 0.7rem;
-  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
   color: #555;
 }
 
@@ -96,9 +98,9 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 1rem 0 2rem;
-  padding: 1.2rem 1rem;
+  gap: 0.4rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.7rem 0.8rem;
   background-color: #f8f9fa;
   border-radius: 10px;
   width: 100%;
@@ -109,21 +111,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 100px;
-  max-width: 150px;
+  min-width: 85px;
+  max-width: 130px;
 }
 
 .task-flow-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #fff;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.4rem;
 }
 
 .memory-icon {
@@ -156,13 +158,13 @@
 }
 
 .task-flow-label h3 {
-  font-size: 0.9rem;
-  margin-bottom: 0.2rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.1rem;
   color: #2c3e50;
 }
 
 .task-flow-label p {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #6c757d;
 }
 
@@ -176,16 +178,16 @@
 .start-assessment-button {
   background-color: #27ae60;
   color: white;
-  font-size: 1.3rem;
-  padding: 0.8rem 2.5rem;
+  font-size: 1.1rem;
+  padding: 0.6rem 2rem;
   border: none;
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-weight: 600;
-  min-width: 220px;
+  min-width: 200px;
 }
 
 .start-assessment-button:hover {
@@ -202,27 +204,29 @@
 .start-description {
   text-align: center;
   color: #666;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   max-width: 600px;
 }
 
 /* Developer menu section */
 .dev-menu-section {
-  margin-top: 0.8rem;
-  border-top: 1px solid #eee;
-  padding-top: 1.5rem;
+  margin-top: 0;
+  padding-top: 0;
+  position: relative;
+  z-index: 10;
 }
 
 .toggle-menu-button {
   background-color: #ecf0f1;
   color: #7f8c8d;
-  font-size: 0.9rem;
-  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem;
+  padding: 0.5rem 2.5rem;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: 1.2rem;
+  margin-bottom: 0.8rem;
+  margin-top: 0.8rem;
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -237,42 +241,48 @@
 .task-grid {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 1.2rem;
-  padding: 1.2rem;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+  padding: 1rem;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
 .task-category {
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.5rem;
 }
 
 .task-category-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #2c3e50;
-  margin-bottom: 0.8rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 2px solid #eaeaea;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #edf2f7;
 }
 
 .task-cards-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-bottom: 0.5rem;
 }
 
 .task-card {
-  background-color: white;
+  background-color: #f8f9fa;
   border-radius: 8px;
-  padding: 1.2rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  padding: 0.7rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  flex: 1;
+  min-width: 140px;
+  max-width: 200px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .task-card::before {
@@ -297,10 +307,11 @@
 }
 
 .task-card h3 {
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
   color: #2c3e50;
-  margin-bottom: 0.6rem;
-  font-size: 1.1rem;
-  transition: color 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .task-card:hover h3 {
@@ -308,18 +319,18 @@
 }
 
 .task-card p {
-  color: #7f8c8d;
-  font-size: 0.85rem;
-  line-height: 1.4;
+  font-size: 0.75rem;
+  color: #6c757d;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 0;
 }
 
 /* Footer styles */
 .home-footer {
-  margin-top: 2rem;
+  margin-top: 0.5rem;
   text-align: center;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
-  background-color: #f8f9fa;
+  padding: 0.5rem 0;
 }
 
 .update-participant-button {

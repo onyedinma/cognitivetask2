@@ -42,7 +42,7 @@ const Home = () => {
           <div className="assessment-description">
             <p>
               This 30-40 minute assessment measures different cognitive abilities through a series of tasks. 
-              Each task includes instructions and practice trials before the actual assessment.
+              Each task includes instructions and practice trials.
             </p>
           </div>
           
@@ -51,7 +51,7 @@ const Home = () => {
               <div className="task-flow-icon memory-icon">1</div>
               <div className="task-flow-label">
                 <h3>Working Memory</h3>
-                <p>Digit & Object Span</p>
+                <p>Digit & Object</p>
               </div>
             </div>
             <div className="task-flow-arrow">→</div>
@@ -109,7 +109,7 @@ const Home = () => {
             aria-controls="task-menu"
           >
             {showMenu ? 'Hide Task Menu' : 'Individual Tasks (Dev)'}
-        </button>
+          </button>
         
           {showMenu && (
             <div id="task-menu" className="task-grid">
@@ -118,88 +118,69 @@ const Home = () => {
                 <div className="task-cards-row">
                   <div className="task-card" onClick={() => navigate('/digit-span/forward')}>
                     <h3>Forward Digit Span</h3>
-                    <p>Remember and repeat digit sequences</p>
+                    <p>Remember digits</p>
                   </div>
                   <div className="task-card" onClick={() => navigate('/digit-span/backward')}>
                     <h3>Backward Digit Span</h3>
-                    <p>Repeat digit sequences in reverse</p>
+                    <p>Reverse digits</p>
                   </div>
                   <div className="task-card" onClick={() => navigate('/object-span/forward')}>
                     <h3>Forward Object Span</h3>
-                    <p>Remember object sequences</p>
+                    <p>Remember objects</p>
                   </div>
                   <div className="task-card" onClick={() => navigate('/object-span/backward')}>
                     <h3>Backward Object Span</h3>
-                    <p>Recall object sequences in reverse</p>
+                    <p>Reverse objects</p>
                   </div>
                 </div>
               </div>
 
               <div className="task-category">
-                <h3 className="task-category-title">Visual Processing Tasks</h3>
+                <h3 className="task-category-title">Visual & Spatial Tasks</h3>
                 <div className="task-cards-row">
                   <div className="task-card" onClick={() => navigate('/shape-counting')}>
                     <h3>Shape Counting</h3>
-                    <p>Count shapes on screen</p>
+                    <p>Count shapes</p>
                   </div>
                   <div className="task-card" onClick={() => navigate('/counting-game')}>
                     <h3>Counting Game</h3>
-                    <p>Count objects in scenes</p>
+                    <p>Count objects</p>
                   </div>
-                </div>
-              </div>
-
-              <div className="task-category">
-                <h3 className="task-category-title">Spatial Memory Tasks</h3>
-                <div className="task-cards-row">
                   <div className="task-card" onClick={() => navigate('/spatial-memory')}>
                     <h3>Spatial Memory</h3>
-                    <p>Remember shape positions</p>
+                    <p>Remember positions</p>
                   </div>
                   <div className="task-card" onClick={() => navigate('/ecological-spatial')}>
                     <h3>Ecological Spatial</h3>
-                    <p>Remember object locations</p>
+                    <p>Object locations</p>
                   </div>
                 </div>
               </div>
 
               <div className="task-category">
-                <h3 className="task-category-title">Reasoning Tasks</h3>
+                <h3 className="task-category-title">Reasoning & Questionnaires</h3>
                 <div className="task-cards-row">
                   <div className="task-card" onClick={() => navigate('/deductive-reasoning')}>
                     <h3>Deductive Reasoning</h3>
-                    <p>Solve logical puzzles</p>
+                    <p>Logical puzzles</p>
                   </div>
                   <div className="task-card" onClick={() => navigate('/ecological-deductive')}>
                     <h3>Ecological Deductive</h3>
-                    <p>Apply reasoning to scenarios</p>
+                    <p>Scenario reasoning</p>
                   </div>
-                </div>
-              </div>
-
-              <div className="task-category">
-                <h3 className="task-category-title">Questionnaires</h3>
-                <div className="task-cards-row">
                   <div className="task-card" onClick={() => navigate('/combined-questionnaire')}>
                     <h3>Questionnaires</h3>
-                    <p>Report everyday functioning</p>
+                    <p>Daily functioning</p>
                   </div>
                 </div>
               </div>
-          </div>
-        )}
+            </div>
+          )}
         </div>
       </div>
       
       <footer className="home-footer">
-        <button 
-          className="update-participant-button"
-          onClick={() => navigate('/participant-info')}
-          aria-label="Update participant information"
-        >
-          Update Participant Info
-        </button>
-        <p className="footer-note">Data stored locally in browser only</p>
+        {/* Footer content removed as requested */}
       </footer>
     </div>
   );
