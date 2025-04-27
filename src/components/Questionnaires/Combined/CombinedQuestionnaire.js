@@ -89,12 +89,85 @@ const CombinedQuestionnaire = () => {
     if (!aceiqResults || !sesResults || !mfqResults || !sdqResults) return;
     
     const csvData = [];
+    const studentId = localStorage.getItem('studentId') || 'unknown';
+    const timestamp = new Date().toISOString();
     
     // Add file header
     csvData.push(['COGNITIVE TASKS QUESTIONNAIRE RESULTS']);
-    csvData.push(['Student ID:', localStorage.getItem('studentId') || 'unknown']);
-    csvData.push(['Export Date:', new Date().toISOString()]);
+    csvData.push(['Student ID:', studentId]);
+    csvData.push(['Export Date:', timestamp]);
     csvData.push([]);  // Blank row
+    
+    // ===== DEMOGRAPHIC INFORMATION SECTION =====
+    // This section will stand out in the CSV file with clear formatting
+    csvData.push(['=========================================']);
+    csvData.push(['========== DEMOGRAPHIC INFORMATION ==========']);
+    csvData.push(['=========================================']);
+    
+    // Add demographic headers
+    csvData.push(['Category', 'Value', 'Source']);
+    
+    // Get demographic information from ACEIQ results, which contains sex, age, ethnicity data
+    // Extract demographic data from aceiqResults if available
+    try {
+      // First check for the dedicated demographics object (new format)
+      if (aceiqResults && aceiqResults.demographics) {
+        const demographics = aceiqResults.demographics;
+        
+        // Add each demographic field
+        Object.entries(demographics).forEach(([key, value]) => {
+          if (value) { // Only add if there's a value
+            const fieldName = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize first letter
+            csvData.push([fieldName, `"${value}"`, 'ACE-IQ']);
+          }
+        });
+      }
+      // Fall back to checking formData if demographics object isn't available
+      else if (aceiqResults && aceiqResults.formData) {
+        // Sex
+        if (aceiqResults.formData.sex) {
+          csvData.push(['Sex', `"${aceiqResults.formData.sex}"`, 'ACE-IQ']);
+        }
+        
+        // Age
+        if (aceiqResults.formData.age) {
+          csvData.push(['Age', aceiqResults.formData.age, 'ACE-IQ']);
+        }
+        
+        // Birth Date
+        if (aceiqResults.formData.birthDate) {
+          csvData.push(['Birth Date', `"${aceiqResults.formData.birthDate}"`, 'ACE-IQ']);
+        }
+        
+        // Ethnicity
+        if (aceiqResults.formData.ethnicity) {
+          csvData.push(['Ethnicity', `"${aceiqResults.formData.ethnicity}"`, 'ACE-IQ']);
+        }
+      } else {
+        // Extract from direct properties if neither demographics nor formData is available
+        const demoProperties = ['sex', 'age', 'birthDate', 'ethnicity'];
+        demoProperties.forEach(prop => {
+          if (aceiqResults && aceiqResults[prop]) {
+            csvData.push([
+              prop.charAt(0).toUpperCase() + prop.slice(1), // Capitalize first letter
+              `"${aceiqResults[prop]}"`,
+              'ACE-IQ'
+            ]);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error extracting demographic data:', error);
+      csvData.push(['Error', '"Failed to extract demographic data"', 'System']);
+    }
+    
+    // Add additional demographic information
+    csvData.push(['Participant ID', `"${studentId}"`, 'System']);
+    csvData.push(['Testing Date', `"${new Date().toLocaleDateString()}"`, 'System']);
+    
+    // Add blank separator rows
+    csvData.push([]);
+    csvData.push([]);
     
     // ACEIQ section
     csvData.push(['===== ADVERSE CHILDHOOD EXPERIENCES QUESTIONNAIRE (ACE-IQ) =====']);
@@ -233,7 +306,6 @@ const CombinedQuestionnaire = () => {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const studentId = localStorage.getItem('studentId') || 'unknown';
     link.setAttribute('href', url);
     link.setAttribute('download', `questionnaire_results_${studentId}.csv`);
     link.style.visibility = 'hidden';

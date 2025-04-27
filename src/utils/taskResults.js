@@ -55,6 +55,7 @@ export const exportAllTaskResults = () => {
   try {
     const allResults = getAllTaskResults();
     const studentId = localStorage.getItem('studentId') || 'unknown';
+    const counterBalance = localStorage.getItem('counterBalance') || 'unknown';
     const timestamp = new Date().toISOString();
     
     // Log what's available in the results for debugging
@@ -63,6 +64,94 @@ export const exportAllTaskResults = () => {
     // Prepare data for CSV
     const csvData = [];
     
+    // Add file header
+    csvData.push(['COGNITIVE ASSESSMENT RESULTS']);
+    csvData.push(['Participant ID:', studentId]);
+    csvData.push(['Counterbalance Condition:', counterBalance]);
+    csvData.push(['Export Date:', timestamp]);
+    csvData.push([]);  // Blank row
+
+    // ===== DEMOGRAPHIC INFORMATION SECTION =====
+    // This section will stand out in the CSV file
+    csvData.push(['========== DEMOGRAPHIC INFORMATION ==========']);
+    
+    // Get demographic data from localStorage (all questionnaire data stored in localStorage)
+    const aceiqDataStr = localStorage.getItem('aceiqResults');
+    const sesDataStr = localStorage.getItem('sesResults');
+    
+    // Add demographic headers
+    csvData.push(['Data Type', 'Category', 'Value', 'Source']);
+    
+    // Extract demographic information from the ACEIQ questionnaire if available
+    if (aceiqDataStr) {
+      try {
+        const aceiqData = JSON.parse(aceiqDataStr);
+        // Get the most recent entry if there are multiple
+        const mostRecentData = Array.isArray(aceiqData) ? aceiqData[aceiqData.length - 1] : aceiqData;
+        
+        // First check for the dedicated demographics object (new format)
+        if (mostRecentData.demographics) {
+          const demographics = mostRecentData.demographics;
+          
+          // Add each demographic field
+          Object.entries(demographics).forEach(([key, value]) => {
+            if (value) { // Only add if there's a value
+              const fieldName = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize first letter
+              csvData.push(['DEMOGRAPHIC', fieldName, `"${value}"`, 'ACE-IQ']);
+            }
+          });
+        }
+        // If no demographics object, check for formData (old format)
+        else {
+          // Get the formData if available, otherwise try with direct properties
+          const demographicData = mostRecentData.formData || mostRecentData;
+          
+          // Add extracted demographic data
+          if (demographicData) {
+            // Sex
+            if (demographicData.sex) {
+              csvData.push(['DEMOGRAPHIC', 'Sex', `"${demographicData.sex}"`, 'ACE-IQ']);
+            }
+            
+            // Age
+            if (demographicData.age) {
+              csvData.push(['DEMOGRAPHIC', 'Age', demographicData.age, 'ACE-IQ']);
+            }
+            
+            // Birth Date
+            if (demographicData.birthDate) {
+              csvData.push(['DEMOGRAPHIC', 'Birth Date', `"${demographicData.birthDate}"`, 'ACE-IQ']);
+            }
+            
+            // Ethnicity
+            if (demographicData.ethnicity) {
+              csvData.push(['DEMOGRAPHIC', 'Ethnicity', `"${demographicData.ethnicity}"`, 'ACE-IQ']);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error extracting demographic data from ACE-IQ:', error);
+        csvData.push(['DEMOGRAPHIC', 'Error', '"Error extracting ACE-IQ demographic data"', 'System']);
+      }
+    } else {
+      csvData.push(['DEMOGRAPHIC', 'ACE-IQ Data', '"Not available"', 'System']);
+    }
+    
+    // Add any additional demographic information that might be available
+    const additionalDemoData = {
+      'Participant ID': studentId,
+      'Testing Date': new Date().toLocaleDateString()
+    };
+    
+    // Add each additional demographic item
+    Object.entries(additionalDemoData).forEach(([key, value]) => {
+      csvData.push(['DEMOGRAPHIC', key, `"${value}"`, 'System']);
+    });
+    
+    // Add a blank separator row
+    csvData.push([]);
+    csvData.push([]);
+
     // Helper function to properly format values for CSV export
     const formatForCSV = (value) => {
       if (value === null || value === undefined) return '';

@@ -39,7 +39,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       "Once": 2,
       "A few times": 3,
       "Many times": 4,
-      "Refused": 0
+      "Refused": -9
     },
     yesNo: {
       "Yes": 2,
@@ -260,11 +260,22 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     // Save form data
     const studentId = localStorage.getItem('studentId') || 'unknown';
     const timestamp = new Date().toISOString();
+    
+    // Extract demographic information
+    const demographics = {
+      sex: formData.sex || '',
+      age: formData.age || '',
+      birthDate: formData.birthDate || '',
+      ethnicity: formData.ethnicity || '',
+    };
+    
     const results = {
       studentId,
       timestamp,
       totalScore,
-      questions: questionsArray
+      questions: questionsArray,
+      demographics, // Add demographics as a dedicated section
+      formData     // Keep full form data as well for reference
     };
     
     // Log results
