@@ -574,3 +574,34 @@ input[type="radio"]:checked {
   color: #444;
   line-height: 1.4;
 }
+
+/* Add styles for the checkbox options */
+.checkbox-options {
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  margin: 6px 0;
+}
+
+.checkbox-options.vertical .checkbox-option {
+  margin: 8px 0;
+}
+
+.checkbox-option input[type="checkbox"] {
+  margin-right: 10px;
+  margin-top: 2px;
+}
+
+.checkbox-option label {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.bullying-types {
+  margin-top: 15px;
+}

@@ -1,0 +1,127 @@
+"COGNITIVE TASKS QUESTIONNAIRE RESULTS"
+"Student ID:","123456"
+"Export Date:","2025-04-27T20:19:44.354Z"
+
+"========================================="
+"========== DEMOGRAPHIC INFORMATION =========="
+"========================================="
+"Category","Value","Source"
+"Sex","Male","ACE-IQ"
+"Age","10","ACE-IQ"
+"BirthDate","2015-01-09","ACE-IQ"
+"Ethnicity","Igbo","ACE-IQ"
+"Participant ID","123456","System"
+"Testing Date","4/27/2025","System"
+
+
+"===== ADVERSE CHILDHOOD EXPERIENCES QUESTIONNAIRE (ACE-IQ) ====="
+"Questionnaire","Question ID","Score","Score Type","Section","Response","Scoring Formula","Question Text"
+"ACEIQ","parentsUnderstandProblems","1","Protection (1-5)","Relationship with Parents","Always","Always = 1, Most of the time = 2, Sometimes = 3, Rarely = 4, Never = 5, Refused = -9","Did your parents/guardians understand your problems and worries?"
+"ACEIQ","parentsKnowFreeTime","1","Protection (1-5)","Relationship with Parents","Always","Always = 1, Most of the time = 2, Sometimes = 3, Rarely = 4, Never = 5, Refused = -9","Did your parents/guardians really know what you were doing with your free time?"
+"ACEIQ","notEnoughFood","1","Frequency (1-4)","Neglect","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did you or your family not have enough food?"
+"ACEIQ","parentsDrunkOrDrugs","1","Frequency (1-4)","Neglect","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Were your parents/guardians too drunk or intoxicated by drugs to take care of you?"
+"ACEIQ","notSentToSchool","1","Frequency (1-4)","Neglect","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Were you not sent to school, or did you stop going to school?"
+"ACEIQ","alcoholicHouseholdMember","1","Binary (1-2)","Family Environment","No","Yes = 2, No = 1, Refused = -9","Did you live with a household member who was a problem drinker, alcoholic, or misused street or prescription drugs?"
+"ACEIQ","mentallyIllHouseholdMember","1","Binary (1-2)","Family Environment","No","Yes = 2, No = 1, Refused = -9","Did you live with a household member who was depressed, mentally ill, or suicidal?"
+"ACEIQ","imprisonedHouseholdMember","1","Binary (1-2)","Family Environment","No","Yes = 2, No = 1, Refused = -9","Did you live with a household member who was ever sent to jail or prison?"
+"ACEIQ","parentsSeparated","1","Binary (1-2)","Family Environment","No","Yes = 2, No = 1, Refused = -9","Were your parents ever separated or divorced?"
+"ACEIQ","parentDied","1","Binary (1-2)","Family Environment","No","Yes = 2, No = 1, Refused = -9","Did your parent/guardian die?"
+"ACEIQ","witnessedVerbalAbuse","1","Frequency (1-4)","Family Environment","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did you see or hear a parent or household member in your home being yelled at, screamed at, sworn at, insulted, or humiliated?"
+"ACEIQ","witnessedPhysicalAbuse","1","Frequency (1-4)","Family Environment","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did you see or hear a parent or household member in your home being slapped, kicked, punched, or beaten up?"
+"ACEIQ","witnessedWeaponAbuse","1","Frequency (1-4)","Family Environment","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did you see or hear a parent or household member in your home being hit or cut with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?"
+"ACEIQ","verbalAbuse","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did a parent, guardian, or other household member yell, scream, or swear at you, insult or humiliate you?"
+"ACEIQ","threatenedAbandonment","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did a parent, guardian, or other household member threaten to, or actually, abandon you or throw you out of the house?"
+"ACEIQ","physicalAbuse","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did a parent, guardian, or other household member spank, slap, kick, punch, or beat you up?"
+"ACEIQ","weaponAbuse","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did a parent, guardian, or other household member hit or cut you with an object, such as a stick (or cane), bottle, club, knife, whip, etc.?"
+"ACEIQ","sexualTouching","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did someone touch or fondle you in a sexual way when you did not want them to?"
+"ACEIQ","sexualFondling","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did someone make you touch their body in a sexual way when you did not want them to?"
+"ACEIQ","attemptedSexualIntercourse","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?"
+"ACEIQ","completedSexualIntercourse","1","Frequency (1-4)","Direct Abuse","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?"
+"ACEIQ","bullied","1","Frequency (1-4)","Peer Violence","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Were you bullied?"
+"ACEIQ","bullyingTypes","0","Frequency (1-4)","","Never bullied","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9",""
+"ACEIQ","physicalFight","1","Frequency (1-4)","Peer Violence","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Were you in a physical fight?"
+"ACEIQ","witnessedBeating","1","Frequency (1-4)","Community Violence","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did you see or hear someone being beaten up in real life?"
+"ACEIQ","witnessedStabbingOrShooting","1","Frequency (1-4)","Community Violence","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did you see or hear someone being stabbed or shot in real life?"
+"ACEIQ","witnessedThreatenedWithWeapon","1","Frequency (1-4)","Community Violence","Never","Many times = 4, A few times = 3, Once = 2, Never = 1, Refused = -9","Did you see or hear someone being threatened with a knife or gun in real life?"
+
+"ACEIQ","SCORING_INFO",,"Relationship with Parents","Protective Factors",,"Reverse scored: 6 - original score","Higher scores on these items indicate LESS protection"
+"ACEIQ","SCORING_INFO",,"Risk Factors","All other sections",,"Direct scoring","Higher scores indicate MORE adversity"
+"ACEIQ","TOTAL","26","Sum of all items","Overall ACE-IQ Score",,"Sum of all scored items","Higher total score indicates more childhood adversity"
+
+
+"===== SOCIOECONOMIC STATUS QUESTIONNAIRE (SES) ====="
+"Questionnaire","Question ID","Score","Score Type","Section","Response","Scoring Formula","Question Text"
+"SES","moneyForHome","5","Standard scored","Socioeconomic Status","","Higher values = Higher socioeconomic status (1-5)","When growing up, your family had enough money to afford the kind of home you all needed"
+"SES","moneyForClothing","5","Standard scored","Socioeconomic Status","","Higher values = Higher socioeconomic status (1-5)","When growing up, your family had enough money to afford the kind of clothing you all needed"
+"SES","moneyForFood","5","Standard scored","Socioeconomic Status","","Higher values = Higher socioeconomic status (1-5)","When growing up, your family had enough money to afford the kind of food that you all needed"
+"SES","moneyForMedicalCare","5","Standard scored","Socioeconomic Status","","Higher values = Higher socioeconomic status (1-5)","When growing up, your family had enough money to afford the kind of medical care that you all needed"
+"SES","feltRichComparedToSchool","5","Standard scored","Socioeconomic Status","","Higher values = Higher socioeconomic status (1-5)","When growing up, I felt well-off (rich, wealthy) compared to other kids in my school"
+"SES","feltRichComparedToNeighborhood","5","Standard scored","Socioeconomic Status","","Higher values = Higher socioeconomic status (1-5)","When growing up, I felt well-off (rich, wealthy) compared to other kids in my neighborhood"
+"SES","struggledFinancially","5","Reverse scored","Socioeconomic Status","","Lower values = Higher socioeconomic status (5-1)","In the past year, how often has your family struggled financially?"
+"SES","TOTAL","35","Sum of all items","Overall SES Score",,"Sum of all scored items","Higher total score indicates higher socioeconomic status"
+
+
+"===== MOOD AND FEELINGS QUESTIONNAIRE (MFQ) ====="
+"Questionnaire","Question ID","Score","Score Type","Section","Response","Scoring Formula","Question Text"
+"MFQ","q1","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I felt miserable or unhappy"
+"MFQ","q2","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I didn't enjoy anything at all"
+"MFQ","q3","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I felt so tired I just sat around and did nothing"
+"MFQ","q4","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I was very restless"
+"MFQ","q5","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I felt I was no good anymore"
+"MFQ","q6","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I cried a lot"
+"MFQ","q7","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I found it hard to think properly or concentrate"
+"MFQ","q8","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I hated myself"
+"MFQ","q9","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I was a bad person"
+"MFQ","q10","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I felt lonely"
+"MFQ","q11","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I thought nobody really loved me"
+"MFQ","q12","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I thought I could never be as good as other kids"
+"MFQ","q13","1","Standard scored","Depression Symptoms","","Not true = 0, Sometimes = 1, True = 2, Refused = -9","I did everything wrong"
+"MFQ","TOTAL","13","Sum of all items","Overall Depression Score",,"Sum of all scored items","Higher total indicates more depressive symptoms"
+"MFQ","INTERPRETATION","Possible depression (score ≥ 12)","Clinical interpretation",,,,
+
+
+"===== STRENGTHS AND DIFFICULTIES QUESTIONNAIRE (SDQ) ====="
+"Questionnaire","Question ID","Score","Score Type","Section","Response","Scoring Formula","Question Text"
+"SDQ","q1","0","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q2","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q3","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q4","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q5","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q6","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q7","1","Reverse scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q8","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q9","0","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q10","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q11","1","Reverse scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q12","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q13","0","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q14","1","Reverse scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q15","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q16","2","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q17","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q18","0","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q19","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q20","2","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q21","1","Reverse scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q22","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q23","2","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q24","1","Standard scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+"SDQ","q25","1","Reverse scored","","","Not true = 0, Somewhat true = 1, Certainly true = 2, Refused = -9",""
+
+"===== SDQ SUMMARY SCORES ====="
+"Scale","Score","Category","Score Type","Interpretation"
+"SDQ","EMOTIONAL_PROBLEMS","5","Subscale total",
+"SDQ","EMOTIONAL_CATEGORY","High","Clinical category",
+"SDQ","CONDUCT_PROBLEMS","4","Subscale total",
+"SDQ","CONDUCT_CATEGORY","High","Clinical category",
+"SDQ","HYPERACTIVITY","5","Subscale total",
+"SDQ","HYPERACTIVITY_CATEGORY","Close to average","Clinical category",
+"SDQ","PEER_PROBLEMS","6","Subscale total",
+"SDQ","PEER_CATEGORY","Very high","Clinical category",
+"SDQ","PROSOCIAL","4","Subscale total (higher is better)",
+"SDQ","PROSOCIAL_CATEGORY","Very low","Clinical category",
+"SDQ","TOTAL_DIFFICULTIES","20","Sum of problem subscales",
+"SDQ","TOTAL_CATEGORY","Very high","Clinical category",
+"SDQ","EXTERNALIZING","9","Conduct + Hyperactivity",
+"SDQ","INTERNALIZING","11","Emotional + Peer",
+"SDQ","INTERPRETATION","The total difficulties score is very high, suggesting substantial risk of clinically significant problems.",,

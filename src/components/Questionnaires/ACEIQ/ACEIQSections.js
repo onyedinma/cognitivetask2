@@ -1138,7 +1138,71 @@ export const DirectAbuseSection = ({ formData, handleChange }) => (
 );
 
 // Section 5: Peer Violence
-export const PeerViolenceSection = ({ formData, handleChange }) => (
+export const PeerViolenceSection = ({ formData, handleChange }) => {
+  // Custom handler for bullying type checkboxes
+  const handleBullyingTypeChange = (e) => {
+    const { name, value, checked } = e.target;
+    
+    // Get current selections as array
+    const currentSelections = formData.bullyingTypes ? formData.bullyingTypes.split(',') : [];
+    
+    // If "Never bullied" or "Refused" is checked, clear all other selections
+    if ((value === "Never bullied" || value === "Refused") && checked) {
+      handleChange({
+        target: {
+          name: "bullyingTypes",
+          value: value
+        }
+      });
+      return;
+    }
+    
+    // If any other option is checked, remove "Never bullied" and "Refused"
+    let newSelections = [...currentSelections];
+    
+    if (checked) {
+      // Add the value if it's not already in the selections
+      if (!newSelections.includes(value)) {
+        // Remove "Never bullied" and "Refused" if they exist
+        newSelections = newSelections.filter(item => item !== "Never bullied" && item !== "Refused");
+        newSelections.push(value);
+      }
+    } else {
+      // Remove the value
+      newSelections = newSelections.filter(item => item !== value);
+    }
+    
+    // Update the form data
+    handleChange({
+      target: {
+        name: "bullyingTypes",
+        value: newSelections.join(',')
+      }
+    });
+  };
+  
+  // Helper to check if a bullying type is selected
+  const isBullyingTypeSelected = (value) => {
+    const currentSelections = formData.bullyingTypes ? formData.bullyingTypes.split(',') : [];
+    return currentSelections.includes(value);
+  };
+  
+  // Helper to check if a bullying type should be disabled
+  const isBullyingTypeDisabled = (value) => {
+    const currentSelections = formData.bullyingTypes ? formData.bullyingTypes.split(',') : [];
+    
+    // If this is "Never bullied" or "Refused", disable if any other option is selected
+    if (value === "Never bullied" || value === "Refused") {
+      const otherSelections = currentSelections.filter(item => 
+        item !== "Never bullied" && item !== "Refused");
+      return otherSelections.length > 0;
+    }
+    
+    // If this is any other option, disable if "Never bullied" or "Refused" is selected
+    return currentSelections.includes("Never bullied") || currentSelections.includes("Refused");
+  };
+  
+  return (
   <>
     <div className="question-description">
       When you were growing up, during the first 18 years of your life...
@@ -1211,96 +1275,134 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
     <div className="question-item">
       <div className="question-text">
         <span className="question-number">5.2</span>
-        How were you bullied most often?
+        How were you bullied? (Select all that apply)
       </div>
-      <div className="radio-options vertical bullying-types">
-        <div className="radio-option">
+      <div className="checkbox-options vertical bullying-types">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
+            id="bullyingType-never" 
+            name="bullyingType-never" 
+            value="Never bullied" 
+            checked={isBullyingTypeSelected("Never bullied")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Never bullied")}
+          />
+          <label htmlFor="bullyingType-never" style={{
+            opacity: isBullyingTypeDisabled("Never bullied") ? 0.5 : 1
+          }}>Never bullied</label>
+        </div>
+        <div className="checkbox-option">
+          <input 
+            type="checkbox" 
             id="bullyingType-physical" 
-            name="bullyingType" 
+            name="bullyingType-physical" 
             value="Physical" 
-            checked={formData.bullyingType === "Physical"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Physical")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Physical")}
           />
-          <label htmlFor="bullyingType-physical">I was hit, kicked, pushed, shoved around, or locked indoors</label>
+          <label htmlFor="bullyingType-physical" style={{
+            opacity: isBullyingTypeDisabled("Physical") ? 0.5 : 1
+          }}>I was hit, kicked, pushed, shoved around, or locked indoors</label>
         </div>
-        <div className="radio-option">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
             id="bullyingType-race" 
-            name="bullyingType" 
+            name="bullyingType-race" 
             value="Race" 
-            checked={formData.bullyingType === "Race"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Race")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Race")}
           />
-          <label htmlFor="bullyingType-race">I was made fun of because of my race, nationality or colour</label>
+          <label htmlFor="bullyingType-race" style={{
+            opacity: isBullyingTypeDisabled("Race") ? 0.5 : 1
+          }}>I was made fun of because of my race, nationality or colour</label>
         </div>
-        <div className="radio-option">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
             id="bullyingType-religion" 
-            name="bullyingType" 
+            name="bullyingType-religion" 
             value="Religion" 
-            checked={formData.bullyingType === "Religion"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Religion")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Religion")}
           />
-          <label htmlFor="bullyingType-religion">I was made fun of because of my religion</label>
+          <label htmlFor="bullyingType-religion" style={{
+            opacity: isBullyingTypeDisabled("Religion") ? 0.5 : 1
+          }}>I was made fun of because of my religion</label>
         </div>
-        <div className="radio-option">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
             id="bullyingType-sexual" 
-            name="bullyingType" 
+            name="bullyingType-sexual" 
             value="Sexual" 
-            checked={formData.bullyingType === "Sexual"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Sexual")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Sexual")}
           />
-          <label htmlFor="bullyingType-sexual">I was made fun of with sexual jokes, comments, or gestures</label>
+          <label htmlFor="bullyingType-sexual" style={{
+            opacity: isBullyingTypeDisabled("Sexual") ? 0.5 : 1
+          }}>I was made fun of with sexual jokes, comments, or gestures</label>
         </div>
-        <div className="radio-option">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
             id="bullyingType-exclusion" 
-            name="bullyingType" 
+            name="bullyingType-exclusion" 
             value="Exclusion" 
-            checked={formData.bullyingType === "Exclusion"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Exclusion")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Exclusion")}
           />
-          <label htmlFor="bullyingType-exclusion">I was left out of activities on purpose or completely ignored</label>
+          <label htmlFor="bullyingType-exclusion" style={{
+            opacity: isBullyingTypeDisabled("Exclusion") ? 0.5 : 1
+          }}>I was left out of activities on purpose or completely ignored</label>
         </div>
-        <div className="radio-option">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
             id="bullyingType-appearance" 
-            name="bullyingType" 
+            name="bullyingType-appearance" 
             value="Appearance" 
-            checked={formData.bullyingType === "Appearance"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Appearance")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Appearance")}
           />
-          <label htmlFor="bullyingType-appearance">I was made fun of because of how my body or face looked</label>
+          <label htmlFor="bullyingType-appearance" style={{
+            opacity: isBullyingTypeDisabled("Appearance") ? 0.5 : 1
+          }}>I was made fun of because of how my body or face looked</label>
         </div>
-        <div className="radio-option">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
             id="bullyingType-other" 
-            name="bullyingType" 
+            name="bullyingType-other" 
             value="Other" 
-            checked={formData.bullyingType === "Other"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Other")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Other")}
           />
-          <label htmlFor="bullyingType-other">I was bullied in some other way</label>
+          <label htmlFor="bullyingType-other" style={{
+            opacity: isBullyingTypeDisabled("Other") ? 0.5 : 1
+          }}>I was bullied in some other way</label>
         </div>
-        <div className="radio-option">
+        <div className="checkbox-option">
           <input 
-            type="radio" 
+            type="checkbox" 
             id="bullyingType-refused" 
-            name="bullyingType" 
+            name="bullyingType-refused" 
             value="Refused" 
-            checked={formData.bullyingType === "Refused"}
-            onChange={handleChange}
+            checked={isBullyingTypeSelected("Refused")}
+            onChange={handleBullyingTypeChange}
+            disabled={isBullyingTypeDisabled("Refused")}
           />
-          <label htmlFor="bullyingType-refused">Refused</label>
+          <label htmlFor="bullyingType-refused" style={{
+            opacity: isBullyingTypeDisabled("Refused") ? 0.5 : 1
+          }}>Refused</label>
         </div>
       </div>
     </div>
@@ -1375,7 +1477,8 @@ export const PeerViolenceSection = ({ formData, handleChange }) => (
       </div>
     </div>
   </>
-);
+  );
+};
 
 // Section 6: Community Violence
 export const CommunityViolenceSection = ({ formData, handleChange }) => (
@@ -1576,6 +1679,16 @@ export const CommunityViolenceSection = ({ formData, handleChange }) => (
           <label htmlFor="witnessedThreatenedWithWeapon-refused">Refused</label>
         </div>
       </div>
+    </div>
+  </>
+);
+
+// Test section - blank screen that won't be captured in export
+export const TestSection = ({ formData, handleChange }) => (
+  <>
+    <div className="question-description">
+      <h2>Test Section</h2>
+      <p>This is a blank test section that will not be captured in the CSV export file.</p>
     </div>
   </>
 ); 

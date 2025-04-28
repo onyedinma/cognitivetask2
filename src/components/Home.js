@@ -109,7 +109,7 @@ const Home = () => {
             aria-controls="task-menu"
           >
             {showMenu ? 'Hide Task Menu' : 'Individual Tasks (Dev)'}
-          </button>
+        </button>
         
           {showMenu && (
             <div id="task-menu" className="task-grid">
@@ -174,8 +174,8 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
       

@@ -83,7 +83,7 @@ const SESQuestionnaire = ({ onComplete }) => {
   
   // Check if all questions are answered
   useEffect(() => {
-    const allAnswered = Object.values(formData).every(value => value !== '');
+    const allAnswered = Object.values(formData).every(value => value && value.value !== '');
     setAllQuestionsAnswered(allAnswered);
     setValidationError(false); // Reset validation error when form changes
     
@@ -92,14 +92,14 @@ const SESQuestionnaire = ({ onComplete }) => {
       let score = 0;
       
       // Process all items (positive and negative)
-      Object.entries(formData).forEach(([key, value]) => {
+      Object.entries(formData).forEach(([key, data]) => {
         if (key !== 'struggledFinancially') {
           // Regular scoring for positive items (higher = better SES)
-          score += parseInt(value);
+          score += parseInt(data.value);
         } else {
           // Reverse scoring for negative items (lower values should contribute higher scores)
           // For a 5-point scale: 5->1, 4->2, 3->3, 2->4, 1->5
-          score += (6 - parseInt(value));
+          score += (6 - parseInt(data.value));
         }
       });
       
@@ -113,8 +113,8 @@ const SESQuestionnaire = ({ onComplete }) => {
     
     questions.forEach(question => {
       const response = formData[question.id];
-      if (response) {
-        let pointValue = parseInt(response);
+      if (response && response.value) {
+        let pointValue = parseInt(response.value);
         
         // Reverse scoring for struggledFinancially (higher = lower SES)
         if (question.id === 'struggledFinancially') {
@@ -142,9 +142,15 @@ const SESQuestionnaire = ({ onComplete }) => {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Find the corresponding label for the selected value
+    const selectedOption = likertOptions.find(option => option.value === value);
     setFormData(prevData => ({
       ...prevData,
-      [name]: value
+      [name]: {
+        value: value,
+        label: selectedOption.label,
+        score: getQuestionScore(name, value)
+      }
     }));
   };
   
@@ -161,7 +167,7 @@ const SESQuestionnaire = ({ onComplete }) => {
                 id={`${question.id}-${option.value}`}
                 name={question.id}
                 value={option.value}
-                checked={value === option.value}
+                checked={value && value.value === option.value}
                 onChange={onChange}
               />
               <label htmlFor={`${question.id}-${option.value}`}>
@@ -188,49 +194,31 @@ const SESQuestionnaire = ({ onComplete }) => {
     // Calculate final score
     const score = calculateScore();
     
-    // Create a structured array of questions with their scores
+    // Create a structured array of questions with their scores and responses
     const questionsArray = questions.map(question => {
       const response = formData[question.id];
-      let finalScore = parseInt(response) || 0;
-      let type = 'Standard scored';
-      
-      // Add special handling for the reverse-scored item
-      if (question.id === 'struggledFinancially') {
-        // Apply reverse scoring for 5-point scale (5->1, 4->2, 3->3, 2->4, 1->5)
-        finalScore = 6 - finalScore; 
-        type = 'Reverse scored';
-      }
-      
       return {
         id: question.id,
-        score: finalScore,
-        type: type
+        text: question.text,
+        response: response.label, // Store the text label
+        value: response.value,    // Store the numeric value
+        score: response.score     // Store the calculated score
       };
     });
     
-    // Create results object
-    const studentId = localStorage.getItem('studentId') || 'unknown';
-    const timestamp = new Date().toISOString();
+    // Create the results object
     const results = {
-      studentId,
-      timestamp,
-      totalScore: score,
-      questions: questionsArray
+      questions: questionsArray,
+      formData: formData,
+      totalScore: score
     };
     
-    // Log results
-    console.log('SES Questionnaire Results:', results);
-    
-    // Save to localStorage
-    const storedResults = JSON.parse(localStorage.getItem('sesResults') || '[]');
-    localStorage.setItem('sesResults', JSON.stringify([...storedResults, results]));
-    
-    setFormSubmitted(true);
-    
-    // If onComplete callback is provided, use it
+    // Call the onComplete callback with the results
     if (onComplete) {
       onComplete(results);
     }
+    
+    setFormSubmitted(true);
   };
   
   // Export results as JSON
@@ -281,20 +269,20 @@ const SESQuestionnaire = ({ onComplete }) => {
       // Add rows for each question
       questions.forEach(question => {
         const response = formData[question.id];
-        const score = response ? parseInt(response) : 0;
+        const score = response ? parseInt(response.value) : 0;
         
         // Add special handling for the reverse-scored item
         let finalScore = score;
         let scoreType = 'Standard scored';
         let section = 'Socioeconomic Status';
-        let scoringFormula = 'Strongly Disagree = 1, Disagree = 2, Neither Agree nor Disagree = 3, Agree = 4, Strongly Agree = 5, Refused = -9';
-        let possibleResponses = 'Strongly Disagree, Disagree, Neither Agree nor Disagree, Agree, Strongly Agree, Refused';
+        let scoringFormula = 'Never True = 1, Rarely True = 2, Sometimes True = 3, Often True = 4, Very Often True = 5, Refused = -9';
+        let possibleResponses = 'Never True, Rarely True, Sometimes True, Often True, Very Often True, Refused';
         
         if (question.isReversed) {
           // Apply reverse scoring for 5-point scale (5->1, 4->2, 3->3, 2->4, 1->5)
           finalScore = response ? (6 - score) : 0;
           scoreType = 'Reverse scored';
-          scoringFormula = 'Strongly Disagree = 5, Disagree = 4, Neither Agree nor Disagree = 3, Agree = 2, Strongly Agree = 1, Refused = -9';
+          scoringFormula = 'Never True = 5, Rarely True = 4, Sometimes True = 3, Often True = 2, Very Often True = 1, Refused = -9';
         }
         
         csvContent += [
@@ -303,7 +291,7 @@ const SESQuestionnaire = ({ onComplete }) => {
           escapeCSVField(section),
           escapeCSVField(question.id),
           escapeCSVField(question.text),
-          escapeCSVField(response || 'Not Answered'),
+          escapeCSVField(response ? response.value : 'Not Answered'),
           finalScore, // Numeric value, no escaping needed
           escapeCSVField(scoreType),
           escapeCSVField(scoringFormula),

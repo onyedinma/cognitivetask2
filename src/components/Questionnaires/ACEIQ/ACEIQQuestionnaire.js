@@ -6,7 +6,8 @@ import {
   FamilyEnvironmentSection,
   DirectAbuseSection,
   PeerViolenceSection,
-  CommunityViolenceSection
+  CommunityViolenceSection,
+  TestSection
 } from './ACEIQSections';
 
 /**
@@ -46,6 +47,18 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     yesNo: {
       "Yes": 2,
       "No": 1,
+      "Refused": -9
+    },
+    // Add scoring for bullying types
+    bullyingTypes: {
+      "Never bullied": 0,
+      "Physical": 1,
+      "Race": 1,
+      "Religion": 1,
+      "Sexual": 1,
+      "Exclusion": 1,
+      "Appearance": 1,
+      "Other": 1,
       "Refused": -9
     }
   };
@@ -122,7 +135,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     
     // Peer violence
     bullied: '',
-    bullyingType: '',
+    bullyingTypes: '',
     physicalFight: '',
     
     // Community violence
@@ -193,6 +206,44 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       }
     });
     
+    // Calculate scores for bullying types
+    if (formData.bullyingTypes && formData.bullyingTypes !== '') {
+      const bullyingTypesArray = formData.bullyingTypes.split(',');
+      let bullyingTypeScore = 0;
+      
+      console.log("DEBUG calculateScores - bullyingTypes raw value:", formData.bullyingTypes);
+      console.log("DEBUG calculateScores - bullyingTypesArray:", bullyingTypesArray);
+      
+      // Special handling for "Never bullied" and "Refused"
+      if (bullyingTypesArray.includes("Never bullied")) {
+        bullyingTypeScore = 0;
+        console.log("DEBUG calculateScores - 'Never bullied' selected, score set to 0");
+      } else if (bullyingTypesArray.includes("Refused")) {
+        bullyingTypeScore = -9;
+        console.log("DEBUG calculateScores - 'Refused' selected, score set to -9");
+      } else {
+        // Sum the scores for all selected types
+        bullyingTypesArray.forEach(type => {
+          // Make sure we're correctly adding scores for each type
+          console.log(`DEBUG calculateScores - Processing type '${type}'`);
+          console.log(`DEBUG calculateScores - Score value from mapping:`, scoringValues.bullyingTypes[type]);
+          
+          // Always add 1 for each valid bullying type
+          if (type && type !== "Never bullied" && type !== "Refused") {
+            bullyingTypeScore += 1;
+            console.log(`DEBUG calculateScores - Adding 1 point for type '${type}', current total: ${bullyingTypeScore}`);
+          }
+        });
+      }
+      
+      console.log("DEBUG calculateScores - Final bullyingTypeScore:", bullyingTypeScore);
+      newScores.bullyingTypes = bullyingTypeScore;
+      if (bullyingTypeScore > 0) {
+        newTotalScore += bullyingTypeScore;
+        console.log(`DEBUG calculateScores - Added ${bullyingTypeScore} to total score, new total: ${newTotalScore}`);
+      }
+    }
+    
     setScores(newScores);
     setTotalScore(newTotalScore);
   };
@@ -208,21 +259,33 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   
   // Handle navigation between sections
   const nextSection = () => {
+    // Add more detailed logging
     console.log(`Moving to section ${currentSection + 1} of ${sections.length}`);
-    console.log('Current section:', currentSection);
+    console.log('Current section name:', getSectionName(currentSection));
+    console.log('Next section name:', getSectionName(currentSection + 1));
     console.log('Sections length:', sections.length);
     
+    // Normal transition for all sections
     // Ensure we never exceed the available sections
     const nextIndex = Math.min(currentSection + 1, sections.length - 1);
     
-    // Set the next section index directly instead of incrementing
+    // Set the next section index directly
     setCurrentSection(nextIndex);
+    
+    // Force scroll to top
     window.scrollTo(0, 0);
+    
+    // Double check we're at the right section
+    setTimeout(() => {
+      console.log('After transition - current section:', nextIndex);
+      console.log('After transition - section name:', getSectionName(nextIndex));
+    }, 100);
   };
   
+  // Handle going back to previous section
   const prevSection = () => {
     console.log(`Moving back to section ${currentSection - 1} of ${sections.length}`);
-    setCurrentSection(prev => prev - 1);
+    setCurrentSection(prev => Math.max(prev - 1, 0)); // Ensure we don't go below 0
     window.scrollTo(0, 0);
   };
   
@@ -230,13 +293,18 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Safety check: ensure we've seen all sections
-    console.log(`Submitting form from section ${currentSection} of ${sections.length}`);
-    if (currentSection < sections.length - 1) {
-      console.warn("Form submitted before reaching the last section. Navigating to the next section instead.");
+    // IMPORTANT: Explicitly check if we're on the Test Section (should be the very last section)
+    console.log(`Submitting form from section ${currentSection} of ${sections.length}, section name: ${getSectionName(currentSection)}`);
+    
+    // If we're not on the last section (Test Section), go to next section instead of submitting
+    if (currentSection !== 7) {
+      console.warn("Form submitted before reaching the final section. Navigating to the next section instead.");
       nextSection();
       return;
     }
+    
+    // At this point, we should be on the Test Section (the last section)
+    console.log("Processing final form submission from Test Section");
     
     // Check if all questions are answered
     if (!allQuestionsAnswered) {
@@ -349,8 +417,17 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
   
   // Return to main menu
   const returnToMenu = () => {
-    if (onComplete) {
+    // Add a check to prevent accidental completion
+    if (onComplete && formSubmitted) {
+      console.log("Calling onComplete with results");
       onComplete(null);
+    } else if (!formSubmitted) {
+      console.warn("Attempted to return to menu before form submission");
+      // If debugging, allow skipping back to menu anyway
+      if (window.confirm("Form not submitted. Return to menu anyway?")) {
+        if (onComplete) onComplete(null);
+        else navigate('/');
+      }
     } else {
       navigate('/');
     }
@@ -405,7 +482,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
         } else if (['verbalAbuse', 'threatenedAbandonment', 'physicalAbuse', 'weaponAbuse', 
                     'sexualTouching', 'sexualFondling', 'attemptedSexualIntercourse', 'completedSexualIntercourse'].includes(question.id)) {
           section = 'Direct Abuse';
-        } else if (['bullied', 'physicalFight'].includes(question.id)) {
+        } else if (['bullied', 'bullyingTypes', 'physicalFight'].includes(question.id)) {
           section = 'Peer Violence';
         } else if (['witnessedBeating', 'witnessedStabbingOrShooting', 'witnessedThreatenedWithWeapon'].includes(question.id)) {
           section = 'Community Violence';
@@ -438,6 +515,62 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
           scoreType = 'Protection (1-5)';
           scoringFormula = 'Always = 1, Most of the time = 2, Sometimes = 3, Rarely = 4, Never = 5, Refused = -9';
           possibleResponses = 'Always, Most of the time, Sometimes, Rarely, Never, Refused';
+        }
+        // Handle bullying types specially
+        else if (question.id === 'bullyingTypes') {
+          // Get the bullying types array
+          const bullyingTypesArray = response ? response.split(',') : [];
+          
+          // Calculate the score based on the selected types
+          if (bullyingTypesArray.includes("Never bullied")) {
+            score = 0;
+          } else if (bullyingTypesArray.includes("Refused")) {
+            score = -9;
+          } else {
+            // Sum the scores for all selected types
+            score = bullyingTypesArray.reduce((sum, type) => {
+              return sum + (scoringValues.bullyingTypes[type] || 0);
+            }, 0);
+          }
+          
+          scoreType = 'Bullying Types (Multiple Selection)';
+          scoringFormula = 'Each type = 1, Never bullied = 0, Refused = -9';
+          possibleResponses = 'Never bullied, Physical, Race, Religion, Sexual, Exclusion, Appearance, Other, Refused';
+          
+          // Special handling for the response display in CSV
+          if (response) {
+            csvContent += [
+              escapeCSVField(studentId),
+              escapeCSVField(timestamp),
+              escapeCSVField(section),
+              escapeCSVField(question.id),
+              escapeCSVField(questionText),
+              escapeCSVField(response || 'Not Answered'),
+              score, // Numeric value, no escaping needed
+              escapeCSVField(scoreType),
+              escapeCSVField(scoringFormula),
+              escapeCSVField(possibleResponses)
+            ].join(',') + '\n';
+            
+            // Add a row for each selected bullying type for clarity
+            bullyingTypesArray.forEach(type => {
+              csvContent += [
+                escapeCSVField(studentId),
+                escapeCSVField(timestamp),
+                escapeCSVField(`${section} - Detail`),
+                escapeCSVField(`${question.id}_${type.replace(/\s+/g, '')}`),
+                escapeCSVField(`Bullying Type: ${type}`),
+                escapeCSVField('Selected'),
+                scoringValues.bullyingTypes[type] || 0,
+                escapeCSVField('Bullying Type Selection'),
+                escapeCSVField(scoringFormula),
+                escapeCSVField('Selected, Not Selected')
+              ].join(',') + '\n';
+            });
+            
+            // Skip the default row addition at the end of the loop
+            return;
+          }
         }
         
         csvContent += [
@@ -903,13 +1036,22 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       <PeerViolenceSection formData={formData} handleChange={handleChange} />
     </section>,
     
-    // New Section 6: Community Violence
+    // Section 6: Community Violence
     <section key="community-violence" className="questionnaire-section community-section">
       <div className="section-header community-header">
         <h2 className="questionnaire-section-title">COMMUNITY VIOLENCE</h2>
         <div className="section-icon">🏙️</div>
       </div>
       <CommunityViolenceSection formData={formData} handleChange={handleChange} />
+    </section>,
+    
+    // Section 7: Test Section
+    <section key="test" className="questionnaire-section test-section">
+      <div className="section-header test-header">
+        <h2 className="questionnaire-section-title">TEST SECTION</h2>
+        <div className="section-icon">🧪</div>
+      </div>
+      <TestSection />
     </section>
   ];
   
@@ -937,6 +1079,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     { id: 'attemptedSexualIntercourse', text: 'Did someone attempt oral, anal, or vaginal intercourse with you when you did not want them to?' },
     { id: 'completedSexualIntercourse', text: 'Did someone actually have oral, anal, or vaginal intercourse with you when you did not want them to?' },
     { id: 'bullied', text: 'Were you bullied?' },
+    { id: 'bullyingTypes', text: 'How were you bullied? (Select all that apply)' },
     { id: 'physicalFight', text: 'Were you in a physical fight?' },
     // Community Violence questions (Section 6)
     { id: 'witnessedBeating', text: 'Did you see or hear someone being beaten up in real life?' },
@@ -970,6 +1113,40 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       }
     });
     
+    // Calculate scores for bullying types
+    if (data.bullyingTypes && data.bullyingTypes !== '') {
+      const bullyingTypesArray = data.bullyingTypes.split(',');
+      let bullyingTypeScore = 0;
+      
+      console.log("DEBUG calculateTotalScore - bullyingTypes raw value:", data.bullyingTypes);
+      console.log("DEBUG calculateTotalScore - bullyingTypesArray:", bullyingTypesArray);
+      
+      // Special handling for "Never bullied" and "Refused"
+      if (bullyingTypesArray.includes("Never bullied")) {
+        bullyingTypeScore = 0;
+        console.log("DEBUG calculateTotalScore - 'Never bullied' selected, score set to 0");
+      } else if (bullyingTypesArray.includes("Refused")) {
+        bullyingTypeScore = -9;
+        console.log("DEBUG calculateTotalScore - 'Refused' selected, score set to -9");
+      } else {
+        // Sum the scores for all selected types
+        bullyingTypesArray.forEach(type => {
+          // Make sure we're correctly adding scores for each valid type
+          console.log(`DEBUG calculateTotalScore - Processing type '${type}'`);
+          
+          // Always add 1 for each valid bullying type
+          if (type && type !== "Never bullied" && type !== "Refused") {
+            bullyingTypeScore += 1;
+            console.log(`DEBUG calculateTotalScore - Adding 1 point for type '${type}', current total: ${bullyingTypeScore}`);
+          }
+        });
+      }
+      
+      console.log("DEBUG calculateTotalScore - Final bullyingTypeScore:", bullyingTypeScore);
+      totalScore += bullyingTypeScore;
+      console.log(`DEBUG calculateTotalScore - Added ${bullyingTypeScore} to total score, new total: ${totalScore}`);
+    }
+    
     return totalScore;
   };
 
@@ -997,6 +1174,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
             <div className="section-progress-text">
               Section {currentSection + 1} of {sections.length} - {getSectionName(currentSection)}
             </div>
+            
             <div className="section-progress-bar">
               <div 
                 className="section-progress-fill" 
@@ -1008,7 +1186,21 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
             </div>
           </div>
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            console.log("Form submit intercepted");
+            
+            // If on the Test Section, call handleSubmit to process submission
+            if (getSectionName(currentSection) === "Test Section") {
+              console.log("On Test Section, proceeding with submission");
+              handleSubmit(e);
+              return;
+            }
+            
+            // For any other section, just navigate to the next section
+            console.log("Not on Test Section, navigating to next section");
+            nextSection();
+          }}>
             <div className="section-container" style={{ background: getSectionBackground(currentSection) }}>
               {sections[currentSection]}
             </div>
@@ -1024,14 +1216,15 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
                 </button>
               )}
               
-              {currentSection < sections.length - 1 ? (
+              {/* Only show Submit button on the absolute last section (Test Section) */}
+              {getSectionName(currentSection) !== "Test Section" ? (
                 <button 
                   type="button" 
                   className="form-button next" 
                   onClick={nextSection}
                   data-next-section={currentSection + 1}
                 >
-                  Next {currentSection === sections.length - 2 ? "(Last section)" : `(${sections.length - currentSection - 1} more sections)`}
+                  Next {currentSection === sections.length - 2 ? "(Test Section)" : `(${sections.length - currentSection - 1} more sections)`}
                 </button>
               ) : (
                 <button 
@@ -1101,7 +1294,8 @@ const getSectionName = (index) => {
     "Family Environment",
     "Direct Abuse",
     "Peer Violence",
-    "Community Violence"
+    "Community Violence",
+    "Test Section"
   ];
   
   return sectionNames[index] || "";
@@ -1116,7 +1310,8 @@ const getSectionBackground = (sectionIndex) => {
     'linear-gradient(to bottom, #f8e8f4, #ffffff)', // Family 
     'linear-gradient(to bottom, #f8e8e8, #ffffff)', // Abuse
     'linear-gradient(to bottom, #e8e8f8, #ffffff)', // Peer
-    'linear-gradient(to bottom, #f0e8f8, #ffffff)'  // Community
+    'linear-gradient(to bottom, #f0e8f8, #ffffff)', // Community
+    'linear-gradient(to bottom, #e8f8ff, #ffffff)'  // Test
   ];
   
   return backgrounds[sectionIndex] || backgrounds[0];
@@ -1131,7 +1326,8 @@ const getProgressBarColor = (sectionIndex) => {
     '#9b59b6', // Family - Purple
     '#e74c3c', // Abuse - Red
     '#34495e', // Peer - Dark Blue
-    '#1abc9c'  // Community - Turquoise
+    '#1abc9c', // Community - Turquoise
+    '#95a5a6'  // Test - Gray
   ];
   
   return colors[sectionIndex] || colors[0];
