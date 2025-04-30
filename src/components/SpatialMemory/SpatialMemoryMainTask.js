@@ -56,12 +56,42 @@ const SpatialMemoryMainTask = () => {
     // Generate positions for all cells in the grid
     const positions = Array.from({ length: numShapes }, (_, i) => i);
     
+    // Create all possible shape-color combinations
+    const allCombinations = [];
+    for (const type of shapeTypes) {
+      for (const color of shapeColors) {
+        // Only add combinations where type and color are different
+        // (e.g., avoid "purple purple" combinations)
+        if (type !== color) {
+          allCombinations.push({ type, color });
+        }
+      }
+    }
+    
+    // Shuffle the combinations to ensure randomness
+    const shuffledCombinations = [...allCombinations]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, numShapes);
+    
+    // If we need more shapes than unique combinations, repeat some combinations
+    // but ensure there are no duplicate shape-color pairs in adjacent positions
+    if (shuffledCombinations.length < numShapes) {
+      const additionalNeeded = numShapes - shuffledCombinations.length;
+      const additionalCombinations = [...allCombinations]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, additionalNeeded);
+      
+      shuffledCombinations.push(...additionalCombinations);
+    }
+    
     // Generate shapes with types and colors
     const newShapes = positions.map((position, index) => ({
       id: index,
-      type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
-      color: shapeColors[Math.floor(Math.random() * shapeColors.length)],
-      position: position
+      type: shuffledCombinations[index].type,
+      color: shuffledCombinations[index].color,
+      position: position,
+      // Add a visual identifier for debugging
+      visualId: `${shuffledCombinations[index].color}-${shuffledCombinations[index].type}`
     }));
     
     setShapes(newShapes);
@@ -102,12 +132,13 @@ const SpatialMemoryMainTask = () => {
       const firstShapeIndex = availableIndices[randomIndex];
       const firstShape = shapesCopy[firstShapeIndex];
       
-      // Find shapes that are different from this one (different type or color)
+      // Find shapes that are DEFINITELY different (must have different TYPE AND COLOR)
       const differentShapeIndices = availableIndices
         .filter(idx => idx !== firstShapeIndex)
         .filter(idx => {
           const shape = shapesCopy[idx];
-          return shape.type !== firstShape.type || shape.color !== firstShape.color;
+          // Both type AND color must be different
+          return !(shape.type === firstShape.type && shape.color === firstShape.color);
         });
       
       // If no different shapes available, try again
@@ -115,6 +146,13 @@ const SpatialMemoryMainTask = () => {
       
       // Randomly pick a different shape
       const secondShapeIndex = differentShapeIndices[Math.floor(Math.random() * differentShapeIndices.length)];
+      const secondShape = shapesCopy[secondShapeIndex];
+      
+      // Double-check they're not visually identical
+      if (firstShape.type === secondShape.type && firstShape.color === secondShape.color) {
+        console.warn("Attempted to swap identical shapes, skipping this pair");
+        continue;
+      }
       
       // Add this pair to our swap list
       shapesToSwap.push(firstShapeIndex, secondShapeIndex);
@@ -140,6 +178,7 @@ const SpatialMemoryMainTask = () => {
         id: s.id,
         type: s.type,
         color: s.color,
+        visualId: s.visualId,
         position: s.position
       }))
     );
@@ -363,6 +402,7 @@ const SpatialMemoryMainTask = () => {
     };
     
     console.log(`Level ${currentLevel}: ${correctSelections} correct out of ${totalMovedShapes} possible. Score: ${levelScore}`);
+    console.log('Result with totalMovedShapes:', result); // Add debugging log
     
     setResults(prevResults => [...prevResults, result]);
     
@@ -416,10 +456,29 @@ const SpatialMemoryMainTask = () => {
       // Import the task results utility function
       const { saveTaskResults } = require('../../utils/taskResults');
       
-      // Save results to the centralized storage system instead of exporting CSV
-      saveTaskResults('spatialMemory', results);
+      // Calculate max level reached and overall accuracy before saving
+      const maxLevelReached = Math.max(...results.map(r => r.level));
       
-      console.log('Spatial Memory results saved:', results);
+      // Calculate overall accuracy based on correct selections vs total moved shapes
+      const totalCorrectSelections = results.reduce((sum, result) => sum + (result.correctSelections || 0), 0);
+      const totalPossibleSelections = results.reduce((sum, result) => sum + (result.totalMovedShapes || 0), 0);
+      
+      // Set overall task metrics for each result
+      const enhancedResults = results.map(result => ({
+        ...result,
+        maxLevelReached,
+        overallAccuracy: totalPossibleSelections > 0 
+          ? (totalCorrectSelections / totalPossibleSelections * 100).toFixed(2) + '%' 
+          : '0%'
+      }));
+      
+      console.log('Enhanced Spatial Working Memory results being saved:', enhancedResults);
+      console.log(`Overall accuracy: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections`);
+      
+      // Save enhanced results to the centralized storage system
+      saveTaskResults('spatialWorkingMemory', enhancedResults);
+      
+      console.log('Spatial Working Memory results saved successfully');
     } catch (error) {
       console.error('Error saving results:', error);
     }

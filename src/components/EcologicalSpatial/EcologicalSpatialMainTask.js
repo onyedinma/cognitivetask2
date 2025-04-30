@@ -422,12 +422,12 @@ const EcologicalSpatialMainTask = () => {
     // Count incorrect selections (objects that didn't move but were selected)
     const incorrectSelections = selectedCells.filter(pos => !movedPositions.includes(pos));
     
-    // Calculate level score (correct - incorrect)
-    const levelScore = Math.max(0, correctSelections.length - incorrectSelections.length);
+    // Calculate level score (correct - incorrect) allowing negative scores
+    const levelScore = correctSelections.length - incorrectSelections.length;
     
     // Check if level was passed (score >= 50% of possible moved objects)
     const totalMovedObjects = movedPositions.length;
-    const isLevelPassed = levelScore >= totalMovedObjects * 0.5;
+    const isLevelPassed = correctSelections.length >= totalMovedObjects * 0.5;
     
     // Get completion time
     const completionTime = new Date().getTime();

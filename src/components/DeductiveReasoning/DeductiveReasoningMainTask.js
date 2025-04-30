@@ -127,8 +127,32 @@ const DeductiveReasoningMainTask = () => {
   const handleComplete = () => {
     // Save results to localStorage for later retrieval
     try {
+      // Format results with all necessary fields
+      const formattedResults = results.map((result, index) => {
+        const currentPuzzle = mainPuzzles[result.puzzleIndex];
+      
+        // Format arrays to use semicolons instead of commas
+        const correctCards = currentPuzzle ? JSON.stringify(currentPuzzle.correctCards).replace(/,/g, ';') : '';
+        const selectedCards = JSON.stringify(result.selectedCards || []).replace(/,/g, ';');
+        
+        return {
+          puzzleIndex: result.puzzleIndex,
+          question: result.question,
+          selectedCards: result.selectedCards,
+          correctCards: currentPuzzle ? currentPuzzle.correctCards : [],
+          isCorrect: result.isCorrect,
+          timestamp: result.timestamp,
+          // Additional fields needed for CSV export matching
+          level: result.puzzleIndex + 1,
+          scenarioName: `Problem ${result.puzzleIndex + 1}`,
+          correctItem: correctCards,
+          userSelectedItem: selectedCards,
+          maxLevelReached: mainPuzzles.length
+        };
+      });
+      
       // Save results using the central utility function
-      saveTaskResults('deductiveReasoning', results);
+      saveTaskResults('deductiveReasoning', formattedResults);
       
       console.log('Deductive Reasoning results saved');
     } catch (error) {
@@ -140,10 +164,34 @@ const DeductiveReasoningMainTask = () => {
   
   // Navigate to the next task in the sequence
   const handleNextTask = () => {
-    // Save results first
+    // Save results first with proper formatting
     try {
+      // Format results with all necessary fields
+      const formattedResults = results.map((result, index) => {
+        const currentPuzzle = mainPuzzles[result.puzzleIndex];
+      
+        // Format arrays to use semicolons instead of commas
+        const correctCards = currentPuzzle ? JSON.stringify(currentPuzzle.correctCards).replace(/,/g, ';') : '';
+        const selectedCards = JSON.stringify(result.selectedCards || []).replace(/,/g, ';');
+        
+        return {
+          puzzleIndex: result.puzzleIndex,
+          question: result.question,
+          selectedCards: result.selectedCards,
+          correctCards: currentPuzzle ? currentPuzzle.correctCards : [],
+          isCorrect: result.isCorrect,
+          timestamp: result.timestamp,
+          // Additional fields needed for CSV export matching
+          level: result.puzzleIndex + 1,
+          scenarioName: `Problem ${result.puzzleIndex + 1}`,
+          correctItem: correctCards,
+          userSelectedItem: selectedCards,
+          maxLevelReached: mainPuzzles.length
+        };
+      });
+      
       // Save results using the central utility function
-      saveTaskResults('deductiveReasoning', results);
+      saveTaskResults('deductiveReasoning', formattedResults);
       
       console.log('Deductive Reasoning results saved');
     } catch (error) {
@@ -176,10 +224,34 @@ const DeductiveReasoningMainTask = () => {
 
   // Render results screen
   if (showResults) {
-    // Save results using the central utility function
+    // Save results using the central utility function with proper formatting
     try {
-      // Save results to the centralized storage
-      saveTaskResults('deductiveReasoning', results);
+      // Format results with all necessary fields
+      const formattedResults = results.map((result, index) => {
+        const currentPuzzle = mainPuzzles[result.puzzleIndex];
+      
+        // Format arrays to use semicolons instead of commas
+        const correctCards = currentPuzzle ? JSON.stringify(currentPuzzle.correctCards).replace(/,/g, ';') : '';
+        const selectedCards = JSON.stringify(result.selectedCards || []).replace(/,/g, ';');
+        
+        return {
+          puzzleIndex: result.puzzleIndex,
+          question: result.question,
+          selectedCards: result.selectedCards,
+          correctCards: currentPuzzle ? currentPuzzle.correctCards : [],
+          isCorrect: result.isCorrect,
+          timestamp: result.timestamp,
+          // Additional fields needed for CSV export matching
+          level: result.puzzleIndex + 1,
+          scenarioName: `Problem ${result.puzzleIndex + 1}`,
+          correctItem: correctCards,
+          userSelectedItem: selectedCards,
+          maxLevelReached: mainPuzzles.length
+        };
+      });
+      
+      // Save the formatted results
+      saveTaskResults('deductiveReasoning', formattedResults);
       
       console.log('Deductive Reasoning results saved');
     } catch (error) {

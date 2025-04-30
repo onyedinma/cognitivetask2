@@ -215,30 +215,22 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       console.log("DEBUG calculateScores - bullyingTypesArray:", bullyingTypesArray);
       
       // Special handling for "Never bullied" and "Refused"
-      if (bullyingTypesArray.includes("Never bullied")) {
-        bullyingTypeScore = 0;
-        console.log("DEBUG calculateScores - 'Never bullied' selected, score set to 0");
-      } else if (bullyingTypesArray.includes("Refused")) {
+      if (bullyingTypesArray.includes("Refused")) {
         bullyingTypeScore = -9;
         console.log("DEBUG calculateScores - 'Refused' selected, score set to -9");
+      } else if (bullyingTypesArray.includes("Never bullied")) {
+        bullyingTypeScore = 0;
+        console.log("DEBUG calculateScores - 'Never bullied' selected, score set to 0");
       } else {
-        // Sum the scores for all selected types
-        bullyingTypesArray.forEach(type => {
-          // Make sure we're correctly adding scores for each type
-          console.log(`DEBUG calculateScores - Processing type '${type}'`);
-          console.log(`DEBUG calculateScores - Score value from mapping:`, scoringValues.bullyingTypes[type]);
-          
-          // Always add 1 for each valid bullying type
-          if (type && type !== "Never bullied" && type !== "Refused") {
-            bullyingTypeScore += 1;
-            console.log(`DEBUG calculateScores - Adding 1 point for type '${type}', current total: ${bullyingTypeScore}`);
-          }
-        });
+        // Count the number of selected bullying types
+        bullyingTypeScore = bullyingTypesArray.length;
+        console.log(`DEBUG calculateScores - ${bullyingTypesArray.length} bullying types selected, score = ${bullyingTypeScore}`);
       }
       
       console.log("DEBUG calculateScores - Final bullyingTypeScore:", bullyingTypeScore);
       newScores.bullyingTypes = bullyingTypeScore;
-      if (bullyingTypeScore > 0) {
+      
+      if (bullyingTypeScore > 0 || bullyingTypeScore === -9) {
         newTotalScore += bullyingTypeScore;
         console.log(`DEBUG calculateScores - Added ${bullyingTypeScore} to total score, new total: ${newTotalScore}`);
       }
@@ -316,13 +308,28 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
     // Calculate total score based on all responses
     const totalScore = calculateTotalScore(formData);
     
-    // Prepare structured questions array for combined export - only scores, not responses
+    // Prepare structured questions array for combined export - with proper bullying scores
     const questionsArray = questions.map(question => {
       const response = formData[question.id];
       let score = 0;
       
+      // Special handling for bullying types question
+      if (question.id === 'bullyingTypes') {
+        if (formData.bullyingTypes) {
+          const bullyingTypesArray = formData.bullyingTypes.split(',');
+          
+          if (bullyingTypesArray.includes("Refused")) {
+            score = -9;
+          } else if (bullyingTypesArray.includes("Never bullied")) {
+            score = 0;
+          } else {
+            // Sum up 1 point for each selected bullying type
+            score = bullyingTypesArray.length;
+          }
+        }
+      }
       // Check if this is a yes/no question
-      if (yesNoQuestions.includes(question.id)) {
+      else if (yesNoQuestions.includes(question.id)) {
         score = response ? scoringValues.yesNo[response] || 0 : 0;
       } 
       // Check if this is a frequency4 question
@@ -339,6 +346,7 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
                       
       return {
         id: question.id,
+        response: response,
         score: score,
         type: scoreType
       };
@@ -1122,29 +1130,24 @@ const ACEIQQuestionnaire = ({ onComplete }) => {
       console.log("DEBUG calculateTotalScore - bullyingTypesArray:", bullyingTypesArray);
       
       // Special handling for "Never bullied" and "Refused"
-      if (bullyingTypesArray.includes("Never bullied")) {
-        bullyingTypeScore = 0;
-        console.log("DEBUG calculateTotalScore - 'Never bullied' selected, score set to 0");
-      } else if (bullyingTypesArray.includes("Refused")) {
+      if (bullyingTypesArray.includes("Refused")) {
         bullyingTypeScore = -9;
         console.log("DEBUG calculateTotalScore - 'Refused' selected, score set to -9");
+      } else if (bullyingTypesArray.includes("Never bullied")) {
+        bullyingTypeScore = 0;
+        console.log("DEBUG calculateTotalScore - 'Never bullied' selected, score set to 0");
       } else {
-        // Sum the scores for all selected types
-        bullyingTypesArray.forEach(type => {
-          // Make sure we're correctly adding scores for each valid type
-          console.log(`DEBUG calculateTotalScore - Processing type '${type}'`);
-          
-          // Always add 1 for each valid bullying type
-          if (type && type !== "Never bullied" && type !== "Refused") {
-            bullyingTypeScore += 1;
-            console.log(`DEBUG calculateTotalScore - Adding 1 point for type '${type}', current total: ${bullyingTypeScore}`);
-          }
-        });
+        // Count the number of selected bullying types
+        bullyingTypeScore = bullyingTypesArray.length;
+        console.log(`DEBUG calculateTotalScore - ${bullyingTypesArray.length} bullying types selected, score = ${bullyingTypeScore}`);
       }
       
       console.log("DEBUG calculateTotalScore - Final bullyingTypeScore:", bullyingTypeScore);
-      totalScore += bullyingTypeScore;
-      console.log(`DEBUG calculateTotalScore - Added ${bullyingTypeScore} to total score, new total: ${totalScore}`);
+      
+      if (bullyingTypeScore > 0 || bullyingTypeScore === -9) {
+        totalScore += bullyingTypeScore;
+        console.log(`DEBUG calculateTotalScore - Added ${bullyingTypeScore} to total score, new total: ${totalScore}`);
+      }
     }
     
     return totalScore;

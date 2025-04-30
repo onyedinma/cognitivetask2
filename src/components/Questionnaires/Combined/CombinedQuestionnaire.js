@@ -390,9 +390,9 @@ const CombinedQuestionnaire = () => {
     setExportSuccess(false);
     
     try {
-      const studentId = localStorage.getItem('studentId') || 'unknown';
-      const timestamp = new Date().toISOString();
-      
+    const studentId = localStorage.getItem('studentId') || 'unknown';
+    const timestamp = new Date().toISOString();
+    
       // Create a new workbook
       const workbook = XLSX.utils.book_new();
       
@@ -529,7 +529,7 @@ const CombinedQuestionnaire = () => {
               scoringFormula = 'Very low = 1, Low = 2, Average = 3, High = 4, Very high = 5, Refused = -9';
             }
             
-            csvData.push([
+          csvData.push([
               'SES',
               q.id,
               q.score !== undefined ? q.score : '',
@@ -841,7 +841,7 @@ const CombinedQuestionnaire = () => {
                 formula,
                 questionText
               ]);
-            } catch (error) {
+    } catch (error) {
               console.error('Error processing SDQ question:', error);
               sdqSheet.push([
                 'SDQ',
@@ -916,7 +916,7 @@ const CombinedQuestionnaire = () => {
         console.error('Error processing SDQ results:', error);
         // Initialize csvData if it doesn't exist yet
         let csvData = [];
-        csvData.push([
+    csvData.push([
           'SDQ',
           'ERROR',
           '',
@@ -931,7 +931,7 @@ const CombinedQuestionnaire = () => {
       console.error('Error processing SDQ results:', error);
       // Initialize csvData if it doesn't exist yet
       let csvData = [];
-      csvData.push([
+    csvData.push([
         'SDQ',
         'ERROR',
         '',
@@ -1293,25 +1293,25 @@ const CombinedQuestionnaire = () => {
           let section = 'Adverse Experiences';
           
           if (['parentsUnderstandProblems', 'parentsKnowFreeTime'].includes(q.id)) {
-            section = 'Relationship with Parents';
+          section = 'Relationship with Parents';
           } else if (['notEnoughFood', 'parentsDrunkOrDrugs', 'notSentToSchool', 'go_hungry'].includes(q.id)) {
-            section = 'Neglect';
+          section = 'Neglect';
           } else if (['alcoholicHouseholdMember', 'mentallyIllHouseholdMember', 'imprisonedHouseholdMember', 
                        'parentsSeparated', 'parentDied', 'witnessedVerbalAbuse', 'witnessedPhysicalAbuse', 
                        'witnessedWeaponAbuse', 'lived_with_alcoholic', 'mentally_ill_household', 
                        'household_member_jail', 'parents_separated', 'witness_abuse'].includes(q.id)) {
-            section = 'Family Environment';
-          } else if (['verbalAbuse', 'threatenedAbandonment', 'physicalAbuse', 'weaponAbuse', 
+          section = 'Family Environment';
+        } else if (['verbalAbuse', 'threatenedAbandonment', 'physicalAbuse', 'weaponAbuse', 
                        'sexualTouching', 'sexualFondling', 'attemptedSexualIntercourse', 
                        'completedSexualIntercourse', 'physical_violence', 'feel_unloved'].includes(q.id)) {
-            section = 'Direct Abuse';
+          section = 'Direct Abuse';
           } else if (['bullied', 'bullyingTypes', 'physicalFight'].includes(q.id)) {
-            section = 'Peer Violence';
+          section = 'Peer Violence';
           } else if (['witnessedBeating', 'witnessedStabbingOrShooting', 'witnessedThreatenedWithWeapon',
                        'community_violence', 'collective_violence'].includes(q.id)) {
-            section = 'Community Violence';
-          }
-          
+          section = 'Community Violence';
+        }
+        
           // Get response text
           let responseText = '';
           if (q.response && typeof q.response === 'object' && q.response.label) {
@@ -1360,8 +1360,8 @@ const CombinedQuestionnaire = () => {
           
           // Format response
           const formattedResponse = formatRefusedResponse(responseText);
-          
-          csvData.push([
+        
+        csvData.push([
             'ACEIQ',
             q.id,
             q.score !== undefined ? q.score : '',
@@ -1370,9 +1370,9 @@ const CombinedQuestionnaire = () => {
             formattedResponse || 'No data',
             scoringFormula,
             aceiqQuestionTexts[q.id] || ''
-          ]);
-        });
-        
+        ]);
+      });
+      
         // Add total score row
         if (processedAceiqResults.totalScore !== undefined) {
           csvData.push([]);
@@ -1390,7 +1390,7 @@ const CombinedQuestionnaire = () => {
       }
       
       // SES section
-      csvData.push([]);
+    csvData.push([]);
       csvData.push(['===== SOCIOECONOMIC STATUS QUESTIONNAIRE (SES) =====']);
       csvData.push(headers);
       
@@ -1486,8 +1486,8 @@ const CombinedQuestionnaire = () => {
           else {
             scoringFormula = 'Very low = 1, Low = 2, Average = 3, High = 4, Very high = 5, Refused = -9';
           }
-          
-          csvData.push([
+        
+        csvData.push([
             'SES',
             q.id,
             q.score !== undefined ? q.score : '',
@@ -1496,12 +1496,12 @@ const CombinedQuestionnaire = () => {
             formattedResponse,
             scoringFormula,
             sesQuestionTexts[q.id] || ''
-          ]);
-        });
+        ]);
+      });
       }
       
       // MFQ section
-      csvData.push([]);
+    csvData.push([]);
       csvData.push(['===== MOOD AND FEELINGS QUESTIONNAIRE (MFQ) =====']);
       csvData.push(headers);
       
@@ -1563,8 +1563,8 @@ const CombinedQuestionnaire = () => {
           
           // Format response
           const formattedResponse = formatRefusedResponse(responseText) || 'No data';
-          
-          csvData.push([
+        
+        csvData.push([
             'MFQ',
             q.id,
             q.score !== undefined ? q.score : '',
@@ -1573,8 +1573,8 @@ const CombinedQuestionnaire = () => {
             formattedResponse,
             'Not true = 0, Sometimes = 1, True = 2, Refused = -9',
             mfqQuestionTexts[q.id] || ''
-          ]);
-        });
+        ]);
+      });
       }
       
       // SDQ section
@@ -1706,14 +1706,14 @@ const CombinedQuestionnaire = () => {
       .join(',')).join('\n');
       
       // Create and download file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
+    link.setAttribute('href', url);
       link.setAttribute('download', `questionnaire_results_${studentId}_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
       
       setIsExporting(false);
       setExportSuccess(true);

@@ -151,20 +151,42 @@ const ShapeCountingMainTask = () => {
       circles: circleCount
     };
     
-    const isCorrect = 
-      squareCount === correctCounts.squares && 
-      triangleCount === correctCounts.triangles && 
-      circleCount === correctCounts.circles;
+    // Calculate category-based scoring (1 point per correct shape type)
+    const squaresCorrect = userCounts.squares === correctCounts.squares ? 1 : 0;
+    const trianglesCorrect = userCounts.triangles === correctCounts.triangles ? 1 : 0;
+    const circlesCorrect = userCounts.circles === correctCounts.circles ? 1 : 0;
     
-    // Record result for this level and attempt
+    // Calculate total correct categories and total categories
+    const totalCorrectCategories = squaresCorrect + trianglesCorrect + circlesCorrect;
+    const totalCategories = 3; // We always have three shape types: squares, triangles, circles
+    
+    // Overall correctness is now based on getting more than half of the categories correct
+    const isCorrect = totalCorrectCategories >= Math.ceil(totalCategories / 2);
+    
+    // Record result for this level and attempt with the new scoring approach
     const trialResult = {
       level: currentLevel,
       attempt: 1, // Always 1 since we're only doing one trial per level
       correctCounts: { ...correctCounts },
       userCounts: { ...userCounts },
+      categoryScores: {
+        squaresCorrect,
+        trianglesCorrect,
+        circlesCorrect,
+        totalCorrectCategories,
+        totalCategories
+      },
       correct: isCorrect,
       timestamp: new Date().toISOString()
     };
+    
+    // Log the category-based scores for debugging
+    console.log(`Level ${currentLevel} category scores:`, 
+      `Squares: ${squaresCorrect}/1, `,
+      `Triangles: ${trianglesCorrect}/1, `,
+      `Circles: ${circlesCorrect}/1, `,
+      `Total: ${totalCorrectCategories}/${totalCategories}`
+    );
     
     // Add result to results array
     setResults(prevResults => [...prevResults, trialResult]);
@@ -241,13 +263,25 @@ const ShapeCountingMainTask = () => {
         correctAnswer: `Squares: ${result.correctCounts.squares}, Triangles: ${result.correctCounts.triangles}, Circles: ${result.correctCounts.circles}`,
         answer: `Squares: ${result.userCounts.squares}, Triangles: ${result.userCounts.triangles}, Circles: ${result.userCounts.circles}`,
         isCorrect: result.correct,
-        timestamp: result.timestamp
+        timestamp: result.timestamp,
+        // Add category scoring data
+        categoryScores: result.categoryScores || {
+          squaresCorrect: 0,
+          trianglesCorrect: 0,
+          circlesCorrect: 0,
+          totalCorrectCategories: 0,
+          totalCategories: 3
+        },
+        totalCorrectCategories: result.categoryScores ? result.categoryScores.totalCorrectCategories : 0,
+        totalCategories: result.categoryScores ? result.categoryScores.totalCategories : 3,
+        categoryAccuracy: result.categoryScores ? 
+          ((result.categoryScores.totalCorrectCategories / result.categoryScores.totalCategories) * 100).toFixed(2) + '%' : '0%'
       }));
       
       // Save results using the utility
       saveTaskResults('shapeCounting', formattedResults);
       
-      console.log('Shape Counting results saved:', formattedResults);
+      console.log('Shape Counting results saved with category scoring:', formattedResults);
     } catch (error) {
       console.error('Error saving results:', error);
     }
@@ -279,11 +313,29 @@ const ShapeCountingMainTask = () => {
   // Calculate overall performance - simplified for one attempt per level
   const calculatePerformance = () => {
     const correctCount = results.filter(result => result.correct).length;
+    
+    // Calculate category-based scoring across all levels
+    let totalCorrectCategories = 0;
+    let totalCategories = 0;
+    
+    results.forEach(result => {
+      if (result.categoryScores) {
+        totalCorrectCategories += result.categoryScores.totalCorrectCategories;
+        totalCategories += result.categoryScores.totalCategories;
+      }
+    });
+    
+    const categoryAccuracy = totalCategories > 0 ? 
+      Math.round((totalCorrectCategories / totalCategories) * 100) : 0;
+    
     return {
       correct: correctCount,
       total: results.length,
       percentage: results.length > 0 ? Math.round((correctCount / results.length) * 100) : 0,
-      highestLevel: results.length > 0 ? Math.max(...results.map(r => r.level)) : 1
+      highestLevel: results.length > 0 ? Math.max(...results.map(r => r.level)) : 1,
+      categoryCorrect: totalCorrectCategories,
+      categoryTotal: totalCategories,
+      categoryPercentage: categoryAccuracy
     };
   };
   
@@ -370,39 +422,11 @@ const ShapeCountingMainTask = () => {
         <div className="results-section">
           <h2>Task Complete!</h2>
           
-          <button 
-            onClick={handleNextTask} 
-            style={{
-              fontSize: '1.5rem',
-              padding: '16px 28px 16px 32px',
-              fontWeight: 'bold',
-              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-              margin: '30px auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '340px',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
-            }}
-          >
-            Next Task: Counting Game (Ecological)
-            <span style={{ marginLeft: '10px', fontSize: '1.6rem' }}>→</span>
-          </button>
+          <div className="task-options">
+            <button onClick={handleNextTask} className="next-task-button">
+              Next Task: Counting Game
+            </button>
+          </div>
         </div>
       )}
       

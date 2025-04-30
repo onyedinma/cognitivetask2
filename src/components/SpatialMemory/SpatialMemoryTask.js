@@ -161,6 +161,10 @@ const SpatialMemoryTask = () => {
             <li>When shapes swap positions, you need to identify BOTH shapes involved</li>
             <li>You gain one point for each correctly identified moved shape</li>
             <li>You lose one point for each incorrectly identified shape</li>
+            <li>Your score can be negative if you make more incorrect than correct selections</li>
+            <li>Example: If 4 shapes moved and you identify all 4 correctly with no errors: score = 4</li>
+            <li>Example: If 4 shapes moved and you identify 3 correctly but also 2 incorrect ones: score = 3 - 2 = 1</li>
+            <li>Example: If 4 shapes moved and you identify 2 correctly but also 3 incorrect ones: score = 2 - 3 = -1</li>
           </ul>
         </div>
         

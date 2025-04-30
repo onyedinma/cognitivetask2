@@ -287,6 +287,10 @@ const ObjectSpanMainTask = () => {
       // Calculate total correct sequences
       const correctSequences = results.filter(r => r.is_correct).length;
       
+      // Log all results to make sure we have all attempts
+      console.log(`Exporting ${results.length} total attempts for ${isBackward ? 'Backward' : 'Forward'} Object Span task`);
+      console.log("All attempts including failed ones:", results);
+      
       // Normalize and format the results data structure
       const finalResults = results.map(result => {
         // Make sure to use the current maxSpanReached state value for all results

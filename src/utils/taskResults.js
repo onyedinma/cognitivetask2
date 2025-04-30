@@ -316,6 +316,7 @@ export const exportAllTaskResults = () => {
         'Timestamp',
         'Trial Number',
         'Span Length',
+        'Attempt Number',
         'Presented Sequence',
         'Expected Response',
         'User Response',
@@ -338,13 +339,17 @@ export const exportAllTaskResults = () => {
       }).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
-      // Add data rows with flexible field names
+      // Log the results for debugging
+      console.log("Forward Object Span data to export:", allResults.objectSpanForward);
+      
+      // Add data rows with flexible field names - Include ALL attempts, including failed ones
       allResults.objectSpanForward.forEach((result, index) => {
         csvContent.push([
           formatForCSV(result.participantId || result.participant_id || studentId),
           formatForCSV(result.timestamp || timestamp),
-          formatForCSV(index + 1),
+          formatForCSV(result.trialNumber || result.trial_number || index + 1),
           formatForCSV(result.spanLength || result.span_length || ''),
+          formatForCSV(result.attemptNumber || result.attempt_number || 1),
           formatForCSV(result.presentedSequence || result.presented_sequence || ''),
           formatForCSV(result.expectedResponse || result.expected_response || ''),
           formatForCSV(result.userResponse || result.user_response || ''),
@@ -372,6 +377,7 @@ export const exportAllTaskResults = () => {
         'Timestamp',
         'Trial Number',
         'Span Length',
+        'Attempt Number',
         'Presented Sequence',
         'Expected Response',
         'User Response',
@@ -392,13 +398,17 @@ export const exportAllTaskResults = () => {
       const correctTrials = allResults.objectSpanBackward.filter(r => r.isCorrect || r.is_correct).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
-      // Add data rows
+      // Log the results for debugging
+      console.log("Backward Object Span data to export:", allResults.objectSpanBackward);
+      
+      // Add data rows - Include ALL attempts, including failed ones
       allResults.objectSpanBackward.forEach((result, index) => {
         csvContent.push([
           formatForCSV(result.participantId || result.participant_id || studentId),
           formatForCSV(result.timestamp || timestamp),
-          formatForCSV(index + 1),
+          formatForCSV(result.trialNumber || result.trial_number || index + 1),
           formatForCSV(result.spanLength || result.span_length || ''),
+          formatForCSV(result.attemptNumber || result.attempt_number || 1),
           formatForCSV(result.presentedSequence || result.presented_sequence || ''),
           formatForCSV(result.expectedResponse || result.expected_response || ''),
           formatForCSV(result.userResponse || result.user_response || ''),
@@ -538,6 +548,7 @@ export const exportAllTaskResults = () => {
           'Timestamp',
           'Trial Number',
           'Span Length',
+          'Attempt Number',
           'Presented Sequence',
           'Expected Response',
           'User Response',
@@ -563,14 +574,15 @@ export const exportAllTaskResults = () => {
           csvContent.push([
             formatForCSV(result.participantId || result.participant_id || studentId),
             formatForCSV(result.timestamp || timestamp),
-            formatForCSV(index + 1),
+            formatForCSV(result.trialNumber || result.trial_number || index + 1),
             formatForCSV(result.spanLength || result.span_length || ''),
+            formatForCSV(result.attemptNumber || result.attempt_number || 1),
             formatForCSV(result.presentedSequence || result.presented_sequence || ''),
             formatForCSV(result.expectedResponse || result.expected_response || ''),
             formatForCSV(result.userResponse || result.user_response || ''),
             formatForCSV((result.isCorrect || result.is_correct) ? '1' : '0'),
             formatForCSV(maxSpan),
-            formatForCSV(correctTrials),
+            formatForCSV(result.totalCorrectSequences || correctTrials),
             formatForCSV(overallAccuracy)
           ]);
         });
@@ -590,6 +602,7 @@ export const exportAllTaskResults = () => {
           'Timestamp',
           'Trial Number',
           'Span Length',
+          'Attempt Number',
           'Presented Sequence',
           'Expected Response',
           'User Response',
@@ -615,14 +628,15 @@ export const exportAllTaskResults = () => {
           csvContent.push([
             formatForCSV(result.participantId || result.participant_id || studentId),
             formatForCSV(result.timestamp || timestamp),
-            formatForCSV(index + 1),
+            formatForCSV(result.trialNumber || result.trial_number || index + 1),
             formatForCSV(result.spanLength || result.span_length || ''),
+            formatForCSV(result.attemptNumber || result.attempt_number || 1),
             formatForCSV(result.presentedSequence || result.presented_sequence || ''),
             formatForCSV(result.expectedResponse || result.expected_response || ''),
             formatForCSV(result.userResponse || result.user_response || ''),
             formatForCSV((result.isCorrect || result.is_correct) ? '1' : '0'),
             formatForCSV(maxSpan),
-            formatForCSV(correctTrials),
+            formatForCSV(result.totalCorrectSequences || correctTrials),
             formatForCSV(overallAccuracy)
           ]);
         });
@@ -648,17 +662,28 @@ export const exportAllTaskResults = () => {
         'User Answer',
         'Correct (1/0)',
         'Max Level Reached',
-        'Overall Accuracy'
+        'Overall Accuracy',
+        'Squares Correct',
+        'Triangles Correct',
+        'Circles Correct',
+        'Category Score',
+        'Category Scoring Accuracy',
+        'Cumulative Category Score',
+        'Cumulative Category Percentage'
       ]);
       
-      // Calculate max level reached and overall accuracy
+      // Calculate max level reached and overall accuracy - include all levels, not just correct ones
       const maxLevel = allResults.shapeCounting.reduce((max, result) => {
-        return result.isCorrect && result.level > max ? result.level : max;
+        return result.level > max ? result.level : max;
       }, 0);
       
       const totalTrials = allResults.shapeCounting.length;
       const correctTrials = allResults.shapeCounting.filter(r => r.isCorrect).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
+      
+      // Track cumulative category scores across all trials
+      let cumulativeCorrectCategories = 0;
+      let cumulativeTotalCategories = 0;
       
       // Add data rows
       allResults.shapeCounting.forEach((result, index) => {
@@ -757,6 +782,25 @@ export const exportAllTaskResults = () => {
           formattedUserAnswer = result.userAnswer || result.answer || '';
         }
         
+        // Get category scoring data if available
+        const categoryScores = result.categoryScores || {};
+        const squaresCorrect = categoryScores.squaresCorrect !== undefined ? categoryScores.squaresCorrect : 0;
+        const trianglesCorrect = categoryScores.trianglesCorrect !== undefined ? categoryScores.trianglesCorrect : 0;
+        const circlesCorrect = categoryScores.circlesCorrect !== undefined ? categoryScores.circlesCorrect : 0;
+        const totalCorrectCategories = categoryScores.totalCorrectCategories !== undefined ? categoryScores.totalCorrectCategories : 0;
+        const totalCategories = categoryScores.totalCategories !== undefined ? categoryScores.totalCategories : 3;
+        const categoryAccuracy = result.categoryAccuracy || 
+          (totalCategories > 0 ? (totalCorrectCategories / totalCategories * 100).toFixed(2) + '%' : '0%');
+        
+        // Update cumulative scores
+        cumulativeCorrectCategories += totalCorrectCategories;
+        cumulativeTotalCategories += totalCategories;
+        
+        // Calculate cumulative percentage
+        const cumulativePercentage = cumulativeTotalCategories > 0 
+          ? (cumulativeCorrectCategories / cumulativeTotalCategories * 100).toFixed(2) + '%' 
+          : '0%';
+        
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -767,7 +811,14 @@ export const exportAllTaskResults = () => {
           formatForCSV(formattedUserAnswer),
           formatForCSV(result.isCorrect ? '1' : '0'),
           formatForCSV(maxLevel),
-          formatForCSV(overallAccuracy)
+          formatForCSV(overallAccuracy),
+          formatForCSV(squaresCorrect),
+          formatForCSV(trianglesCorrect),
+          formatForCSV(circlesCorrect),
+          formatForCSV(`${totalCorrectCategories} ÷ ${totalCategories}`),
+          formatForCSV(categoryAccuracy),
+          formatForCSV(`${cumulativeCorrectCategories} ÷ ${cumulativeTotalCategories}`),
+          formatForCSV(cumulativePercentage)
         ]);
       });
       
@@ -790,17 +841,28 @@ export const exportAllTaskResults = () => {
         'User Answer',
         'Correct (1/0)',
         'Max Level Reached',
-        'Overall Accuracy'
+        'Overall Accuracy',
+        'Bills Correct',
+        'Buses Correct',
+        'Faces Correct',
+        'Category Score',
+        'Category Scoring Accuracy',
+        'Cumulative Category Score',
+        'Cumulative Category Percentage'
       ]);
       
-      // Calculate max level reached and overall accuracy
+      // Calculate max level reached and overall accuracy - include all levels, not just correct ones
       const maxLevel = allResults.countingGame.reduce((max, result) => {
-        return result.isCorrect && result.level > max ? result.level : max;
+        return result.level > max ? result.level : max;
       }, 0);
       
       const totalTrials = allResults.countingGame.length;
       const correctTrials = allResults.countingGame.filter(r => r.isCorrect).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
+      
+      // Track cumulative category scores across all trials
+      let cumulativeCorrectCategories = 0;
+      let cumulativeTotalCategories = 0;
       
       // Add data rows
       allResults.countingGame.forEach((result, index) => {
@@ -940,6 +1002,25 @@ export const exportAllTaskResults = () => {
           formattedUserAnswer = result.userAnswer || result.answer || '';
         }
         
+        // Get category scoring data if available
+        const categoryScores = result.categoryScores || {};
+        const billsCorrect = categoryScores.billsCorrect !== undefined ? categoryScores.billsCorrect : 0;
+        const busesCorrect = categoryScores.busesCorrect !== undefined ? categoryScores.busesCorrect : 0;
+        const facesCorrect = categoryScores.facesCorrect !== undefined ? categoryScores.facesCorrect : 0;
+        const totalCorrectCategories = categoryScores.totalCorrectCategories !== undefined ? categoryScores.totalCorrectCategories : 0;
+        const totalCategories = categoryScores.totalCategories !== undefined ? categoryScores.totalCategories : 3;
+        const categoryAccuracy = result.categoryAccuracy || 
+          (totalCategories > 0 ? (totalCorrectCategories / totalCategories * 100).toFixed(2) + '%' : '0%');
+        
+        // Update cumulative scores
+        cumulativeCorrectCategories += totalCorrectCategories;
+        cumulativeTotalCategories += totalCategories;
+        
+        // Calculate cumulative percentage
+        const cumulativePercentage = cumulativeTotalCategories > 0 
+          ? (cumulativeCorrectCategories / cumulativeTotalCategories * 100).toFixed(2) + '%' 
+          : '0%';
+        
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -949,7 +1030,14 @@ export const exportAllTaskResults = () => {
           formatForCSV(formattedUserAnswer),
           formatForCSV(result.isCorrect ? '1' : '0'),
           formatForCSV(maxLevel),
-          formatForCSV(overallAccuracy)
+          formatForCSV(overallAccuracy),
+          formatForCSV(billsCorrect),
+          formatForCSV(busesCorrect),
+          formatForCSV(facesCorrect),
+          formatForCSV(`${totalCorrectCategories} ÷ ${totalCategories}`),
+          formatForCSV(categoryAccuracy),
+          formatForCSV(`${cumulativeCorrectCategories} ÷ ${cumulativeTotalCategories}`),
+          formatForCSV(cumulativePercentage)
         ]);
       });
       
@@ -957,9 +1045,9 @@ export const exportAllTaskResults = () => {
       csvContent.push(['']);
     }
     
-    // Process Spatial Memory Task
+    // Process Spatial Memory Task (deprecated) - keeping for backward compatibility
     if (allResults.spatialMemory && allResults.spatialMemory.length > 0) {
-      console.log('Found spatialMemory results:', allResults.spatialMemory.length, 'entries');
+      console.log('Found spatialMemory results (deprecated):', allResults.spatialMemory.length, 'entries');
       
       // Add section header for Spatial Memory
       csvContent.push(['SPATIAL MEMORY TASK']);
@@ -1026,6 +1114,78 @@ export const exportAllTaskResults = () => {
       csvContent.push(['']);
     }
     
+    // Process Spatial Working Memory Task
+    if (allResults.spatialWorkingMemory && allResults.spatialWorkingMemory.length > 0) {
+      console.log('Found spatialWorkingMemory results:', allResults.spatialWorkingMemory.length, 'entries');
+      
+      // Add section header for Spatial Working Memory
+      csvContent.push(['SPATIAL WORKING MEMORY TASK']);
+      
+      // Add task-specific headers matching the image
+      csvContent.push([
+        'Participant ID',
+        'Timestamp',
+        'Trial Num',
+        'Difficulty Level',
+        'Grid Size',
+        'Target Positions',
+        'Selected Positions',
+        'Correct Selections',
+        'Incorrect Selections',
+        'Score',
+        'Total Selections Made',
+        'Total Moved Shapes',
+        'Completion Time (ms)',
+        'Max Level Reached',
+        'Overall Accuracy'
+      ]);
+      
+      // Calculate max level reached and overall accuracy
+      const maxLevel = allResults.spatialWorkingMemory.reduce((max, result) => {
+        return result.level > max ? result.level : max;
+      }, 0);
+      
+      // Calculate overall accuracy based on correct selections vs total moved shapes
+      const totalCorrectSelections = allResults.spatialWorkingMemory.reduce((sum, result) => {
+        return sum + (result.correctSelections || 0);
+      }, 0);
+      
+      const totalPossibleSelections = allResults.spatialWorkingMemory.reduce((sum, result) => {
+        return sum + (result.totalMovedShapes || 0);
+      }, 0);
+      
+      // Calculate accuracy based on correct selections
+      const overallAccuracy = totalPossibleSelections > 0 
+        ? (totalCorrectSelections / totalPossibleSelections * 100).toFixed(2) + '%' 
+        : '0%';
+      
+      console.log(`Spatial Working Memory accuracy calculation: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections = ${overallAccuracy}`);
+      
+      // Add data rows with expanded fields
+      allResults.spatialWorkingMemory.forEach((result, index) => {
+        csvContent.push([
+          formatForCSV(result.participantId || studentId),
+          formatForCSV(result.timestamp || timestamp),
+          formatForCSV(result.trial || result.trialNumber || index + 1),
+          formatForCSV(result.difficultyLevel || result.level || ''),
+          formatForCSV(result.gridSize || ''),
+          formatForCSV(result.targetPositions || ''),
+          formatForCSV(result.selectedPositions || ''),
+          formatForCSV(result.correctSelections || 0),
+          formatForCSV(result.incorrectSelections || 0),
+          formatForCSV(result.score || (result.correctSelections - result.incorrectSelections) || 0),
+          formatForCSV(result.totalSelectionsCount || (result.correctSelections + result.incorrectSelections) || 0),
+          formatForCSV(result.totalMovedShapes || 0),
+          formatForCSV(result.completionTime || ''),
+          formatForCSV(maxLevel),
+          formatForCSV(overallAccuracy)
+        ]);
+      });
+      
+      // Add blank separator row
+      csvContent.push(['']);
+    }
+    
     // Process Ecological Spatial Task
     if (allResults.ecologicalSpatial && allResults.ecologicalSpatial.length > 0) {
       console.log('Found ecologicalSpatial results:', allResults.ecologicalSpatial.length, 'entries');
@@ -1043,17 +1203,39 @@ export const exportAllTaskResults = () => {
         'Scene Description',
         'Target Objects',
         'Selected Objects',
-        'Correct (1/0)',
+        'Correct Selections',
+        'Incorrect Selections',
+        'Score',
+        'Total Selections Made',
+        'Total Moved Objects',
         'Completion Time (ms)',
+        'Max Level Reached',
         'Overall Accuracy'
       ]);
       
-      // Calculate overall accuracy
-      const totalTrials = allResults.ecologicalSpatial.length;
-      const correctTrials = allResults.ecologicalSpatial.filter(r => r.isCorrect || r.passed).length;
-      const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
+      // Calculate max level reached - include all levels like in Spatial Working Memory
+      const maxLevel = allResults.ecologicalSpatial.reduce((max, result) => {
+        return result.level > max ? result.level : max;
+      }, 0);
       
-      // Add data rows with all fields
+      // Calculate overall accuracy based on correct selections vs total moved objects
+      // This is more appropriate than using just isCorrect/passed flags
+      const totalCorrectSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
+        return sum + (result.correctSelections || 0);
+      }, 0);
+      
+      const totalPossibleSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
+        return sum + (result.totalMovedObjects || 0);
+      }, 0);
+      
+      // Calculate accuracy based on correct selections
+      const overallAccuracy = totalPossibleSelections > 0 
+        ? (totalCorrectSelections / totalPossibleSelections * 100).toFixed(2) + '%' 
+        : '0%';
+      
+      console.log(`Ecological Spatial accuracy calculation: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections = ${overallAccuracy}`);
+      
+      // Add data rows with expanded fields
       allResults.ecologicalSpatial.forEach((result, index) => {
         csvContent.push([
           formatForCSV(result.participantId || studentId),
@@ -1064,8 +1246,13 @@ export const exportAllTaskResults = () => {
           formatForCSV(result.sceneDescription || ''),
           formatForCSV(result.targetObjects || ''),
           formatForCSV(result.selectedObjects || ''),
-          formatForCSV((result.isCorrect || result.passed) ? '1' : '0'),
+          formatForCSV(result.correctSelections || 0),
+          formatForCSV(result.incorrectSelections || 0),
+          formatForCSV(result.score || (result.correctSelections - result.incorrectSelections) || 0),
+          formatForCSV(result.totalSelectionsCount || (result.correctSelections + result.incorrectSelections) || 0),
+          formatForCSV(result.totalMovedObjects || 0),
           formatForCSV(result.completionTime || ''),
+          formatForCSV(maxLevel),
           formatForCSV(overallAccuracy)
         ]);
       });

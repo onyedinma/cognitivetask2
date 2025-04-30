@@ -251,6 +251,10 @@ const SpatialMemoryPractice = () => {
               <div className="instructions-note">
                 <p><strong>Note:</strong> You'll have the option to move forward after 10 seconds if you feel ready</p>
               </div>
+              
+              <div className="instructions-note">
+                <p><strong>Scoring:</strong> You gain 1 point for each correctly identified moved shape, but lose 1 point for each incorrect selection. Your score can be negative if you make more incorrect than correct selections.</p>
+              </div>
             </div>
             
             <div className="instructions-examples">

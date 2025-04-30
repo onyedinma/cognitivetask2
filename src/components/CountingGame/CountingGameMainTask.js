@@ -147,19 +147,41 @@ const CountingGameMainTask = () => {
       faces: faceCount
     };
     
-    const isCorrect = 
-      billCount === correctCounts.bills && 
-      busCount === correctCounts.buses && 
-      faceCount === correctCounts.faces;
+    // Calculate category-based scoring (1 point per correct object type)
+    const billsCorrect = userCounts.bills === correctCounts.bills ? 1 : 0;
+    const busesCorrect = userCounts.buses === correctCounts.buses ? 1 : 0;
+    const facesCorrect = userCounts.faces === correctCounts.faces ? 1 : 0;
     
-    // Record result for this level
+    // Calculate total correct categories and total categories
+    const totalCorrectCategories = billsCorrect + busesCorrect + facesCorrect;
+    const totalCategories = 3; // We always have three object types: bills, buses, faces
+    
+    // Overall correctness is now based on getting more than half of the categories correct
+    const isCorrect = totalCorrectCategories >= Math.ceil(totalCategories / 2);
+    
+    // Record result for this level with the new scoring approach
     const trialResult = {
       level: currentLevel,
       correctCounts: { ...correctCounts },
       userCounts: { ...userCounts },
+      categoryScores: {
+        billsCorrect,
+        busesCorrect,
+        facesCorrect,
+        totalCorrectCategories,
+        totalCategories
+      },
       correct: isCorrect,
       timestamp: new Date().toISOString()
     };
+    
+    // Log the category-based scores for debugging
+    console.log(`Level ${currentLevel} category scores:`, 
+      `Bills: ${billsCorrect}/1, `,
+      `Buses: ${busesCorrect}/1, `,
+      `Faces: ${facesCorrect}/1, `,
+      `Total: ${totalCorrectCategories}/${totalCategories}`
+    );
     
     // Add result to results array
     setResults(prevResults => [...prevResults, trialResult]);
@@ -224,13 +246,25 @@ const CountingGameMainTask = () => {
         correctAnswer: `Bills: ${result.correctCounts.bills}, Buses: ${result.correctCounts.buses}, Faces: ${result.correctCounts.faces}`,
         answer: `Bills: ${result.userCounts.bills}, Buses: ${result.userCounts.buses}, Faces: ${result.userCounts.faces}`,
         isCorrect: result.correct,
-        timestamp: result.timestamp
+        timestamp: result.timestamp,
+        // Add category scoring data
+        categoryScores: result.categoryScores || {
+          billsCorrect: 0,
+          busesCorrect: 0,
+          facesCorrect: 0,
+          totalCorrectCategories: 0,
+          totalCategories: 3
+        },
+        totalCorrectCategories: result.categoryScores ? result.categoryScores.totalCorrectCategories : 0,
+        totalCategories: result.categoryScores ? result.categoryScores.totalCategories : 3,
+        categoryAccuracy: result.categoryScores ? 
+          ((result.categoryScores.totalCorrectCategories / result.categoryScores.totalCategories) * 100).toFixed(2) + '%' : '0%'
       }));
       
       // Save results using the utility
       saveTaskResults('countingGame', formattedResults);
       
-      console.log('Counting Game results saved:', formattedResults);
+      console.log('Counting Game results saved with category scoring:', formattedResults);
     } catch (error) {
       console.error('Error saving results:', error);
     }
