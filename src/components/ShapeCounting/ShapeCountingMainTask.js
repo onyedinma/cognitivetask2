@@ -35,7 +35,8 @@ const ShapeCountingMainTask = () => {
     { level: 2, shapes: 6 },
     { level: 3, shapes: 8 },
     { level: 4, shapes: 10 },
-    { level: 5, shapes: 12 }
+    { level: 5, shapes: 12 },
+    { level: 6, shapes: 0 }  // Debug level to test if level 5 gets captured
   ];
   
   // Set maximum attempts to 1
@@ -85,6 +86,36 @@ const ShapeCountingMainTask = () => {
   const startSequence = () => {
     // Clear any existing timers
     clearAllTimers();
+    
+    // Special handling for invisible level 6
+    if (currentLevel === 6) {
+      console.log("Auto-completing invisible level 6");
+      // Add a placeholder result for level 6
+      const placeholderResult = {
+        level: 6,
+        attempt: 1,
+        correctCounts: { squares: 0, triangles: 0, circles: 0 },
+        userCounts: { squares: 0, triangles: 0, circles: 0 },
+        categoryScores: {
+          squaresCorrect: 0,
+          trianglesCorrect: 0,
+          circlesCorrect: 0,
+          totalCorrectCategories: 0,
+          totalCategories: 3
+        },
+        correct: true,
+        timestamp: new Date().toISOString()
+      };
+      
+      setResults(prevResults => [...prevResults, placeholderResult]);
+      
+      // Complete the task immediately
+      setTimeout(() => {
+        setTaskComplete(true);
+        saveResultsToStorage();
+      }, 500);
+      return;
+    }
     
     // Reset state
     setCurrentShape(null);

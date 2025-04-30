@@ -339,10 +339,7 @@ export const exportAllTaskResults = () => {
       }).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
-      // Log the results for debugging
-      console.log("Forward Object Span data to export:", allResults.objectSpanForward);
-      
-      // Add data rows with flexible field names - Include ALL attempts, including failed ones
+      // Add data rows with flexible field names
       allResults.objectSpanForward.forEach((result, index) => {
         csvContent.push([
           formatForCSV(result.participantId || result.participant_id || studentId),
@@ -398,10 +395,7 @@ export const exportAllTaskResults = () => {
       const correctTrials = allResults.objectSpanBackward.filter(r => r.isCorrect || r.is_correct).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
-      // Log the results for debugging
-      console.log("Backward Object Span data to export:", allResults.objectSpanBackward);
-      
-      // Add data rows - Include ALL attempts, including failed ones
+      // Add data rows
       allResults.objectSpanBackward.forEach((result, index) => {
         csvContent.push([
           formatForCSV(result.participantId || result.participant_id || studentId),
@@ -672,10 +666,15 @@ export const exportAllTaskResults = () => {
         'Cumulative Category Percentage'
       ]);
       
-      // Calculate max level reached and overall accuracy - include all levels, not just correct ones
+      // Calculate max level reached and overall accuracy
       const maxLevel = allResults.shapeCounting.reduce((max, result) => {
-        return result.level > max ? result.level : max;
+        // Don't require isCorrect for tracking max level
+        const newMax = result.level > max ? result.level : max;
+        console.log(`ShapeCounting level check: result.level=${result.level}, isCorrect=${result.isCorrect}, current max=${max}, new max=${newMax}`);
+        return newMax;
       }, 0);
+      
+      console.log('Shape Counting max level calculated:', maxLevel);
       
       const totalTrials = allResults.shapeCounting.length;
       const correctTrials = allResults.shapeCounting.filter(r => r.isCorrect).length;
@@ -801,6 +800,7 @@ export const exportAllTaskResults = () => {
           ? (cumulativeCorrectCategories / cumulativeTotalCategories * 100).toFixed(2) + '%' 
           : '0%';
         
+        // Format using Excel formula to prevent date conversion
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -815,9 +815,9 @@ export const exportAllTaskResults = () => {
           formatForCSV(squaresCorrect),
           formatForCSV(trianglesCorrect),
           formatForCSV(circlesCorrect),
-          formatForCSV(`${totalCorrectCategories} ÷ ${totalCategories}`),
+          formatForCSV(`=\"${totalCorrectCategories}/${totalCategories}\"`),
           formatForCSV(categoryAccuracy),
-          formatForCSV(`${cumulativeCorrectCategories} ÷ ${cumulativeTotalCategories}`),
+          formatForCSV(`=\"${cumulativeCorrectCategories}/${cumulativeTotalCategories}\"`),
           formatForCSV(cumulativePercentage)
         ]);
       });
@@ -851,10 +851,15 @@ export const exportAllTaskResults = () => {
         'Cumulative Category Percentage'
       ]);
       
-      // Calculate max level reached and overall accuracy - include all levels, not just correct ones
+      // Calculate max level reached and overall accuracy
       const maxLevel = allResults.countingGame.reduce((max, result) => {
-        return result.level > max ? result.level : max;
+        // Don't require isCorrect for tracking max level
+        const newMax = result.level > max ? result.level : max;
+        console.log(`CountingGame level check: result.level=${result.level}, isCorrect=${result.isCorrect}, current max=${max}, new max=${newMax}`);
+        return newMax;
       }, 0);
+      
+      console.log('Counting Game max level calculated:', maxLevel);
       
       const totalTrials = allResults.countingGame.length;
       const correctTrials = allResults.countingGame.filter(r => r.isCorrect).length;
@@ -1021,6 +1026,7 @@ export const exportAllTaskResults = () => {
           ? (cumulativeCorrectCategories / cumulativeTotalCategories * 100).toFixed(2) + '%' 
           : '0%';
         
+        // Format using Excel formula to prevent date conversion
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -1034,9 +1040,9 @@ export const exportAllTaskResults = () => {
           formatForCSV(billsCorrect),
           formatForCSV(busesCorrect),
           formatForCSV(facesCorrect),
-          formatForCSV(`${totalCorrectCategories} ÷ ${totalCategories}`),
+          formatForCSV(`=\"${totalCorrectCategories}/${totalCategories}\"`),
           formatForCSV(categoryAccuracy),
-          formatForCSV(`${cumulativeCorrectCategories} ÷ ${cumulativeTotalCategories}`),
+          formatForCSV(`=\"${cumulativeCorrectCategories}/${cumulativeTotalCategories}\"`),
           formatForCSV(cumulativePercentage)
         ]);
       });
@@ -1206,14 +1212,18 @@ export const exportAllTaskResults = () => {
         'Correct Selections',
         'Incorrect Selections',
         'Score',
-        'Total Selections Made',
-        'Total Moved Objects',
         'Completion Time (ms)',
         'Max Level Reached',
         'Overall Accuracy'
       ]);
       
-      // Calculate max level reached - include all levels like in Spatial Working Memory
+      // Log the first result to debug the available fields
+      if (allResults.ecologicalSpatial.length > 0) {
+        console.log('First ecological spatial result fields:', Object.keys(allResults.ecologicalSpatial[0]));
+        console.log('First ecological spatial result data sample:', allResults.ecologicalSpatial[0]);
+      }
+      
+      // Calculate max level reached without requiring isCorrect
       const maxLevel = allResults.ecologicalSpatial.reduce((max, result) => {
         return result.level > max ? result.level : max;
       }, 0);
@@ -1221,11 +1231,20 @@ export const exportAllTaskResults = () => {
       // Calculate overall accuracy based on correct selections vs total moved objects
       // This is more appropriate than using just isCorrect/passed flags
       const totalCorrectSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
-        return sum + (result.correctSelections || 0);
+        const correctSelections = result.correctSelections || 0;
+        console.log(`Level ${result.level}: Correct selections = ${correctSelections}`);
+        return sum + correctSelections;
       }, 0);
       
       const totalPossibleSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
-        return sum + (result.totalMovedObjects || 0);
+        // Try to get totalMovedObjects directly, fallback to other fields if not available
+        const totalMoved = result.totalMovedObjects || 
+                          (result.movedObjectPairs ? result.movedObjectPairs.length : 0) || 
+                          (typeof result.correctSelections !== 'undefined' && typeof result.incorrectSelections !== 'undefined' ? 
+                            result.correctSelections + result.incorrectSelections : 0);
+        
+        console.log(`Level ${result.level}: Total moved objects = ${totalMoved}`);
+        return sum + totalMoved;
       }, 0);
       
       // Calculate accuracy based on correct selections
@@ -1249,8 +1268,6 @@ export const exportAllTaskResults = () => {
           formatForCSV(result.correctSelections || 0),
           formatForCSV(result.incorrectSelections || 0),
           formatForCSV(result.score || (result.correctSelections - result.incorrectSelections) || 0),
-          formatForCSV(result.totalSelectionsCount || (result.correctSelections + result.incorrectSelections) || 0),
-          formatForCSV(result.totalMovedObjects || 0),
           formatForCSV(result.completionTime || ''),
           formatForCSV(maxLevel),
           formatForCSV(overallAccuracy)

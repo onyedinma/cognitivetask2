@@ -226,11 +226,35 @@ const ObjectSpanMainTask = () => {
   
   // Handle task response based on correctness
   const handleTaskResponse = (responseIsCorrect) => {
+    // Record current max span reached
+    const currentSpan = getSpanForRound(currentRound);
+    setMaxSpanReached(prevMax => Math.max(prevMax, currentSpan));
+
+    // Create the result object for this attempt
+    const newResult = {
+      participant_id: studentId,
+      counter_balance: counterBalance,
+      task_type: 'object_span',
+      span_mode: isBackward ? 'backward' : 'forward',
+      trial_number: currentRound,
+      timestamp: new Date().toISOString(),
+      span_length: currentSpan,
+      attempt_number: currentAttempt,
+      is_correct: responseIsCorrect,
+      max_span_reached: maxSpanReached,
+      presented_sequence: currentSequence.map(index => 
+        TASK_CONFIG.objectSpan.objectMapping[index].name
+      ).join(' '),
+      expected_response: isBackward 
+        ? [...currentSequence].map(index => TASK_CONFIG.objectSpan.objectMapping[index].name).reverse().join(' ')
+        : currentSequence.map(index => TASK_CONFIG.objectSpan.objectMapping[index].name).join(' '),
+      user_response: userResponse
+    };
+
+    // Add the result to results array BEFORE changing task state
+    setResults(prevResults => [...prevResults, newResult]);
+    
     if (responseIsCorrect) {
-      // Record current max span reached
-      const currentSpan = getSpanForRound(currentRound);
-      setMaxSpanReached(prevMax => Math.max(prevMax, currentSpan));
-      
       // Move to next round
       const newRound = currentRound + 1;
       
@@ -286,10 +310,6 @@ const ObjectSpanMainTask = () => {
       
       // Calculate total correct sequences
       const correctSequences = results.filter(r => r.is_correct).length;
-      
-      // Log all results to make sure we have all attempts
-      console.log(`Exporting ${results.length} total attempts for ${isBackward ? 'Backward' : 'Forward'} Object Span task`);
-      console.log("All attempts including failed ones:", results);
       
       // Normalize and format the results data structure
       const finalResults = results.map(result => {

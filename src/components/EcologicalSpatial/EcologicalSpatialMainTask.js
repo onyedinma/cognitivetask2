@@ -528,10 +528,23 @@ const EcologicalSpatialMainTask = () => {
         selectedObjects: result.selectedObjects || '',
         correctSelections: result.correctSelections,
         incorrectSelections: result.incorrectSelections,
+        totalMovedObjects: result.totalMovedObjects,
         completionTime: result.completionTime || 0,
         isCorrect: result.isCorrect || result.passed,
         score: result.score
       }));
+      
+      // Calculate and log accuracy metrics for verification
+      const totalCorrectSelections = formattedResults.reduce((sum, result) => sum + (result.correctSelections || 0), 0);
+      const totalPossibleSelections = formattedResults.reduce((sum, result) => sum + (result.totalMovedObjects || 0), 0);
+      const overallAccuracy = totalPossibleSelections > 0 
+        ? (totalCorrectSelections / totalPossibleSelections * 100).toFixed(2) + '%' 
+        : '0%';
+        
+      console.log(`Ecological Spatial Task Accuracy Metrics:`);
+      console.log(`- Total Correct Selections: ${totalCorrectSelections}`);
+      console.log(`- Total Possible Selections: ${totalPossibleSelections}`);
+      console.log(`- Overall Accuracy: ${overallAccuracy}`);
       
       // Save results to the centralized storage system
       saveTaskResults('ecologicalSpatial', formattedResults);

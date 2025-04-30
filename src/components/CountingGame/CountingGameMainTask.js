@@ -39,7 +39,8 @@ const CountingGameMainTask = () => {
     { level: 2, objects: 6 },
     { level: 3, objects: 8 },
     { level: 4, objects: 10 },
-    { level: 5, objects: 12 }
+    { level: 5, objects: 12 },
+    { level: 6, objects: 0 }  // Debug level to test if level 5 gets captured
   ];
   
   // Object image mapping
@@ -81,6 +82,35 @@ const CountingGameMainTask = () => {
   const startSequence = () => {
     // Clear any existing timers
     clearAllTimers();
+    
+    // Special handling for invisible level 6
+    if (currentLevel === 6) {
+      console.log("Auto-completing invisible level 6");
+      // Add a placeholder result for level 6
+      const placeholderResult = {
+        level: 6,
+        correctCounts: { bills: 0, buses: 0, faces: 0 },
+        userCounts: { bills: 0, buses: 0, faces: 0 },
+        categoryScores: {
+          billsCorrect: 0,
+          busesCorrect: 0,
+          facesCorrect: 0,
+          totalCorrectCategories: 0,
+          totalCategories: 3
+        },
+        correct: true,
+        timestamp: new Date().toISOString()
+      };
+      
+      setResults(prevResults => [...prevResults, placeholderResult]);
+      
+      // Complete the task immediately
+      setTimeout(() => {
+        setTaskComplete(true);
+        exportToCSV();
+      }, 500);
+      return;
+    }
     
     // Reset state
     setCurrentObject(null);
@@ -199,7 +229,7 @@ const CountingGameMainTask = () => {
       // Automatically export results when task completes
       setTimeout(() => {
         exportToCSV();
-      }, 500);
+      }, 1000);
     }
   };
   
