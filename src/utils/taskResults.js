@@ -1143,7 +1143,10 @@ export const exportAllTaskResults = () => {
         'Total Moved Shapes',
         'Completion Time (ms)',
         'Max Level Reached',
-        'Overall Accuracy'
+        'Overall Accuracy',
+        'Cumulative Correct Selections',
+        'Cumulative Incorrect Selections',
+        'Cumulative Total Score'
       ]);
       
       // Calculate max level reached and overall accuracy
@@ -1167,8 +1170,18 @@ export const exportAllTaskResults = () => {
       
       console.log(`Spatial Working Memory accuracy calculation: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections = ${overallAccuracy}`);
       
+      // Track cumulative values
+      let cumulativeCorrect = 0;
+      let cumulativeIncorrect = 0;
+      let cumulativeScore = 0;
+      
       // Add data rows with expanded fields
       allResults.spatialWorkingMemory.forEach((result, index) => {
+        // Update cumulative values
+        cumulativeCorrect += (result.correctSelections || 0);
+        cumulativeIncorrect += (result.incorrectSelections || 0);
+        cumulativeScore += (result.score || 0);
+        
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -1184,7 +1197,10 @@ export const exportAllTaskResults = () => {
           formatForCSV(result.totalMovedShapes || 0),
           formatForCSV(result.completionTime || ''),
           formatForCSV(maxLevel),
-          formatForCSV(overallAccuracy)
+          formatForCSV(overallAccuracy),
+          formatForCSV(cumulativeCorrect),
+          formatForCSV(cumulativeIncorrect),
+          formatForCSV(cumulativeScore)
         ]);
       });
       
@@ -1214,14 +1230,11 @@ export const exportAllTaskResults = () => {
         'Score',
         'Completion Time (ms)',
         'Max Level Reached',
-        'Overall Accuracy'
+        'Overall Accuracy',
+        'Cumulative Correct Selections',
+        'Cumulative Incorrect Selections',
+        'Cumulative Total Score'
       ]);
-      
-      // Log the first result to debug the available fields
-      if (allResults.ecologicalSpatial.length > 0) {
-        console.log('First ecological spatial result fields:', Object.keys(allResults.ecologicalSpatial[0]));
-        console.log('First ecological spatial result data sample:', allResults.ecologicalSpatial[0]);
-      }
       
       // Calculate max level reached without requiring isCorrect
       const maxLevel = allResults.ecologicalSpatial.reduce((max, result) => {
@@ -1229,7 +1242,6 @@ export const exportAllTaskResults = () => {
       }, 0);
       
       // Calculate overall accuracy based on correct selections vs total moved objects
-      // This is more appropriate than using just isCorrect/passed flags
       const totalCorrectSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
         const correctSelections = result.correctSelections || 0;
         console.log(`Level ${result.level}: Correct selections = ${correctSelections}`);
@@ -1237,14 +1249,7 @@ export const exportAllTaskResults = () => {
       }, 0);
       
       const totalPossibleSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
-        // Try to get totalMovedObjects directly, fallback to other fields if not available
-        const totalMoved = result.totalMovedObjects || 
-                          (result.movedObjectPairs ? result.movedObjectPairs.length : 0) || 
-                          (typeof result.correctSelections !== 'undefined' && typeof result.incorrectSelections !== 'undefined' ? 
-                            result.correctSelections + result.incorrectSelections : 0);
-        
-        console.log(`Level ${result.level}: Total moved objects = ${totalMoved}`);
-        return sum + totalMoved;
+        return sum + (result.totalMovedObjects || 0);
       }, 0);
       
       // Calculate accuracy based on correct selections
@@ -1254,8 +1259,18 @@ export const exportAllTaskResults = () => {
       
       console.log(`Ecological Spatial accuracy calculation: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections = ${overallAccuracy}`);
       
+      // Track cumulative values
+      let cumulativeCorrect = 0;
+      let cumulativeIncorrect = 0;
+      let cumulativeScore = 0;
+      
       // Add data rows with expanded fields
       allResults.ecologicalSpatial.forEach((result, index) => {
+        // Update cumulative values
+        cumulativeCorrect += (result.correctSelections || 0);
+        cumulativeIncorrect += (result.incorrectSelections || 0);
+        cumulativeScore += (result.score || 0);
+        
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -1270,7 +1285,10 @@ export const exportAllTaskResults = () => {
           formatForCSV(result.score || (result.correctSelections - result.incorrectSelections) || 0),
           formatForCSV(result.completionTime || ''),
           formatForCSV(maxLevel),
-          formatForCSV(overallAccuracy)
+          formatForCSV(overallAccuracy),
+          formatForCSV(cumulativeCorrect),
+          formatForCSV(cumulativeIncorrect),
+          formatForCSV(cumulativeScore)
         ]);
       });
       
@@ -1295,7 +1313,10 @@ export const exportAllTaskResults = () => {
         'User Selected Item',
         'Correct (1/0)',
         'Max Level Reached',
-        'Overall Accuracy'
+        'Overall Accuracy',
+        'Cumulative Correct Selections',
+        'Cumulative Incorrect Selections',
+        'Cumulative Score'
       ]);
       
       // Calculate overall accuracy
@@ -1303,8 +1324,21 @@ export const exportAllTaskResults = () => {
       const correctTrials = allResults.deductiveReasoning.filter(r => r.isCorrect).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
+      // Track cumulative values
+      let cumulativeCorrect = 0;
+      let cumulativeIncorrect = 0;
+      let cumulativeScore = 0;
+      
       // Add data rows
       allResults.deductiveReasoning.forEach((result, index) => {
+        // Update cumulative values
+        if (result.isCorrect) {
+          cumulativeCorrect++;
+          cumulativeScore++;
+        } else {
+          cumulativeIncorrect++;
+        }
+        
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -1316,7 +1350,10 @@ export const exportAllTaskResults = () => {
           formatForCSV(result.userSelectedItem || ''),
           formatForCSV(result.isCorrect ? '1' : '0'),
           formatForCSV(result.maxLevelReached || ''),
-          formatForCSV(overallAccuracy)
+          formatForCSV(overallAccuracy),
+          formatForCSV(cumulativeCorrect),
+          formatForCSV(cumulativeIncorrect),
+          formatForCSV(cumulativeScore)
         ]);
       });
       
@@ -1343,7 +1380,10 @@ export const exportAllTaskResults = () => {
         'Selected Items',
         'Correct (1/0)',
         'Completion Time (ms)',
-        'Overall Accuracy'
+        'Overall Accuracy',
+        'Cumulative Correct Selections',
+        'Cumulative Incorrect Selections',
+        'Cumulative Score'
       ]);
       
       // Log available field names for debugging
@@ -1356,8 +1396,21 @@ export const exportAllTaskResults = () => {
       const correctTrials = allResults.ecologicalDeductiveReasoning.filter(r => r.isCorrect).length;
       const overallAccuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(2) + '%' : '0%';
       
+      // Track cumulative values
+      let cumulativeCorrect = 0;
+      let cumulativeIncorrect = 0;
+      let cumulativeScore = 0;
+      
       // Add data rows with flexible field mapping
       allResults.ecologicalDeductiveReasoning.forEach((result, index) => {
+        // Update cumulative values
+        if (result.isCorrect) {
+          cumulativeCorrect++;
+          cumulativeScore++;
+        } else {
+          cumulativeIncorrect++;
+        }
+        
         csvContent.push([
           formatForCSV(result.participantId || studentId),
           formatForCSV(result.timestamp || timestamp),
@@ -1369,7 +1422,10 @@ export const exportAllTaskResults = () => {
           formatForCSV(result.userSelectedItem || ''),
           formatForCSV(result.isCorrect ? '1' : '0'),
           formatForCSV(result.completionTime || ''),
-          formatForCSV(overallAccuracy)
+          formatForCSV(overallAccuracy),
+          formatForCSV(cumulativeCorrect),
+          formatForCSV(cumulativeIncorrect),
+          formatForCSV(cumulativeScore)
         ]);
       });
       
