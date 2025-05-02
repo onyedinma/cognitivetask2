@@ -524,22 +524,7 @@ const SpatialMemoryMainTask = () => {
 
     // In feedback phase, highlight shapes that changed positions
     const getChangedStyle = (position) => {
-      if (phase !== 'feedback') return {};
-      
-      // Find if a different shape was originally in this position
-      const originalShapeAtPosition = shapes.find(s => s.position === position);
-      const currentShapeAtPosition = movedShapes.find(s => s.position === position);
-      
-      if (!originalShapeAtPosition || !currentShapeAtPosition) return {};
-      
-      // If different shapes are at this position in original vs moved state
-      if (originalShapeAtPosition.id !== currentShapeAtPosition.id) {
-        return {
-          boxShadow: '0 0 0 3px #4CAF50, 0 4px 8px rgba(0,0,0,0.2)',
-          transform: 'scale(1.05)'
-        };
-      }
-      
+      // Remove feedback styling
       return {};
     };
 
@@ -551,21 +536,20 @@ const SpatialMemoryMainTask = () => {
         alignItems: 'center',
         padding: '20px',
         boxSizing: 'border-box',
-        marginTop: '-30px' // Reduced negative margin to prevent shapes from being hidden
+        marginTop: '-30px'
       }}>
         <div className={`grid-container level-${currentLevel}`} style={gridStyle}>
           {Array(totalCells).fill().map((_, i) => {
             const shape = displayShapes.find(s => s.position === i);
             const isSelected = selectedCells.includes(i);
-            const isChangedPosition = phase === 'feedback' && getChangedStyle(i).boxShadow;
             
             const cellStyle = {
               width: '100%',
               height: '100%',
               background: isSelected ? '#e3f2fd' : 'white',
-              border: isSelected ? '3px solid #2196F3' : (isChangedPosition ? '3px solid #4CAF50' : '1px solid #ddd'),
+              border: isSelected ? '3px solid #2196F3' : '1px solid #ddd',
               borderRadius: '10px',
-              padding: '8px', // Slightly reduced from 9px
+              padding: '8px',
               transition: 'all 0.2s ease',
               cursor: phase === 'response' ? 'pointer' : 'default',
               boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
@@ -575,12 +559,12 @@ const SpatialMemoryMainTask = () => {
               boxSizing: 'border-box'
             };
             
-            const shapeSize = Math.floor(cellSize * 0.6); // Slightly reduced from 0.62
+            const shapeSize = Math.floor(cellSize * 0.6);
             
             return (
               <div 
                 key={i} 
-                className={`grid-cell ${phase === 'response' ? 'clickable' : ''} ${isSelected ? 'selected' : ''} ${isChangedPosition ? 'changed' : ''}`}
+                className={`grid-cell ${phase === 'response' ? 'clickable' : ''} ${isSelected ? 'selected' : ''}`}
                 onClick={phase === 'response' ? () => handleCellClick(i) : undefined}
                 style={cellStyle}
               >
@@ -597,30 +581,9 @@ const SpatialMemoryMainTask = () => {
                       color: 'transparent',
                       boxShadow: '0 3px 6px rgba(0,0,0,0.2)',
                       transition: 'all 0.2s ease',
-                      position: 'relative',
-                      ...(isChangedPosition ? getChangedStyle(i) : {})
+                      position: 'relative'
                     }}
                   >
-                    {phase === 'feedback' && isChangedPosition && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '-8px',
-                        right: '-8px',
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: '#4CAF50',
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                      }}>
-                        ✓
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
