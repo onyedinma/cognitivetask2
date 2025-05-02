@@ -170,6 +170,20 @@ const ObjectSpanPractice = () => {
     navigate(`/object-span/${direction}`);
   };
 
+  const handleObjectClick = (objectName) => {
+    // Add the clicked object name to the input field
+    // If there's already text, add a space before the new object name
+    const newValue = userResponse.trim() === '' 
+      ? objectName 
+      : `${userResponse.trim()} ${objectName}`;
+    setUserResponse(newValue);
+    
+    // Focus the input field after adding the object
+    if (responseInputRef.current) {
+      responseInputRef.current.focus();
+    }
+  };
+
   return (
     <div className="task-screen">
       <h1>{isBackward ? 'Backward' : 'Forward'} Object Span Practice</h1>
@@ -212,10 +226,10 @@ const ObjectSpanPractice = () => {
             />
             <button type="submit" className="submit-button">Submit Answer</button>
           </form>
-          <p className="hint">Separate object names with spaces. Names are not case-sensitive.</p>
+          <p className="hint">Click on objects below or type their names. Separate multiple objects with spaces.</p>
           
           {/* Object Reference Guide */}
-          <ObjectReference />
+          <ObjectReference onObjectClick={handleObjectClick} />
         </div>
       )}
 

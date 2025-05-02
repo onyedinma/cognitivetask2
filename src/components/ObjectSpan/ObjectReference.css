@@ -49,12 +49,27 @@
   border-radius: 8px;
   transition: all 0.2s ease;
   background-color: #f8f9fa;
+  cursor: pointer;
+  border: 2px solid transparent;
+  user-select: none;
 }
 
 .object-reference-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
   background-color: #e3f2fd;
+  border-color: #3498db;
+}
+
+.object-reference-item:active {
+  transform: scale(0.95);
+  background-color: #bbdefb;
+}
+
+.object-reference-item:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
 }
 
 .reference-image {
