@@ -1149,26 +1149,29 @@ export const exportAllTaskResults = () => {
         'Cumulative Total Score'
       ]);
       
-      // Calculate max level reached and overall accuracy
+      // Calculate max level reached
       const maxLevel = allResults.spatialWorkingMemory.reduce((max, result) => {
         return result.level > max ? result.level : max;
       }, 0);
       
-      // Calculate overall accuracy based on correct selections vs total moved shapes
-      const totalCorrectSelections = allResults.spatialWorkingMemory.reduce((sum, result) => {
-        return sum + (result.correctSelections || 0);
-      }, 0);
+      // Calculate overall accuracy based on cumulative score vs total possible selections
+      const totalCorrectSelections = allResults.spatialWorkingMemory.reduce((sum, result) => 
+        sum + (result.correctSelections || 0), 0);
+      const totalIncorrectSelections = allResults.spatialWorkingMemory.reduce((sum, result) => 
+        sum + (result.incorrectSelections || 0), 0);
+      const totalPossibleSelections = allResults.spatialWorkingMemory.reduce((sum, result) => 
+        sum + (result.totalMovedShapes || 0), 0);
       
-      const totalPossibleSelections = allResults.spatialWorkingMemory.reduce((sum, result) => {
-        return sum + (result.totalMovedShapes || 0);
-      }, 0);
-      
-      // Calculate accuracy based on correct selections
+      // Calculate accuracy using the formula: ((TotalCorrectSelections - TotalIncorrectSelections) / TotalPossibleSelections) × 100
       const overallAccuracy = totalPossibleSelections > 0 
-        ? (totalCorrectSelections / totalPossibleSelections * 100).toFixed(2) + '%' 
+        ? (((totalCorrectSelections - totalIncorrectSelections) / totalPossibleSelections) * 100).toFixed(2) + '%'
         : '0%';
       
-      console.log(`Spatial Working Memory accuracy calculation: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections = ${overallAccuracy}`);
+      console.log(`Spatial Working Memory accuracy calculation:`);
+      console.log(`- Total Correct Selections: ${totalCorrectSelections}`);
+      console.log(`- Total Incorrect Selections: ${totalIncorrectSelections}`);
+      console.log(`- Total Possible Selections: ${totalPossibleSelections}`);
+      console.log(`- Overall Accuracy: ${overallAccuracy}`);
       
       // Track cumulative values
       let cumulativeCorrect = 0;
@@ -1241,23 +1244,24 @@ export const exportAllTaskResults = () => {
         return result.level > max ? result.level : max;
       }, 0);
       
-      // Calculate overall accuracy based on correct selections vs total moved objects
-      const totalCorrectSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
-        const correctSelections = result.correctSelections || 0;
-        console.log(`Level ${result.level}: Correct selections = ${correctSelections}`);
-        return sum + correctSelections;
-      }, 0);
+      // Calculate overall accuracy based on cumulative score vs total possible selections
+      const totalCorrectSelections = allResults.ecologicalSpatial.reduce((sum, result) => 
+        sum + (result.correctSelections || 0), 0);
+      const totalIncorrectSelections = allResults.ecologicalSpatial.reduce((sum, result) => 
+        sum + (result.incorrectSelections || 0), 0);
+      const totalPossibleSelections = allResults.ecologicalSpatial.reduce((sum, result) => 
+        sum + (result.totalMovedObjects || 0), 0);
       
-      const totalPossibleSelections = allResults.ecologicalSpatial.reduce((sum, result) => {
-        return sum + (result.totalMovedObjects || 0);
-      }, 0);
-      
-      // Calculate accuracy based on correct selections
+      // Calculate accuracy using the formula: ((TotalCorrectSelections - TotalIncorrectSelections) / TotalPossibleSelections) × 100
       const overallAccuracy = totalPossibleSelections > 0 
-        ? (totalCorrectSelections / totalPossibleSelections * 100).toFixed(2) + '%' 
+        ? (((totalCorrectSelections - totalIncorrectSelections) / totalPossibleSelections) * 100).toFixed(2) + '%'
         : '0%';
       
-      console.log(`Ecological Spatial accuracy calculation: ${totalCorrectSelections} correct selections out of ${totalPossibleSelections} possible selections = ${overallAccuracy}`);
+      console.log(`Ecological Spatial accuracy calculation:`);
+      console.log(`- Total Correct Selections: ${totalCorrectSelections}`);
+      console.log(`- Total Incorrect Selections: ${totalIncorrectSelections}`);
+      console.log(`- Total Possible Selections: ${totalPossibleSelections}`);
+      console.log(`- Overall Accuracy: ${overallAccuracy}`);
       
       // Track cumulative values
       let cumulativeCorrect = 0;
