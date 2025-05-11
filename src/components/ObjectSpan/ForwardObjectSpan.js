@@ -86,8 +86,9 @@ const ForwardObjectSpan = () => {
         <p>In this task, you will be shown a series of objects one at a time.</p>
         <p>Your task is to remember and recall the objects in the <strong>SAME ORDER</strong> as they appeared.</p>
         <p>For example, if you see: bread → car → books</p>
-        <p>You should type: "bread car books"</p>
+        <p>You should click on the objects in order: "bread car books"</p>
         <p>You will start with practice trials to help you understand the task.</p>
+        <p>Click on the objects below to add them to your answer in the correct order.</p>
       </div>
 
       <div className="example-objects">
