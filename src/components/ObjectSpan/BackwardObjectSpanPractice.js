@@ -17,13 +17,13 @@ const BackwardObjectSpanPractice = () => {
     const allImages = [
       '/images/Bread.png',
       '/images/Car.png', 
-      '/images/Book.png',
+      '/images/Books.png',
       '/images/Bag.png',
       '/images/Chair.png',
       '/images/Computer.png',
       '/images/Money.png',
       '/images/Pot.png',
-      '/images/Shoe.png'
+      '/images/Shoes.png'
     ];
     
     let loadedCount = 0;
@@ -66,12 +66,12 @@ const BackwardObjectSpanPractice = () => {
       correctAnswer: 'car bread',
     },
     {
-      objects: ['Book', 'Bag', 'Chair'],
-      correctAnswer: 'chair bag book',
+      objects: ['Books', 'Bag', 'Chair'],
+      correctAnswer: 'chair bag books',
     },
     {
-      objects: ['Computer', 'Money', 'Pot', 'Shoe'],
-      correctAnswer: 'shoe pot money computer',
+      objects: ['Computer', 'Money', 'Pot', 'Shoes'],
+      correctAnswer: 'shoes pot money computer',
     },
   ];
 
@@ -167,7 +167,7 @@ const BackwardObjectSpanPractice = () => {
       ) : (
         <div className="recall-section">
           <p>Now, type the objects you saw in <strong>REVERSE ORDER</strong> (last to first)</p>
-          <p>Separate each object with a space. For example: "shoe pot money"</p>
+          <p>Separate each object with a space. For example: "shoes pot money"</p>
           
           <input
             type="text"

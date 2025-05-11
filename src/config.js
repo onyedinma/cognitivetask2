@@ -14,13 +14,13 @@ export const TASK_CONFIG = {
     objectMapping: {
       1: { name: 'bread', image: '/images/Bread.png' },
       2: { name: 'car', image: '/images/Car.png' },
-      3: { name: 'book', image: '/images/Book.png' },
+      3: { name: 'books', image: '/images/Books.png' },
       4: { name: 'bag', image: '/images/Bag.png' },
       5: { name: 'chair', image: '/images/Chair.png' },
       6: { name: 'computer', image: '/images/Computer.png' },
       7: { name: 'money', image: '/images/Money.png' },
       8: { name: 'pot', image: '/images/Pot.png' },
-      9: { name: 'shoe', image: '/images/Shoe.png' }
+      9: { name: 'shoes', image: '/images/Shoes.png' }
     }
   },
   
