@@ -13,21 +13,21 @@ const chair = '/ecoimages/chair.jpg';
 const computer = '/ecoimages/computer.jpg';
 const umbrella = '/ecoimages/umbrella.jpg';
 const clock = '/ecoimages/clock.jpg';
-const teacup = '/ecoimages/teacup.jpg';
-const guitar = '/ecoimages/guitar.jpg';
+const pot = '/ecoimages/Pot.jpg';
+const horse = '/ecoimages/horse.png';
 const flower = '/ecoimages/flower.jpg';
-const bread = '/ecoimages/bread.jpg';
-const bag = '/ecoimages/bag.jpg';
-const shoe = '/ecoimages/shoe.jpg';
-const kettle = '/ecoimages/kettle.jpg';
-const fryingpan = '/ecoimages/fryingpan.jpg';
-const electriciron = '/ecoimages/electriciron.jpg';
+const bread = '/ecoimages/Bread.jpg';
+const bag = '/ecoimages/bag.webp';
+const shoe = '/ecoimages/Shoe.jpg';
+const sofa = '/ecoimages/sofa.jpg';
+const fryingpan = '/ecoimages/fryingpan.png';
+const book = '/ecoimages/book.jpg';
 const elephant = '/ecoimages/elephant.jpg';
 
 // Array of all image paths for preloading
 const allImagePaths = [
   dog, cat, bird, car, house, bus, chair, computer, umbrella, clock,
-  teacup, guitar, flower, bread, bag, shoe, kettle, fryingpan, electriciron, elephant
+  pot, horse, flower, bread, bag, shoe, sofa, fryingpan, book, elephant
 ];
 
 // Define image objects to use
@@ -42,15 +42,15 @@ const ecoImages = [
   { name: 'computer', src: computer },
   { name: 'umbrella', src: umbrella },
   { name: 'clock', src: clock },
-  { name: 'teacup', src: teacup },
-  { name: 'guitar', src: guitar },
+  { name: 'pot', src: pot },
+  { name: 'horse', src: horse },
   { name: 'flower', src: flower },
   { name: 'bread', src: bread },
   { name: 'bag', src: bag },
   { name: 'shoe', src: shoe },
-  { name: 'kettle', src: kettle },
+  { name: 'sofa', src: sofa },
   { name: 'fryingpan', src: fryingpan },
-  { name: 'electriciron', src: electriciron },
+  { name: 'book', src: book },
   { name: 'elephant', src: elephant }
 ];
 
@@ -626,7 +626,7 @@ const EcologicalSpatialMainTask = () => {
               background: isSelected ? '#e3f2fd' : 'white',
               border: isSelected ? '3px solid #2196F3' : '1px solid #ddd',
               borderRadius: '10px',
-              padding: '8px',
+              padding: '4px', // Reduced padding to allow for larger images
               transition: 'all 0.2s ease',
               cursor: phase === 'response' ? 'pointer' : 'default',
               boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
@@ -636,7 +636,7 @@ const EcologicalSpatialMainTask = () => {
               boxSizing: 'border-box'
             };
             
-            const imageSize = Math.floor(cellSize * 0.75);
+            const imageSize = Math.floor(cellSize * 0.9); // Increased from 0.75 to 0.9
             
             return (
               <div 
@@ -665,6 +665,8 @@ const EcologicalSpatialMainTask = () => {
                       style={{
                         maxWidth: '100%',
                         maxHeight: '100%',
+                        width: 'auto',
+                        height: 'auto',
                         objectFit: 'contain'
                       }}
                     />
